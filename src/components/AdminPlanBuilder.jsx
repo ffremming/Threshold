@@ -454,12 +454,20 @@ export default function AdminPlanBuilder({
     onWeekChange(next.week, next.year)
   }
 
-  function handleTemplateDragStart(template) {
+  function handleTemplateDragStart(template, event) {
+    if (event?.dataTransfer) {
+      event.dataTransfer.effectAllowed = 'copy'
+      try { event.dataTransfer.setData('text/plain', `template:${template.id || ''}`) } catch {}
+    }
     setDragState({ kind: 'template', template })
     setDropTarget(null)
   }
 
-  function handleWorkoutDragStart(workout) {
+  function handleWorkoutDragStart(workout, event) {
+    if (event?.dataTransfer) {
+      event.dataTransfer.effectAllowed = 'move'
+      try { event.dataTransfer.setData('text/plain', `workout:${workout.id}`) } catch {}
+    }
     setDragState({ kind: 'workout', workoutId: workout.id })
     setDropTarget({
       weekday: workout.weekday,
@@ -505,6 +513,13 @@ export default function AdminPlanBuilder({
     if (!draggedWorkout) return
 
     await onDeleteWorkout(draggedWorkout)
+  }
+
+  function handleAddTemplateClick(template) {
+    const today = new Date()
+    const todayWeekday = ((today.getDay() + 6) % 7) + 1
+    const targetWeekday = isThisWeek ? todayWeekday : 1
+    return onAddTemplateToDay(template, targetWeekday)
   }
 
   function handleAddBankWindow() {
@@ -575,6 +590,7 @@ export default function AdminPlanBuilder({
             templates={templates}
             onDragStart={handleTemplateDragStart}
             onDragEnd={handleDragEnd}
+            onAddTemplate={handleAddTemplateClick}
             canRemove={false}
             onRemove={() => {}}
             onEditTemplate={onEditTemplate}
@@ -601,6 +617,7 @@ export default function AdminPlanBuilder({
             templates={templates}
             onDragStart={handleTemplateDragStart}
             onDragEnd={handleDragEnd}
+            onAddTemplate={handleAddTemplateClick}
             canRemove
             onRemove={() => handleRemoveBankWindow(window.id)}
             onEditTemplate={onEditTemplate}
@@ -631,7 +648,11 @@ export default function AdminPlanBuilder({
               key={day.value}
               className={`program-day-section admin-program-day-section${dropTarget?.weekday === day.value ? ' drag-over' : ''}`}
               onDragOver={event => {
+                if (!dragState) return
                 event.preventDefault()
+                if (event.dataTransfer) {
+                  event.dataTransfer.dropEffect = dragState.kind === 'template' ? 'copy' : 'move'
+                }
                 handleDropTargetChange(day.value)
               }}
               onDrop={async event => {
@@ -653,8 +674,12 @@ export default function AdminPlanBuilder({
                   <div
                     className={`program-day-empty-slot admin-program-day-empty-slot${dropTarget?.weekday === day.value && !dropTarget?.beforeWorkoutId ? ' drag-over' : ''}`}
                     onDragOver={event => {
+                      if (!dragState) return
                       event.preventDefault()
                       event.stopPropagation()
+                      if (event.dataTransfer) {
+                        event.dataTransfer.dropEffect = dragState.kind === 'template' ? 'copy' : 'move'
+                      }
                       handleDropTargetChange(day.value)
                     }}
                     onDrop={async event => {
@@ -678,11 +703,15 @@ export default function AdminPlanBuilder({
                         onClick={() => onSelectWorkout(workout)}
                         onMoveUp={() => onMoveWorkout(workout, -1)}
                         onMoveDown={() => onMoveWorkout(workout, 1)}
-                        onDragStart={() => handleWorkoutDragStart(workout)}
+                        onDragStart={event => handleWorkoutDragStart(workout, event)}
                         onDragEnd={handleDragEnd}
                         onDragOver={event => {
+                          if (!dragState) return
                           event.preventDefault()
                           event.stopPropagation()
+                          if (event.dataTransfer) {
+                            event.dataTransfer.dropEffect = dragState.kind === 'template' ? 'copy' : 'move'
+                          }
                           handleDropTargetChange(day.value, workout.id)
                         }}
                         onDrop={async event => {
@@ -713,11 +742,15 @@ export default function AdminPlanBuilder({
               onClick={() => onSelectWorkout(workout)}
               onMoveUp={() => onMoveWorkout(workout, -1)}
               onMoveDown={() => onMoveWorkout(workout, 1)}
-              onDragStart={() => handleWorkoutDragStart(workout)}
+              onDragStart={event => handleWorkoutDragStart(workout, event)}
               onDragEnd={handleDragEnd}
               onDragOver={event => {
+                if (!dragState) return
                 event.preventDefault()
                 event.stopPropagation()
+                if (event.dataTransfer) {
+                  event.dataTransfer.dropEffect = dragState.kind === 'template' ? 'copy' : 'move'
+                }
                 handleDropTargetChange(workout.weekday, workout.id)
               }}
               onDrop={async event => {
@@ -915,12 +948,12 @@ export default function AdminPlanBuilder({
         ))}
       </div>
 
-      {dragState && (
+      {dragState?.kind === 'workout' && (
         <div
-          className={`builder-trash-zone${dragState.kind === 'workout' ? ' visible' : ''}`}
+          className="builder-trash-zone visible"
           onDragOver={event => {
-            if (dragState.kind !== 'workout') return
             event.preventDefault()
+            if (event.dataTransfer) event.dataTransfer.dropEffect = 'move'
           }}
           onDrop={async event => {
             event.preventDefault()
@@ -961,7 +994,7 @@ function BuilderPanelHeader({ title, copy, panelId, visiblePanelIds, onMove, chi
   )
 }
 
-function SessionColumn({ title, subtitle, sessions, onDragStart, onDragEnd, onEditTemplate }) {
+function SessionColumn({ title, subtitle, sessions, onDragStart, onDragEnd, onAddTemplate, onEditTemplate }) {
   return (
     <section className="builder-session-column">
       <div className="builder-session-column-head">
@@ -977,8 +1010,9 @@ function SessionColumn({ title, subtitle, sessions, onDragStart, onDragEnd, onEd
             <TemplateDragCard
               key={session.id}
               session={session}
-              onDragStart={() => onDragStart(session)}
+              onDragStart={event => onDragStart(session, event)}
               onDragEnd={onDragEnd}
+              onAdd={onAddTemplate}
               onEdit={onEditTemplate}
             />
           ))}
@@ -994,6 +1028,7 @@ function BankPickerWindow({
   templates,
   onDragStart,
   onDragEnd,
+  onAddTemplate,
   canRemove,
   onRemove,
   onEditTemplate,
@@ -1093,6 +1128,7 @@ function BankPickerWindow({
           sessions={hardTemplates}
           onDragStart={onDragStart}
           onDragEnd={onDragEnd}
+          onAddTemplate={onAddTemplate}
           onEditTemplate={onEditTemplate}
         />
         <SessionColumn
@@ -1101,6 +1137,7 @@ function BankPickerWindow({
           sessions={easyTemplates}
           onDragStart={onDragStart}
           onDragEnd={onDragEnd}
+          onAddTemplate={onAddTemplate}
           onEditTemplate={onEditTemplate}
         />
       </div>
@@ -1108,7 +1145,7 @@ function BankPickerWindow({
   )
 }
 
-function TemplateDragCard({ session, onDragStart, onDragEnd, onEdit }) {
+function TemplateDragCard({ session, onDragStart, onDragEnd, onAdd, onEdit }) {
   const typeColors = TYPE_COLORS[session.type] || TYPE_COLORS.annet
   const icon = TYPE_ICONS[session.type] || 'AN'
   const loadTag = session.loadTag ? LOAD_TAG_MAP[session.loadTag] : null
@@ -1129,6 +1166,22 @@ function TemplateDragCard({ session, onDragStart, onDragEnd, onEdit }) {
       <div className="builder-session-card-top">
         <span className="card-icon"><ActivityIcon name={icon} className="ui-icon" /></span>
         <div className="builder-session-card-actions">
+          {onAdd ? (
+            <button
+              type="button"
+              className="builder-template-add-btn"
+              onClick={event => {
+                event.preventDefault()
+                event.stopPropagation()
+                onAdd(session)
+              }}
+              draggable={false}
+              title="Legg til i plan"
+              aria-label={`Legg ${session.title} til i plan`}
+            >
+              +
+            </button>
+          ) : null}
           {isCustomTemplate && onEdit ? (
             <button
               type="button"

@@ -1744,6 +1744,28 @@ html, body {
   border-color: rgba(59, 130, 246, 0.28);
 }
 
+.builder-template-add-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.7rem;
+  height: 1.7rem;
+  border-radius: 999px;
+  border: 1px solid rgba(59, 130, 246, 0.28);
+  background: rgba(59, 130, 246, 0.08);
+  color: rgb(37, 99, 235);
+  font-size: 1.1rem;
+  line-height: 1;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+}
+
+.builder-template-add-btn:hover {
+  background: rgba(59, 130, 246, 0.16);
+  border-color: rgba(59, 130, 246, 0.45);
+}
+
 .builder-session-card .card-title {
   font-size: var(--builder-side-title-font);
   line-height: 1.2;

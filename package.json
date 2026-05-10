@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "create-admin": "node scripts/create-admin.mjs",
     "seed-templates": "node scripts/seed-templates.mjs",
+    "seed-global-templates": "node scripts/seed-global-templates.mjs",
     "normalize-zones": "node scripts/normalize-zones.mjs"
   },
   "dependencies": {

@@ -99,6 +99,12 @@ service cloud.firestore {
       );
     }
 
+    // Global session library (read by all authenticated, write by superadmin only)
+    match /globalTemplates/{templateId} {
+      allow read: if request.auth != null;
+      allow write: if isSuperadmin();
+    }
+
     // Tests
     match /tests/{testId} {
       allow read: if request.auth != null && (

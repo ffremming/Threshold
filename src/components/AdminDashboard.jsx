@@ -33,7 +33,7 @@ import {
   normalizeIntensityZone,
   normalizeWorkout,
 } from '../utils'
-import { BUILTIN_TEMPLATES, mergeTemplates } from '../templateLibrary'
+import { sortTemplates } from '../templateLibrary'
 import WorkoutForm from './WorkoutForm'
 import WorkoutDetail from './WorkoutDetail'
 import BirdsEyeOverview from './BirdsEyeOverview'
@@ -44,6 +44,7 @@ import SystemIcon from './SystemIcon'
 import WorkoutLayoutToggle from './WorkoutLayoutToggle'
 import AdminPlanBuilder from './AdminPlanBuilder'
 import TestingDashboard from './TestingDashboard'
+import LibraryBrowser from './LibraryBrowser'
 import { subscribeToWorkoutWeeks } from '../workoutSubscriptions'
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
@@ -102,9 +103,13 @@ export default function AdminDashboard({
   // Øktbank state
   const [templates, setTemplates] = useState([])
   const [loadingTemplates, setLoadingTemplates] = useState(true)
+  const [globalTemplates, setGlobalTemplates] = useState([])
+  const [loadingGlobalTemplates, setLoadingGlobalTemplates] = useState(true)
   const [activeCategory, setActiveCategory] = useState('Alle')
   const [editingTemplate, setEditingTemplate] = useState(null)
   const [templateForm, setTemplateForm] = useState({ ...EMPTY_TEMPLATE })
+  const [editingGlobalTemplate, setEditingGlobalTemplate] = useState(null)
+  const [globalTemplateForm, setGlobalTemplateForm] = useState({ ...EMPTY_TEMPLATE })
   const [pickingFromBank, setPickingFromBank] = useState(false)
   const [showOverview, setShowOverview] = useState(false)
   const [activeTagFilter, setActiveTagFilter] = useState(null)
@@ -210,11 +215,11 @@ export default function AdminDashboard({
     })
   }, [analysisWeekKeys, analysisWeeks, selectedAthleteId])
 
-  // ─── Templates listener ───
+  // ─── Coach's own templates listener (custom-only) ───
   useEffect(() => {
     setLoadingTemplates(true)
     if (!userProfile?.uid) {
-      setTemplates(mergeTemplates())
+      setTemplates([])
       setLoadingTemplates(false)
       return
     }
@@ -222,9 +227,37 @@ export default function AdminDashboard({
     const unsub = onSnapshot(
       query(collection(db, 'templates'), where('ownerId', '==', userProfile.uid)),
       snap => {
-        const customTemplates = snap.docs.map(d => ({ id: d.id, ...d.data() }))
-        setTemplates(mergeTemplates(customTemplates))
+        const customTemplates = snap.docs
+          .map(d => normalizeWorkout({ id: d.id, ...d.data() }))
+          .sort(sortTemplates)
+        setTemplates(customTemplates)
         setLoadingTemplates(false)
+      }
+    )
+    return unsub
+  }, [userProfile?.uid])
+
+  // ─── Global session library listener ───
+  useEffect(() => {
+    setLoadingGlobalTemplates(true)
+    if (!userProfile?.uid) {
+      setGlobalTemplates([])
+      setLoadingGlobalTemplates(false)
+      return
+    }
+
+    const unsub = onSnapshot(
+      collection(db, 'globalTemplates'),
+      snap => {
+        const items = snap.docs
+          .map(d => normalizeWorkout({ id: d.id, ...d.data(), source: 'global' }))
+          .sort(sortTemplates)
+        setGlobalTemplates(items)
+        setLoadingGlobalTemplates(false)
+      },
+      () => {
+        setGlobalTemplates([])
+        setLoadingGlobalTemplates(false)
       }
     )
     return unsub
@@ -592,6 +625,73 @@ export default function AdminDashboard({
     await deleteDoc(doc(db, 'templates', template.id))
   }
 
+  // ─── Global library actions ───
+  async function handleAddFromLibrary(template) {
+    if (!userProfile?.uid) return
+    const { id, source, createdAt, updatedAt, ownerId, libraryId, ...fields } = template
+    await addDoc(collection(db, 'templates'), {
+      ...fields,
+      source: 'custom',
+      ownerId: userProfile.uid,
+      libraryId: id,
+      intensityZone: normalizeIntensityZones(fields.type, fields.intensityZone),
+      loadTag: normalizeLoadTag(fields.type, fields.intensityZone, fields.loadTag),
+      warmup: fields.warmup?.trim() || getDefaultWarmup(fields.type, fields.activityTag),
+      cooldown: fields.cooldown?.trim() || getDefaultCooldown(fields.type, fields.activityTag),
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    })
+  }
+
+  function isAlreadyInBank(template) {
+    return templates.some(t => t.libraryId === template.id)
+  }
+
+  async function handleDeleteGlobalTemplate(template) {
+    if (!isSuperadmin) return
+    if (!window.confirm(`Slett "${template.title}" fra biblioteket? Coachers kopier beholdes.`)) return
+    await deleteDoc(doc(db, 'globalTemplates', template.id))
+  }
+
+  function startEditGlobalTemplate(template) {
+    if (!isSuperadmin) return
+    setEditingGlobalTemplate(template)
+    setGlobalTemplateForm({ ...template })
+  }
+
+  function startNewGlobalTemplate() {
+    if (!isSuperadmin) return
+    setEditingGlobalTemplate('new')
+    setGlobalTemplateForm({ ...EMPTY_TEMPLATE })
+  }
+
+  async function handleSaveGlobalTemplate(e) {
+    e.preventDefault()
+    if (!isSuperadmin) return
+    if (!globalTemplateForm.title?.trim()) return
+
+    const fields = {
+      ...globalTemplateForm,
+      intensityZone: normalizeIntensityZones(globalTemplateForm.type, globalTemplateForm.intensityZone),
+      loadTag: normalizeLoadTag(globalTemplateForm.type, globalTemplateForm.intensityZone, globalTemplateForm.loadTag),
+      warmup: globalTemplateForm.warmup?.trim() || getDefaultWarmup(globalTemplateForm.type, globalTemplateForm.activityTag),
+      cooldown: globalTemplateForm.cooldown?.trim() || getDefaultCooldown(globalTemplateForm.type, globalTemplateForm.activityTag),
+      updatedAt: serverTimestamp(),
+    }
+
+    if (editingGlobalTemplate === 'new') {
+      await addDoc(collection(db, 'globalTemplates'), {
+        ...fields,
+        source: 'global',
+        createdAt: serverTimestamp(),
+      })
+    } else {
+      const { id, ...rest } = fields
+      await updateDoc(doc(db, 'globalTemplates', editingGlobalTemplate.id), rest)
+    }
+    setEditingGlobalTemplate(null)
+  }
+
   async function handleLogout() {
     await signOut(auth)
     onClose()
@@ -698,6 +798,15 @@ export default function AdminDashboard({
           }}
         >
           Øktbank
+        </button>
+        <button
+          className={`admin-tab${tab === 'library' ? ' active' : ''}`}
+          onClick={() => {
+            setTab('library')
+            setReplacementTarget(null)
+          }}
+        >
+          Bibliotek
         </button>
         <button
           className={`admin-tab${tab === 'builder' ? ' active' : ''}`}
@@ -1072,6 +1181,8 @@ export default function AdminDashboard({
           onMoveWorkoutByDrag={moveWorkoutByDrag}
           onAddTemplateToDay={handleAddTemplateToDay}
           onEditTemplate={startEditTemplate}
+          onCreateTemplate={startNewTemplate}
+          onDeleteTemplate={handleDeleteTemplate}
         />
       )}
 
@@ -1137,6 +1248,20 @@ export default function AdminDashboard({
         </div>
       )}
 
+      {/* ─── Bibliotek (global library) tab ─── */}
+      {tab === 'library' && (
+        <LibraryBrowser
+          globalTemplates={globalTemplates}
+          loading={loadingGlobalTemplates}
+          onAddToBank={handleAddFromLibrary}
+          isAlreadyInBank={isAlreadyInBank}
+          isSuperadmin={isSuperadmin}
+          onEditGlobal={isSuperadmin ? startEditGlobalTemplate : null}
+          onDeleteGlobal={isSuperadmin ? handleDeleteGlobalTemplate : null}
+          onCreateGlobal={isSuperadmin ? startNewGlobalTemplate : null}
+        />
+      )}
+
       {/* ─── Workout detail / edit modal ─── */}
       {selectedWorkout && (
         <WorkoutDetail
@@ -1166,6 +1291,30 @@ export default function AdminDashboard({
               <div className="form-actions" style={{ marginTop: '1rem' }}>
                 <button type="button" className="btn-cancel" onClick={() => setEditingTemplate(null)}>Avbryt</button>
                 <button type="submit" className="btn-save">Lagre mal</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {editingGlobalTemplate !== null && (
+        <div className="modal-backdrop" onClick={event => {
+          if (event.target === event.currentTarget) {
+            setEditingGlobalTemplate(null)
+          }
+        }}>
+          <div className="modal add-modal">
+            <button className="modal-close" onClick={() => setEditingGlobalTemplate(null)}>
+              <SystemIcon name="close" className="system-icon" />
+            </button>
+            <h2 className="modal-title-h2">
+              {editingGlobalTemplate === 'new' ? 'Ny økt i bibliotek' : 'Rediger bibliotekøkt'}
+            </h2>
+            <form onSubmit={handleSaveGlobalTemplate}>
+              <WorkoutForm value={globalTemplateForm} onChange={setGlobalTemplateForm} showCategory />
+              <div className="form-actions" style={{ marginTop: '1rem' }}>
+                <button type="button" className="btn-cancel" onClick={() => setEditingGlobalTemplate(null)}>Avbryt</button>
+                <button type="submit" className="btn-save">Lagre i bibliotek</button>
               </div>
             </form>
           </div>

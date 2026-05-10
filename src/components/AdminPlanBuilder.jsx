@@ -191,6 +191,8 @@ export default function AdminPlanBuilder({
   onMoveWorkoutByDrag,
   onAddTemplateToDay,
   onEditTemplate,
+  onCreateTemplate,
+  onDeleteTemplate,
 }) {
   const [dragState, setDragState] = useState(null)
   const [dropTarget, setDropTarget] = useState(null)
@@ -576,6 +578,11 @@ export default function AdminPlanBuilder({
         visiblePanelIds={visiblePanelIds}
         onMove={movePanel}
       >
+        {onCreateTemplate && (
+          <button type="button" className="builder-new-template-btn" onClick={onCreateTemplate}>
+            + Ny mal
+          </button>
+        )}
         <button type="button" className="builder-add-window-btn" onClick={handleAddBankWindow}>
           + Vindu
         </button>
@@ -594,6 +601,7 @@ export default function AdminPlanBuilder({
             canRemove={false}
             onRemove={() => {}}
             onEditTemplate={onEditTemplate}
+            onDeleteTemplate={onDeleteTemplate}
           />
         </div>
       )}
@@ -621,6 +629,7 @@ export default function AdminPlanBuilder({
             canRemove
             onRemove={() => handleRemoveBankWindow(window.id)}
             onEditTemplate={onEditTemplate}
+            onDeleteTemplate={onDeleteTemplate}
           />
         ))}
       </div>
@@ -994,7 +1003,7 @@ function BuilderPanelHeader({ title, copy, panelId, visiblePanelIds, onMove, chi
   )
 }
 
-function SessionColumn({ title, subtitle, sessions, onDragStart, onDragEnd, onAddTemplate, onEditTemplate }) {
+function SessionColumn({ title, subtitle, sessions, onDragStart, onDragEnd, onAddTemplate, onEditTemplate, onDeleteTemplate }) {
   return (
     <section className="builder-session-column">
       <div className="builder-session-column-head">
@@ -1014,6 +1023,7 @@ function SessionColumn({ title, subtitle, sessions, onDragStart, onDragEnd, onAd
               onDragEnd={onDragEnd}
               onAdd={onAddTemplate}
               onEdit={onEditTemplate}
+              onDelete={onDeleteTemplate}
             />
           ))}
         </div>
@@ -1032,6 +1042,7 @@ function BankPickerWindow({
   canRemove,
   onRemove,
   onEditTemplate,
+  onDeleteTemplate,
 }) {
   const [activeTagFilter, setActiveTagFilter] = useState(null)
   const [activeIntensityFilters, setActiveIntensityFilters] = useState([])
@@ -1130,6 +1141,7 @@ function BankPickerWindow({
           onDragEnd={onDragEnd}
           onAddTemplate={onAddTemplate}
           onEditTemplate={onEditTemplate}
+          onDeleteTemplate={onDeleteTemplate}
         />
         <SessionColumn
           title="Rolige økter"
@@ -1139,13 +1151,14 @@ function BankPickerWindow({
           onDragEnd={onDragEnd}
           onAddTemplate={onAddTemplate}
           onEditTemplate={onEditTemplate}
+          onDeleteTemplate={onDeleteTemplate}
         />
       </div>
     </section>
   )
 }
 
-function TemplateDragCard({ session, onDragStart, onDragEnd, onAdd, onEdit }) {
+function TemplateDragCard({ session, onDragStart, onDragEnd, onAdd, onEdit, onDelete }) {
   const typeColors = TYPE_COLORS[session.type] || TYPE_COLORS.annet
   const icon = TYPE_ICONS[session.type] || 'AN'
   const loadTag = session.loadTag ? LOAD_TAG_MAP[session.loadTag] : null
@@ -1196,6 +1209,22 @@ function TemplateDragCard({ session, onDragStart, onDragEnd, onAdd, onEdit }) {
               aria-label={`Rediger malen ${session.title}`}
             >
               <SystemIcon name="edit" className="system-icon" />
+            </button>
+          ) : null}
+          {isCustomTemplate && onDelete ? (
+            <button
+              type="button"
+              className="builder-template-delete-btn"
+              onClick={event => {
+                event.preventDefault()
+                event.stopPropagation()
+                onDelete(session)
+              }}
+              draggable={false}
+              title="Slett mal"
+              aria-label={`Slett malen ${session.title}`}
+            >
+              <SystemIcon name="delete" className="system-icon" />
             </button>
           ) : null}
           <span className="drag-handle" title="Dra inn i kalender">⋮⋮</span>

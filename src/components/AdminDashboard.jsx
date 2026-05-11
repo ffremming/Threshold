@@ -45,6 +45,27 @@ import WorkoutLayoutToggle from './WorkoutLayoutToggle'
 import AdminPlanBuilder from './AdminPlanBuilder'
 import TestingDashboard from './TestingDashboard'
 import LibraryBrowser from './LibraryBrowser'
+import {
+  Button,
+  IconButton,
+  PageShell,
+  ShellBrand,
+  Page,
+  PageHeader,
+  Section,
+  EmptyState,
+  Toolbar,
+  ToolbarGroup,
+  SearchBox,
+  Chip,
+  SportPicker,
+  WeekNav,
+  LayoutToggle,
+  TemplateCard as UITemplateCard,
+  Modal,
+} from './ui'
+import './LibraryBrowser.css'
+import './AdminPlanBuilder.css'
 import { subscribeToWorkoutWeeks } from '../workoutSubscriptions'
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
@@ -722,51 +743,57 @@ export default function AdminDashboard({
   const selectedAthleteName = athletes.find(a => a.uid === selectedAthleteId)?.displayName
     || (selectedAthleteId === userProfile?.uid ? userProfile?.displayName : null)
 
-  // ─── Render: Custom workout form modal ───
+  // ─── Render: Custom workout form ───
   if (showCustomForm) {
     return (
-      <div className="admin-dashboard">
-        <header className="admin-header">
-          <button className="admin-back-btn" onClick={() => setShowCustomForm(false)}>‹ Avbryt</button>
-          <div className="admin-header-copy">
-            <span className="brand-eyebrow">Workout Editor</span>
-            <span className="admin-header-title">Egendefinert økt</span>
-          </div>
-          <div style={{ width: 72 }} />
-        </header>
-        <div className="admin-scroll-area">
-          <form onSubmit={handleAddCustom} style={{ padding: '1rem' }}>
-            <WorkoutForm value={customForm} onChange={setCustomForm} showCategory showScheduleFields />
-            <div className="form-actions" style={{ marginTop: '1rem' }}>
-              <button type="button" className="btn-cancel" onClick={() => setShowCustomForm(false)}>Avbryt</button>
-              <button type="submit" className="btn-save">Legg til i uke {currentWeek}</button>
+      <PageShell brand={<ShellBrand onBack={() => setShowCustomForm(false)} eyebrow="Ny økt" title="Egendefinert økt" />}>
+        <Page>
+          <form onSubmit={handleAddCustom} className="tp-form">
+            <WorkoutForm value={customForm} onChange={setCustomForm} showScheduleFields />
+            <div className="tp-form-actions">
+              <Button variant="secondary" type="button" onClick={() => setShowCustomForm(false)}>Avbryt</Button>
+              <Button type="submit">Legg til i uke {currentWeek}</Button>
             </div>
           </form>
-        </div>
-      </div>
+        </Page>
+      </PageShell>
     )
   }
 
-  return (
-    <div className={`admin-dashboard${tab === 'builder' ? ' admin-dashboard-wide' : ''}`}>
-      {/* ─── Header ─── */}
-      <header className="admin-header">
-        <button className="admin-back-btn" onClick={onClose}>‹ Tilbake</button>
-        <div className="admin-header-copy">
-          <span className="brand-eyebrow">Training Planner</span>
-          <span className="admin-header-title">
-            {isSuperadmin ? 'Adminpanel' : 'Trenerpanel'}
-          </span>
-        </div>
-        <button className="admin-logout-btn" onClick={handleLogout}>Logg ut</button>
-      </header>
+  function changeTab(next) {
+    setTab(next)
+    setReplacementTarget(null)
+    if (next !== 'oktbank') setPickingFromBank(false)
+  }
 
-      {/* ─── Athlete Selector ─── */}
-      {athletes.length > 0 && (
-        <div className="main-athlete-selector shell-card admin-athlete-shell">
-          <div className="selector-meta">
-            <span className="selector-label">Utøver</span>
-            <span className="selector-help">Velg hvem planen og analysen gjelder for.</span>
+  const tabItems = [
+    { value: 'plan',     label: 'Ukeplan' },
+    { value: 'oktbank',  label: 'Øktbank' },
+    { value: 'library',  label: 'Bibliotek' },
+    { value: 'builder',  label: 'Planverktøy' },
+    { value: 'analysis', label: 'Analyse' },
+    { value: 'tests',    label: 'Tester' },
+  ]
+
+  return (
+    <PageShell
+      className={tab === 'builder' ? 'admin-dashboard-wide' : undefined}
+      brand={<ShellBrand onBack={onClose} eyebrow="Training Planner" title={isSuperadmin ? 'Adminpanel' : 'Trenerpanel'} />}
+      actions={
+        <>
+          {onOpenUserManagement && (
+            <Button variant="secondary" size="sm" onClick={onOpenUserManagement}>
+              <SystemIcon name="users" className="button-icon" />
+              Brukere
+            </Button>
+          )}
+          <Button variant="ghost" size="sm" onClick={handleLogout}>Logg ut</Button>
+        </>
+      }
+      banner={athletes.length > 0 ? (
+        <>
+          <div className="tp-shell-selector-meta">
+            <span className="tp-shell-selector-label">Utøver</span>
           </div>
           <AthleteSelector
             athletes={athletes}
@@ -775,141 +802,56 @@ export default function AdminDashboard({
             currentUserProfile={userProfile}
             hideLabel
           />
-        </div>
-      )}
+        </>
+      ) : null}
+      tabs={tabItems}
+      tabValue={tab}
+      onTabChange={changeTab}
+    >
 
-      {/* ─── Tabs ─── */}
-      <div className="admin-tabs">
-        <button
-          className={`admin-tab${tab === 'plan' ? ' active' : ''}`}
-          onClick={() => {
-            setTab('plan')
-            setPickingFromBank(false)
-            setReplacementTarget(null)
-          }}
-        >
-          Ukeplan
-        </button>
-        <button
-          className={`admin-tab${tab === 'oktbank' ? ' active' : ''}`}
-          onClick={() => {
-            setTab('oktbank')
-            setReplacementTarget(null)
-          }}
-        >
-          Øktbank
-        </button>
-        <button
-          className={`admin-tab${tab === 'library' ? ' active' : ''}`}
-          onClick={() => {
-            setTab('library')
-            setReplacementTarget(null)
-          }}
-        >
-          Bibliotek
-        </button>
-        <button
-          className={`admin-tab${tab === 'builder' ? ' active' : ''}`}
-          onClick={() => {
-            setTab('builder')
-            setPickingFromBank(false)
-            setReplacementTarget(null)
-          }}
-        >
-          Planverktøy
-        </button>
-        <button
-          className={`admin-tab${tab === 'analysis' ? ' active' : ''}`}
-          onClick={() => {
-            setTab('analysis')
-            setReplacementTarget(null)
-          }}
-        >
-          Analyse
-        </button>
-        <button
-          className={`admin-tab${tab === 'tests' ? ' active' : ''}`}
-          onClick={() => {
-            setTab('tests')
-            setReplacementTarget(null)
-          }}
-        >
-          Tester
-        </button>
-        {onOpenUserManagement && (
-          <button
-            className="admin-tab"
-            onClick={onOpenUserManagement}
-          >
-            <SystemIcon name="users" className="button-icon" />
-            Brukere
-          </button>
-        )}
-      </div>
-
-      {/* ─── No athlete selected warning ─── */}
-      {!selectedAthleteId && tab === 'plan' && (
-        <div className="admin-plan">
-          <div className="empty-state">
-            <div className="empty-icon">UT</div>
-            <div>Velg en utøver for å administrere treningsplanen</div>
-          </div>
-        </div>
-      )}
-
-      {!selectedAthleteId && tab === 'builder' && (
-        <div className="admin-plan">
-          <div className="empty-state">
-            <div className="empty-icon">BV</div>
-            <div>Velg en utøver for å bruke planverktøyet</div>
-          </div>
-        </div>
+      {!selectedAthleteId && (tab === 'plan' || tab === 'builder') && (
+        <Page>
+          <EmptyState
+            title="Ingen utøver valgt"
+            description={tab === 'plan' ? 'Velg en utøver for å administrere treningsplanen.' : 'Velg en utøver for å bruke planverktøyet.'}
+          />
+        </Page>
       )}
 
       {/* ─── Ukeplan tab ─── */}
       {tab === 'plan' && selectedAthleteId && (
-        <div className="admin-plan">
+        <Page>
           {selectedAthleteName && (
-            <div className="admin-athlete-banner">
+            <div className="pb-athlete-banner">
               Treningsplan for <strong>{selectedAthleteName}</strong>
             </div>
           )}
 
-          <div className="admin-week-nav">
-            <button className="nav-btn" onClick={prevWeek}>‹</button>
-            <div className="week-info">
-              <span className="week-label">
-                Uke {currentWeek}
-                {isThisWeek && <span className="this-week-dot" aria-hidden="true" />}
-              </span>
-              <span className="week-dates">
-                {monday.getDate()}.{monday.getMonth() + 1} – {sunday.getDate()}.{sunday.getMonth() + 1}.{sunday.getFullYear()}
-              </span>
-            </div>
-            <button className="nav-btn" onClick={nextWeek}>›</button>
-            <button
-              type="button"
-              className={`nav-btn overview-nav-btn${showOverview ? ' active' : ''}`}
-              onClick={() => setShowOverview(prev => !prev)}
-              aria-expanded={showOverview}
-              aria-controls="admin-birds-eye-overview"
-              aria-label="Vis oversikt for siste 4 og neste 4 uker"
-              title="Siste 4 og neste 4 uker"
-            >
-              <span className="overview-icon" aria-hidden="true">
-                <span />
-                <span />
-                <span />
-                <span />
-              </span>
-            </button>
-          </div>
+          <WeekNav
+            week={currentWeek}
+            year={currentYear}
+            monday={monday}
+            sunday={sunday}
+            isThisWeek={isThisWeek}
+            onPrev={prevWeek}
+            onNext={nextWeek}
+            onToday={() => onWeekChange(getWeekNumber(new Date()), new Date().getFullYear())}
+            rightSlot={
+              <IconButton
+                ariaLabel="Vis ukeoversikt"
+                variant={showOverview ? undefined : 'ghost'}
+                onClick={() => setShowOverview(p => !p)}
+              >
+                <span className="pb-overview-glyph" aria-hidden="true"><span /><span /><span /><span /></span>
+              </IconButton>
+            }
+          />
 
           {showOverview && (
             loadingOverview ? (
-              <div className="birds-eye-loading admin-overview-loading" id="admin-birds-eye-overview">Laster mengdeoversikt...</div>
+              <div className="pb-overview-loading" id="admin-birds-eye-overview">Laster mengdeoversikt…</div>
             ) : (
-              <div className="admin-overview-wrap" id="admin-birds-eye-overview">
+              <div className="pb-overview-wrap" id="admin-birds-eye-overview">
                 <BirdsEyeOverview
                   weeks={overviewWeeks}
                   workoutsByWeekKey={overviewWorkoutsByWeekKey}
@@ -923,59 +865,41 @@ export default function AdminDashboard({
             )
           )}
 
-          <div className="admin-plan-controls">
-            <div className="admin-layout-toggle-row">
-              <div className="selector-meta">
-                <span className="selector-label">Visning</span>
-                <span className="selector-help">Velg mellom kalender og liste.</span>
-              </div>
-              <WorkoutLayoutToggle value={workoutLayout} onChange={onWorkoutLayoutChange} compact />
-            </div>
-            <div className="admin-tag-filter">
-              <button
-                type="button"
-                className={`admin-tag-filter-btn${!activeTagFilter ? ' active' : ''}`}
-                onClick={() => setActiveTagFilter(null)}
-              >
-                Alle aktiviteter
-              </button>
-              {ACTIVITY_TAGS.map(tag => (
-                <button
-                  key={tag.value}
-                  type="button"
-                  className={`admin-tag-filter-btn${activeTagFilter === tag.value ? ' active' : ''}`}
-                  style={{ '--tag-color': tag.color, '--tag-bg': tag.bg }}
-                  onClick={() => setActiveTagFilter(activeTagFilter === tag.value ? null : tag.value)}
-                >
-                  <span className="activity-tag-icon" aria-hidden="true"><ActivityIcon name={tag.icon} className="tag-icon-svg" /></span>
-                  <span>{tag.label}</span>
-                </button>
-              ))}
-            </div>
-          </div>
+          <Toolbar>
+            <ToolbarGroup label="Visning">
+              <LayoutToggle value={workoutLayout} onChange={onWorkoutLayoutChange} />
+            </ToolbarGroup>
+            <ToolbarGroup label="Aktivitet">
+              <SportPicker
+                value={activeTagFilter ? [activeTagFilter] : []}
+                onChange={(next) => setActiveTagFilter(next.length ? next[next.length - 1] : null)}
+                limitToValues={Array.from(new Set(workouts.map(w => w.activityTag).filter(Boolean)))}
+              />
+            </ToolbarGroup>
+          </Toolbar>
 
-          <div className="admin-plan-list">
+          <div className="pb-plan-list">
             {loadingWorkouts ? (
-              <div className="empty-state">Laster...</div>
+              <EmptyState title="Laster…" />
             ) : filteredWorkouts.length === 0 ? (
-              <div className="empty-state">
-                <div className="empty-icon">{activeTagFilter ? 'TG' : 'PL'}</div>
-                <div>{activeTagFilter ? 'Ingen økter matcher valgt aktivitet' : 'Ingen økter denne uken'}</div>
-              </div>
+              <EmptyState
+                title={activeTagFilter ? 'Ingen økter matcher valgt aktivitet' : 'Ingen økter denne uken'}
+                description={activeTagFilter ? 'Prøv å fjerne aktivitetsfilteret.' : 'Legg til en økt fra øktbanken eller opprett en ny.'}
+              />
             ) : workoutLayout === 'calendar' ? (
               groupedWorkouts.map(day => (
-                <section key={day.value} className="program-day-section admin-program-day-section">
-                  <div className="program-day-header">
-                    <div>
-                      <h2 className="program-day-title">{day.label}</h2>
-                      <div className="program-day-meta">
+                <section key={day.value} className="pb-day">
+                  <header className="pb-day-head">
+                    <div className="pb-day-titles">
+                      <h2 className="pb-day-title">{day.label}</h2>
+                      <div className="pb-day-meta">
                         {day.workouts.length > 0 ? `${day.workouts.length} økt${day.workouts.length > 1 ? 'er' : ''}` : 'Ingen økter'}
                       </div>
                     </div>
-                    <div className="program-day-actions">
+                    <div className="pb-day-actions">
                       <button
                         type="button"
-                        className="program-day-btn secondary"
+                        className="pb-mini-btn"
                         onClick={() => {
                           setReplacementTarget(null)
                           setCustomForm(prev => ({ ...prev, weekday: day.value }))
@@ -987,7 +911,7 @@ export default function AdminDashboard({
                       </button>
                       <button
                         type="button"
-                        className="program-day-btn"
+                        className="pb-mini-btn pb-mini-btn--solid"
                         onClick={() => {
                           setCustomForm({ ...EMPTY_TEMPLATE, weekday: day.value })
                           setShowCustomForm(true)
@@ -996,76 +920,48 @@ export default function AdminDashboard({
                         Ny økt
                       </button>
                     </div>
-                  </div>
+                  </header>
 
                   {day.workouts.length === 0 ? (
-                    <div className="program-day-slots admin-program-day-slots" style={{ '--slot-count': 2 }}>
-                      <div className="program-day-empty-slot admin-program-day-empty-slot">Ledig slot</div>
-                      <div className="program-day-empty-slot admin-program-day-empty-slot">Ledig slot</div>
+                    <div className="pb-day-slots">
+                      <div className="pb-empty-slot">Ledig slot</div>
                     </div>
                   ) : (
-                    <div
-                      className="program-day-slots admin-program-day-slots"
-                      style={{ '--slot-count': Math.max(2, day.workouts.length) }}
-                    >
-                      {Array.from({ length: Math.max(2, day.workouts.length) }, (_, idx) => {
-                        const workout = day.workouts[idx]
-                        if (!workout) {
-                          return (
-                            <div
-                              key={`empty-${day.value}-${idx}`}
-                              className={`program-day-empty-slot admin-program-day-empty-slot${
-                                dropTarget?.weekday === day.value && !dropTarget?.beforeWorkoutId ? ' drag-over' : ''
-                              }`}
-                              onDragOver={e => {
-                                e.preventDefault()
-                                handleDropTargetChange(day.value)
-                              }}
-                              onDrop={async e => {
-                                e.preventDefault()
-                                await handleDropWorkout(day.value)
-                              }}
-                            >
-                              Ledig slot
-                            </div>
-                          )
-                        }
-
-                        return (
-                          <AdminWorkoutSlot
-                            key={workout.id}
-                            workout={workout}
-                            index={idx}
-                            total={day.workouts.length}
-                            onClick={setSelectedWorkout}
-                            onDelete={handleDeleteWorkout}
-                            onReplace={handleStartReplaceWorkout}
-                            onToggleComplete={handleToggleComplete}
-                            onMoveUp={() => moveWorkout(workout, -1)}
-                            onMoveDown={() => moveWorkout(workout, 1)}
-                            isDragging={draggedWorkoutId === workout.id}
-                            isDropTarget={dropTarget?.beforeWorkoutId === workout.id}
-                            onDragStart={() => handleDragStart(workout)}
-                            onDragEnd={handleDragEnd}
-                            onDragOver={e => {
-                              e.preventDefault()
-                              e.stopPropagation()
-                              handleDropTargetChange(day.value, workout.id)
-                            }}
-                            onDrop={async e => {
-                              e.preventDefault()
-                              e.stopPropagation()
-                              await handleDropWorkout(day.value, workout.id)
-                            }}
-                          />
-                        )
-                      })}
+                    <div className="pb-day-slots">
+                      {day.workouts.map((workout, idx) => (
+                        <AdminWorkoutSlot
+                          key={workout.id}
+                          workout={workout}
+                          index={idx}
+                          total={day.workouts.length}
+                          onClick={setSelectedWorkout}
+                          onDelete={handleDeleteWorkout}
+                          onReplace={handleStartReplaceWorkout}
+                          onToggleComplete={handleToggleComplete}
+                          onMoveUp={() => moveWorkout(workout, -1)}
+                          onMoveDown={() => moveWorkout(workout, 1)}
+                          isDragging={draggedWorkoutId === workout.id}
+                          isDropTarget={dropTarget?.beforeWorkoutId === workout.id}
+                          onDragStart={() => handleDragStart(workout)}
+                          onDragEnd={handleDragEnd}
+                          onDragOver={e => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            handleDropTargetChange(day.value, workout.id)
+                          }}
+                          onDrop={async e => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            await handleDropWorkout(day.value, workout.id)
+                          }}
+                        />
+                      ))}
                     </div>
                   )}
 
                   <div
-                    className={`admin-day-dropzone${
-                      dropTarget?.weekday === day.value && !dropTarget?.beforeWorkoutId ? ' drag-over' : ''
+                    className={`pb-day-dropzone${
+                      dropTarget?.weekday === day.value && !dropTarget?.beforeWorkoutId ? ' is-target' : ''
                     }`}
                     onDragOver={e => {
                       e.preventDefault()
@@ -1081,7 +977,7 @@ export default function AdminDashboard({
                 </section>
               ))
             ) : (
-              <div className="workout-list admin-workout-list">
+              <div className="pb-workout-list">
                 {filteredWorkouts.map((workout, index) => (
                   <AdminWorkoutSlot
                     key={workout.id}
@@ -1113,18 +1009,19 @@ export default function AdminDashboard({
               </div>
             )}
           </div>
-        </div>
+        </Page>
       )}
 
       {tab === 'analysis' && (
-        <div className="admin-analysis">
+        <>
           {!selectedAthleteId ? (
-            <div className="empty-state">
-              <div className="empty-icon">AN</div>
-              <div>Velg en utøver for å se analyse</div>
-            </div>
+            <Page>
+              <EmptyState title="Ingen utøver valgt" description="Velg en utøver for å se analyse." />
+            </Page>
           ) : loadingAnalysis ? (
-            <div className="empty-state">Laster analyse...</div>
+            <Page>
+              <EmptyState title="Laster analyse…" />
+            </Page>
           ) : (
             <AnalysisDashboard
               weeks={analysisWeeks}
@@ -1134,16 +1031,15 @@ export default function AdminDashboard({
               currentYear={currentYear}
             />
           )}
-        </div>
+        </>
       )}
 
       {tab === 'tests' && (
-        <div className="admin-analysis">
+        <>
           {!selectedAthleteId ? (
-            <div className="empty-state">
-              <div className="empty-icon">TS</div>
-              <div>Velg en utøver for å administrere tester</div>
-            </div>
+            <Page>
+              <EmptyState title="Ingen utøver valgt" description="Velg en utøver for å administrere tester." />
+            </Page>
           ) : (
             <TestingDashboard
               selectedAthleteId={selectedAthleteId}
@@ -1151,7 +1047,7 @@ export default function AdminDashboard({
               userProfile={userProfile}
             />
           )}
-        </div>
+        </>
       )}
 
       {tab === 'builder' && selectedAthleteId && (
@@ -1188,64 +1084,19 @@ export default function AdminDashboard({
 
       {/* ─── Øktbank tab ─── */}
       {tab === 'oktbank' && (
-        <div className="admin-oktbank">
-          <div className="oktbank-header">
-            {pickingFromBank ? (
-              <>
-                <h2 className="oktbank-title">Velg økt for uke {currentWeek}</h2>
-                <p className="oktbank-subtitle">
-                  {replacementTarget
-                    ? `Trykk på en økt for å bytte ut "${replacementTarget.title}"`
-                    : 'Trykk på en økt for å legge den til i planen'}
-                </p>
-              </>
-            ) : (
-              <>
-                <h2 className="oktbank-title">Øktbank</h2>
-                <p className="oktbank-subtitle">{templates.length} maler · trykk for å redigere</p>
-              </>
-            )}
-          </div>
-
-          <div className="category-filter">
-            {['Alle', ...TEMPLATE_CATEGORIES].map(cat => (
-              <button
-                key={cat}
-                className={`cat-btn${activeCategory === cat ? ' active' : ''}`}
-                onClick={() => setActiveCategory(cat)}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
-
-          {loadingTemplates ? (
-            <div className="empty-state">Laster maler...</div>
-          ) : filteredTemplates.length === 0 ? (
-            <div className="empty-state">
-              <div>Ingen maler i denne kategorien</div>
-              <button className="btn-add-empty" onClick={startNewTemplate}>+ Ny mal</button>
-            </div>
-          ) : (
-            <div className="template-list">
-              {filteredTemplates.map(template => (
-                <TemplateCard
-                  key={template.id}
-                  template={template}
-                  pickMode={pickingFromBank}
-                  replacementMode={!!replacementTarget}
-                  onPick={() => handleAddFromTemplate(template)}
-                  onEdit={template.source === 'custom' ? () => startEditTemplate(template) : null}
-                  onDelete={template.source === 'custom' ? () => handleDeleteTemplate(template) : null}
-                />
-              ))}
-            </div>
-          )}
-
-          {!pickingFromBank && (
-            <button className="fab" onClick={startNewTemplate}>+</button>
-          )}
-        </div>
+        <OktbankTab
+          templates={templates}
+          activeCategory={activeCategory}
+          setActiveCategory={setActiveCategory}
+          loadingTemplates={loadingTemplates}
+          pickingFromBank={pickingFromBank}
+          replacementTarget={replacementTarget}
+          currentWeek={currentWeek}
+          handleAddFromTemplate={handleAddFromTemplate}
+          startEditTemplate={startEditTemplate}
+          handleDeleteTemplate={handleDeleteTemplate}
+          startNewTemplate={startNewTemplate}
+        />
       )}
 
       {/* ─── Bibliotek (global library) tab ─── */}
@@ -1287,8 +1138,8 @@ export default function AdminDashboard({
             </button>
             <h2 className="modal-title-h2">{editingTemplate === 'new' ? 'Ny mal' : 'Rediger mal'}</h2>
             <form onSubmit={handleSaveTemplate}>
-              <WorkoutForm value={templateForm} onChange={setTemplateForm} showCategory />
-              <div className="form-actions" style={{ marginTop: '1rem' }}>
+              <WorkoutForm value={templateForm} onChange={setTemplateForm} />
+              <div className="form-actions form-actions--spaced">
                 <button type="button" className="btn-cancel" onClick={() => setEditingTemplate(null)}>Avbryt</button>
                 <button type="submit" className="btn-save">Lagre mal</button>
               </div>
@@ -1311,8 +1162,8 @@ export default function AdminDashboard({
               {editingGlobalTemplate === 'new' ? 'Ny økt i bibliotek' : 'Rediger bibliotekøkt'}
             </h2>
             <form onSubmit={handleSaveGlobalTemplate}>
-              <WorkoutForm value={globalTemplateForm} onChange={setGlobalTemplateForm} showCategory />
-              <div className="form-actions" style={{ marginTop: '1rem' }}>
+              <WorkoutForm value={globalTemplateForm} onChange={setGlobalTemplateForm} />
+              <div className="form-actions form-actions--spaced">
                 <button type="button" className="btn-cancel" onClick={() => setEditingGlobalTemplate(null)}>Avbryt</button>
                 <button type="submit" className="btn-save">Lagre i bibliotek</button>
               </div>
@@ -1320,7 +1171,135 @@ export default function AdminDashboard({
           </div>
         </div>
       )}
-    </div>
+    </PageShell>
+  )
+}
+
+// ─── Øktbank Tab ───────────────────────────────────────────────────────────
+
+function OktbankTab({
+  templates,
+  activeCategory,
+  setActiveCategory,
+  loadingTemplates,
+  pickingFromBank,
+  replacementTarget,
+  currentWeek,
+  handleAddFromTemplate,
+  startEditTemplate,
+  handleDeleteTemplate,
+  startNewTemplate,
+}) {
+  const [search, setSearch] = useState('')
+  const [activitySet, setActivitySet] = useState([])
+
+  const sportCounts = useMemo(() => {
+    const counts = new Map()
+    templates.forEach(t => {
+      if (!t.activityTag) return
+      counts.set(t.activityTag, (counts.get(t.activityTag) || 0) + 1)
+    })
+    return counts
+  }, [templates])
+
+  const presentSportValues = useMemo(() => Array.from(sportCounts.keys()), [sportCounts])
+
+  const filtered = useMemo(() => {
+    return templates
+      .filter(t => activeCategory === 'Alle' || t.category === activeCategory)
+      .filter(t => activitySet.length === 0 || activitySet.includes(t.activityTag))
+      .filter(t => {
+        if (!search.trim()) return true
+        const term = search.trim().toLowerCase()
+        const haystack = [t.title, t.description, t.notes, t.category, ACTIVITY_TAG_MAP[t.activityTag]?.label]
+          .filter(Boolean).join(' ').toLowerCase()
+        return haystack.includes(term)
+      })
+  }, [templates, activeCategory, activitySet, search])
+
+  const filtersActive = search.length > 0 || activitySet.length > 0 || activeCategory !== 'Alle'
+
+  function clearAll() {
+    setSearch('')
+    setActivitySet([])
+    setActiveCategory('Alle')
+  }
+
+  return (
+    <Page>
+      <PageHeader
+        eyebrow="Øktbank"
+        title={pickingFromBank ? `Velg økt for uke ${currentWeek}` : 'Mine øktmaler'}
+        subtitle={
+          pickingFromBank
+            ? (replacementTarget
+              ? `Trykk på en økt for å bytte ut «${replacementTarget.title}»`
+              : 'Trykk på en økt for å legge den til i planen')
+            : `${templates.length} ${templates.length === 1 ? 'mal' : 'maler'} · trykk for å redigere`
+        }
+        actions={!pickingFromBank ? <Button onClick={startNewTemplate}>+ Ny mal</Button> : null}
+      />
+
+      <Toolbar>
+        <SearchBox value={search} onChange={setSearch} placeholder="Søk i mine maler…" />
+        <ToolbarGroup label="Sport">
+          <SportPicker
+            value={activitySet}
+            onChange={setActivitySet}
+            counts={sportCounts}
+            limitToValues={presentSportValues}
+          />
+        </ToolbarGroup>
+        <ToolbarGroup label="Kategori">
+          <Chip active={activeCategory === 'Alle'} onClick={() => setActiveCategory('Alle')}>Alle</Chip>
+          {TEMPLATE_CATEGORIES.filter(cat => cat !== 'Alle').map(cat => (
+            <Chip key={cat} active={activeCategory === cat} onClick={() => setActiveCategory(cat)}>
+              {cat}
+            </Chip>
+          ))}
+        </ToolbarGroup>
+        {filtersActive && (
+          <Button variant="ghost" size="sm" onClick={clearAll}>Tøm filter</Button>
+        )}
+      </Toolbar>
+
+      {loadingTemplates ? (
+        <EmptyState title="Laster maler…" />
+      ) : filtered.length === 0 ? (
+        <EmptyState
+          title={templates.length === 0 ? 'Ingen maler enda' : 'Ingen maler matcher filteret'}
+          description={
+            templates.length === 0
+              ? 'Lag dine egne maler eller legg til økter fra biblioteket.'
+              : 'Prøv et annet søk eller fjern filter.'
+          }
+          action={
+            templates.length === 0
+              ? <Button onClick={startNewTemplate}>+ Ny mal</Button>
+              : (filtersActive ? <Button variant="secondary" onClick={clearAll}>Tøm filter</Button> : null)
+          }
+        />
+      ) : (
+        <>
+          <div className="tp-results-count">{filtered.length} av {templates.length} maler</div>
+          <div className="tp-card-grid">
+            {filtered.map(template => {
+              const canEdit = template.source === 'custom'
+              return (
+                <UITemplateCard
+                  key={template.id}
+                  template={template}
+                  primaryLabel={pickingFromBank ? (replacementTarget ? 'Bytt ut økt' : '+ Legg til i plan') : (canEdit ? 'Rediger' : null)}
+                  onPrimary={pickingFromBank ? () => handleAddFromTemplate(template) : (canEdit ? () => startEditTemplate(template) : null)}
+                  primaryVariant={pickingFromBank ? 'primary' : 'secondary'}
+                  onDelete={!pickingFromBank && canEdit ? () => handleDeleteTemplate(template) : null}
+                />
+              )
+            })}
+          </div>
+        </>
+      )}
+    </Page>
   )
 }
 
@@ -1343,77 +1322,55 @@ function AdminWorkoutSlot({
   onDragOver,
   onDrop,
 }) {
-  const typeColors = TYPE_COLORS[workout.type] || TYPE_COLORS.annet
   const icon = TYPE_ICONS[workout.type] || 'AN'
   const activityTag = workout.activityTag ? ACTIVITY_TAG_MAP[workout.activityTag] : null
-  const loadTag = workout.loadTag ? LOAD_TAG_MAP[workout.loadTag] : null
   const scheduleLabel = formatWorkoutTime(workout) || formatWorkoutSchedule(workout, { includeWeekday: false })
 
   return (
     <div
-      className={`admin-workout-slot${workout.completed ? ' completed' : ''}${isDragging ? ' dragging' : ''}${isDropTarget ? ' drag-over' : ''}`}
-      style={{ borderLeftColor: typeColors.border }}
+      className={`pb-slot${workout.completed ? ' is-completed' : ''}${isDragging ? ' is-dragging' : ''}${isDropTarget ? ' is-target' : ''}`}
       draggable
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
       onDragOver={onDragOver}
       onDrop={onDrop}
     >
-      <div className="admin-slot-top">
-        <span className="card-icon"><ActivityIcon name={icon} className="ui-icon" /></span>
-        <div className="admin-slot-actions">
-          <span className="drag-handle" title="Dra for å flytte">⋮⋮</span>
-          <button
-            className="reorder-btn"
-            onClick={onMoveUp}
-            disabled={index === 0}
-            title="Flytt opp"
-          ><SystemIcon name="up" className="system-icon" /></button>
-          <button
-            className="reorder-btn"
-            onClick={onMoveDown}
-            disabled={index === total - 1}
-            title="Flytt ned"
-          ><SystemIcon name="down" className="system-icon" /></button>
+      <div className="pb-slot-top">
+        <span className="pb-card-icon"><ActivityIcon name={icon} className="tag-icon-svg" /></span>
+        <div className="pb-slot-actions">
+          <span className="pb-card-grip" title="Dra for å flytte" aria-hidden="true">⋮⋮</span>
+          <button className="pb-slot-reorder" onClick={onMoveUp} disabled={index === 0} title="Flytt opp">
+            <SystemIcon name="up" className="system-icon" />
+          </button>
+          <button className="pb-slot-reorder" onClick={onMoveDown} disabled={index === total - 1} title="Flytt ned">
+            <SystemIcon name="down" className="system-icon" />
+          </button>
         </div>
       </div>
 
-      <div className="admin-slot-main" onClick={() => onClick(workout)}>
-        <div className="admin-row-info">
-          {scheduleLabel && <span className="card-date">{scheduleLabel}</span>}
-          <span className="card-title">{workout.title}</span>
-          {workout.description && (
-            <span className="card-desc admin-slot-desc">{workout.description}</span>
-          )}
-          {activityTag && (
-            <span
-              className="activity-tag-pill compact"
-              style={{ '--tag-color': activityTag.color, '--tag-bg': activityTag.bg }}
-            >
-              <span className="activity-tag-icon" aria-hidden="true"><ActivityIcon name={activityTag.icon} className="tag-icon-svg" /></span>
-              <span>{activityTag.label}</span>
-            </span>
-          )}
-          {loadTag && (
-            <span
-              className="load-tag-pill compact"
-              style={{ '--load-color': loadTag.color, '--load-bg': loadTag.bg }}
-            >
-              <span>{loadTag.label}</span>
-            </span>
-          )}
-        </div>
-      </div>
+      <button type="button" className="pb-slot-main" onClick={() => onClick(workout)}>
+        {scheduleLabel && <span className="pb-slot-time">{scheduleLabel}</span>}
+        <span className="pb-slot-title">{workout.title}</span>
+        {workout.description && (
+          <span className="pb-slot-desc">{workout.description}</span>
+        )}
+        {activityTag && <span className="pb-slot-zone">{activityTag.label}</span>}
+      </button>
 
-      <div className="admin-slot-footer">
-        <button className="reorder-btn" onClick={() => onReplace(workout)} title="Bytt ut fra øktbank"><SystemIcon name="replace" className="system-icon" /></button>
+      <div className="pb-slot-footer">
+        <button className="pb-slot-reorder" onClick={() => onReplace(workout)} title="Bytt ut fra øktbank">
+          <SystemIcon name="replace" className="system-icon" />
+        </button>
         <button
-          className={`check-btn${workout.completed ? ' checked' : ''}`}
+          className={`pb-slot-check${workout.completed ? ' is-checked' : ''}`}
           onClick={() => onToggleComplete(workout)}
+          aria-label={workout.completed ? 'Marker ikke fullført' : 'Marker fullført'}
         >
           {workout.completed ? <SystemIcon name="check" className="system-icon" /> : null}
         </button>
-        <button className="delete-btn" onClick={() => onDelete(workout)} title="Slett"><SystemIcon name="delete" className="system-icon" /></button>
+        <button className="pb-slot-reorder pb-slot-reorder--danger" onClick={() => onDelete(workout)} title="Slett">
+          <SystemIcon name="delete" className="system-icon" />
+        </button>
       </div>
     </div>
   )
@@ -1432,69 +1389,67 @@ function TemplateCard({ template, pickMode, replacementMode, onPick, onEdit, onD
   const isCustomTemplate = template.source === 'custom'
 
   return (
-    <div
-      className="template-card"
-      style={{ backgroundColor: typeColors.bg, borderLeftColor: typeColors.border }}
+    <article
+      className="lib-card"
+      style={loadTag ? { borderTopColor: loadTag.color } : undefined}
     >
-      <div className="template-card-top">
-        <div className="template-card-left">
-          <span className="template-icon"><ActivityIcon name={icon} className="ui-icon" /></span>
-          <div>
-            <div className="template-title">{template.title}</div>
-            {template.category && (
-              <div className="template-category">{template.category}</div>
-            )}
-            {!pickMode && (
-              <div className="template-category">{isCustomTemplate ? 'Egen mal' : 'Standardmal'}</div>
+      <header className="lib-card-head">
+        <span
+          className="lib-card-icon"
+          style={activityTag ? { '--tag-color': activityTag.color, '--tag-bg': activityTag.bg, background: 'var(--tag-bg)', color: 'var(--tag-color)' } : undefined}
+        >
+          <ActivityIcon name={activityTag?.icon || icon || 'annet'} className="ui-icon" />
+        </span>
+        <div className="lib-card-titles">
+          <h3 className="lib-card-title">{template.title}</h3>
+          <div className="lib-card-meta">
+            {activityTag?.label && <span>{activityTag.label}</span>}
+            {template.category && <span>· {template.category}</span>}
+            {zone && zoneLabel && (
+              <span className="lib-card-meta-zone" style={{ '--zone-color': zoneColors?.border }}>· {zoneLabel}</span>
             )}
           </div>
         </div>
-        {zone && zoneLabel && (
-          <span
-            className="zone-badge"
-            style={{ backgroundColor: zoneColors.border, color: zoneColors.text }}
-          >
-            {zoneLabel}
-          </span>
-        )}
-      </div>
+      </header>
 
       {template.description && (
-        <div className="template-desc">{template.description}</div>
+        <p className="lib-card-desc">{template.description}</p>
       )}
 
-      {activityTag && (
-        <span
-          className="activity-tag-pill compact"
-          style={{ '--tag-color': activityTag.color, '--tag-bg': activityTag.bg }}
-        >
-          <span className="activity-tag-icon" aria-hidden="true"><ActivityIcon name={activityTag.icon} className="tag-icon-svg" /></span>
-          <span>{activityTag.label}</span>
-        </span>
-      )}
-      {loadTag && (
-        <span
-          className="load-tag-pill compact"
-          style={{ '--load-color': loadTag.color, '--load-bg': loadTag.bg }}
-        >
-          <span>{loadTag.label}</span>
-        </span>
+      {(loadTag || template.distance) && (
+        <div className="lib-card-tags">
+          {loadTag && (
+            <span
+              className="lib-card-tag lib-card-tag--accent"
+              style={{ '--tag-color': loadTag.color, '--tag-bg': loadTag.bg }}
+            >
+              {loadTag.label}
+            </span>
+          )}
+          {template.distance && (
+            <span className="lib-card-tag lib-card-tag--neutral">{template.distance}</span>
+          )}
+        </div>
       )}
 
-      <div className="template-actions">
+      <footer className="lib-card-foot">
         {pickMode ? (
-          <button className="btn-template-pick" onClick={onPick}>
+          <Button block onClick={onPick}>
             {replacementMode ? 'Bytt ut økt' : '+ Legg til i plan'}
-          </button>
+          </Button>
         ) : isCustomTemplate ? (
           <>
-            <button className="btn-template-edit" onClick={onEdit}><SystemIcon name="edit" className="button-icon" />Rediger</button>
-            <button className="btn-template-delete" onClick={onDelete}><SystemIcon name="delete" className="button-icon" />Slett</button>
+            <Button block variant="secondary" size="sm" onClick={onEdit}>
+              <SystemIcon name="edit" className="button-icon" />Rediger
+            </Button>
+            <IconButton ariaLabel="Slett mal" onClick={onDelete} size="sm" className="lib-card-danger">
+              <SystemIcon name="delete" className="system-icon" />
+            </IconButton>
           </>
         ) : (
-          <span className="template-category">Kan brukes i plan, men ikke redigeres her</span>
+          <span className="lib-card-meta lib-card-meta--flex">Kan brukes i plan, men ikke redigeres her</span>
         )}
-      </div>
-    </div>
+      </footer>
+    </article>
   )
 }

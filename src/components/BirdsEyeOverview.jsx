@@ -82,7 +82,7 @@ export default function BirdsEyeOverview({ weeks, workoutsByWeekKey, selectedWee
                     >
                       <span
                         className="birds-eye-tile"
-                        style={{ backgroundColor: colors.bg, borderColor: colors.border, color: colors.text }}
+                        style={{ '--zone-color': colors.border }}
                         aria-hidden="true"
                       />
                       <span className="birds-eye-tile-distance">{distanceLabel}</span>

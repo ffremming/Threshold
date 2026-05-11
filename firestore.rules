@@ -105,6 +105,30 @@ service cloud.firestore {
       allow write: if isSuperadmin();
     }
 
+    // Per-athlete session pool (coach maintains a session bank per athlete)
+    match /athleteSessions/{sessionId} {
+      allow read: if request.auth != null && (
+        isSuperadmin() ||
+        resource.data.coachId == request.auth.uid ||
+        resource.data.athleteId == request.auth.uid ||
+        isCoachOf(resource.data.athleteId)
+      );
+      allow create: if request.auth != null && (
+        isSuperadmin() ||
+        (
+          request.resource.data.coachId == request.auth.uid &&
+          isCoachOf(request.resource.data.athleteId)
+        )
+      );
+      allow update, delete: if request.auth != null && (
+        isSuperadmin() ||
+        (
+          resource.data.coachId == request.auth.uid &&
+          isCoachOf(resource.data.athleteId)
+        )
+      );
+    }
+
     // Tests
     match /tests/{testId} {
       allow read: if request.auth != null && (

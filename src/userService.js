@@ -1,6 +1,7 @@
 import {
   doc, setDoc, getDoc, getDocs, updateDoc, deleteDoc,
-  collection, query, where, onSnapshot, serverTimestamp
+  collection, query, where, onSnapshot, serverTimestamp,
+  arrayUnion, arrayRemove,
 } from 'firebase/firestore'
 import { db } from './firebase'
 import { getPrimaryRole } from './roles'
@@ -50,6 +51,48 @@ export async function updateUserRole(uid, roles) {
 
 export async function updateUserProfile(uid, fields) {
   await updateDoc(doc(db, 'users', uid), fields)
+}
+
+// ─── Athlete coaching profile (maxHr, zones, results) ────────────────────
+
+export async function updateAthleteMaxHr(uid, maxHr) {
+  const value = Number(maxHr)
+  await updateDoc(doc(db, 'users', uid), {
+    maxHr: Number.isFinite(value) && value > 0 ? value : null,
+  })
+}
+
+export async function updateAthleteZones(uid, { thresholdHr, vo2maxHr, easyTempo, longTempo }) {
+  const numberOrNull = (v) => {
+    const n = Number(v)
+    return Number.isFinite(n) && n > 0 ? n : null
+  }
+  await updateDoc(doc(db, 'users', uid), {
+    thresholdHr: numberOrNull(thresholdHr),
+    vo2maxHr: numberOrNull(vo2maxHr),
+    easyTempo: typeof easyTempo === 'string' ? easyTempo.trim() : (easyTempo ?? null),
+    longTempo: typeof longTempo === 'string' ? longTempo.trim() : (longTempo ?? null),
+  })
+}
+
+export async function addAthleteResult(uid, { date, distance, time, note }) {
+  const entry = {
+    date: date || new Date().toISOString().slice(0, 10),
+    distance: typeof distance === 'string' ? distance.trim() : String(distance ?? ''),
+    time: typeof time === 'string' ? time.trim() : String(time ?? ''),
+    note: typeof note === 'string' ? note.trim() : '',
+    createdAt: new Date().toISOString(),
+  }
+  await updateDoc(doc(db, 'users', uid), {
+    results: arrayUnion(entry),
+  })
+  return entry
+}
+
+export async function removeAthleteResult(uid, entry) {
+  await updateDoc(doc(db, 'users', uid), {
+    results: arrayRemove(entry),
+  })
 }
 
 export async function getAllUsers() {

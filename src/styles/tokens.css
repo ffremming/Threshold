@@ -1,0 +1,156 @@
+/* ────────────────────────────────────────────────────────────────────
+ * Design tokens — minimalist 10-color palette, light only
+ *
+ * Five neutrals + accent, plus five intensity zones. All other UI
+ * surfaces (borders, hovers, selected states) are derived via
+ * color-mix from these primitives — keeps the palette honest.
+ * ──────────────────────────────────────────────────────────────────── */
+
+:root {
+  /* ── Base palette ───────────────────────────────────────────────── */
+  --tp-bg:        #f4f1ec;   /* warm paper page background */
+  --tp-surface:   #ffffff;   /* card / panel surface */
+  --tp-surface-2: #faf8f4;   /* subtle inset surface (rows, table bands) */
+  --tp-ink:       #14171a;   /* primary text */
+  --tp-ink-muted: #6b7280;   /* secondary text / labels */
+  --tp-ink-soft:  #9aa0a6;   /* tertiary text / placeholders */
+
+  /* ── Accent (subtle, used for primary interaction only) ─────────── */
+  --tp-accent:        #2f6b8a;   /* muted editorial blue */
+  --tp-accent-hover:  #25577a;
+  --tp-accent-soft:   color-mix(in srgb, var(--tp-accent) 10%, transparent);
+  --tp-accent-ring:   color-mix(in srgb, var(--tp-accent) 28%, transparent);
+  --tp-on-accent:     #ffffff;
+
+  /* ── Intensity zones (5) ───────────────────────────────────────── */
+  --tp-zone-1:    #6cb4d8;   /* easy   — cool blue */
+  --tp-zone-2:    #6fbe83;   /* aerob  — green */
+  --tp-zone-3:    #ddb340;   /* terskel — amber */
+  --tp-zone-4:    #df7d3a;   /* hard   — orange */
+  --tp-zone-5:    #c4523f;   /* max    — red */
+
+  /* ── Derived surfaces (no new hues, just opacity/mix) ───────────── */
+  --tp-line:        color-mix(in srgb, var(--tp-ink) 8%, transparent);
+  --tp-line-strong: color-mix(in srgb, var(--tp-ink) 16%, transparent);
+  --tp-hover:       color-mix(in srgb, var(--tp-ink) 4%, transparent);
+  --tp-pressed:     color-mix(in srgb, var(--tp-ink) 8%, transparent);
+  --tp-overlay:     color-mix(in srgb, var(--tp-ink) 45%, transparent);
+  --tp-focus:       var(--tp-accent-ring);
+
+  /* ── Status colors (soft, paper-tone) ───────────────────────────── */
+  --tp-success:     #4f8a5f;
+  --tp-success-bg:  #e8f1e9;
+  --tp-warning:     #b07e23;
+  --tp-warning-bg:  #f4ecd8;
+  --tp-danger:      #b54a3a;
+  --tp-danger-bg:   #f5e5e1;
+  --tp-info:        var(--tp-accent);
+  --tp-info-bg:     var(--tp-accent-soft);
+
+  /* ── Type ───────────────────────────────────────────────────────── */
+  --tp-font-sans: 'Inter Tight', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --tp-font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --tp-text-2xs: 0.6875rem;   /* 11 */
+  --tp-text-xs:  0.75rem;     /* 12 */
+  --tp-text-sm:  0.8125rem;   /* 13 */
+  --tp-text-md:  0.9375rem;   /* 15 */
+  --tp-text-lg:  1.0625rem;   /* 17 */
+  --tp-text-xl:  1.25rem;     /* 20 */
+  --tp-text-2xl: 1.5rem;      /* 24 */
+  --tp-text-3xl: 1.875rem;    /* 30 */
+
+  --tp-leading-tight: 1.15;
+  --tp-leading-snug:  1.3;
+  --tp-leading-body:  1.55;
+
+  --tp-tracking-tight: -0.022em;
+  --tp-tracking-snug:  -0.012em;
+  --tp-tracking-normal: 0;
+  --tp-tracking-wide:  0.04em;
+
+  /* ── Spacing (4px base) ─────────────────────────────────────────── */
+  --tp-space-1:  0.25rem;
+  --tp-space-2:  0.5rem;
+  --tp-space-3:  0.75rem;
+  --tp-space-4:  1rem;
+  --tp-space-5:  1.25rem;
+  --tp-space-6:  1.5rem;
+  --tp-space-8:  2rem;
+  --tp-space-10: 2.5rem;
+  --tp-space-12: 3rem;
+  --tp-space-16: 4rem;
+
+  /* ── Radii (tight, editorial) ───────────────────────────────────── */
+  --tp-radius-xs: 4px;
+  --tp-radius-sm: 6px;
+  --tp-radius-md: 8px;
+  --tp-radius-lg: 12px;
+  --tp-radius-xl: 16px;
+  --tp-radius-pill: 999px;
+
+  /* ── Elevation (very restrained) ────────────────────────────────── */
+  --tp-shadow-xs: 0 1px 1px color-mix(in srgb, var(--tp-ink) 4%, transparent);
+  --tp-shadow-sm: 0 1px 3px color-mix(in srgb, var(--tp-ink) 6%, transparent);
+  --tp-shadow-md: 0 6px 18px color-mix(in srgb, var(--tp-ink) 8%, transparent);
+  --tp-shadow-lg: 0 16px 40px color-mix(in srgb, var(--tp-ink) 12%, transparent);
+
+  /* ── Motion ─────────────────────────────────────────────────────── */
+  --tp-ease: cubic-bezier(0.2, 0, 0, 1);
+  --tp-dur-fast: 120ms;
+  --tp-dur-base: 180ms;
+  --tp-dur-slow: 280ms;
+
+  /* ── Z-index ───────────────────────────────────────────────────── */
+  --tp-z-sticky:   20;
+  --tp-z-elevated: 30;
+  --tp-z-overlay:  50;
+  --tp-z-modal:    60;
+
+  /* ── Aliases used by legacy/ui CSS variants ─────────────────────── */
+  --tp-bg-elev:    var(--tp-surface);
+  --tp-bg-sunken:  var(--tp-surface-2);
+  --tp-ink-onbrand: var(--tp-on-accent);
+  --tp-brand-600:  var(--tp-accent);
+  --tp-ease-out:   var(--tp-ease);
+}
+
+/* No dark mode in this round. Light is the only theme. */
+
+html, body {
+  font-family: var(--tp-font-sans);
+  background: var(--tp-bg);
+  color: var(--tp-ink);
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+button { font: inherit; color: inherit; }
+
+::selection { background: var(--tp-ink); color: var(--tp-on-accent); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Mono numbers utility */
+.tp-num {
+  font-family: var(--tp-font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.tp-tnum {
+  font-variant-numeric: tabular-nums;
+}

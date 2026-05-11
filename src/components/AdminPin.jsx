@@ -41,7 +41,7 @@ export default function AdminPin({ onSuccess, onClose }) {
             autoFocus
           />
           {error && <div className="pin-error-msg">Feil PIN, prøv igjen</div>}
-          <button type="submit" className="btn-save" style={{ marginTop: '1rem' }}>
+          <button type="submit" className="btn-save pin-submit">
             <SystemIcon name="login" className="button-icon" />
             Logg inn
           </button>

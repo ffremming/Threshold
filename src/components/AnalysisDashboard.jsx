@@ -28,6 +28,21 @@ import {
   normalizeIntensityZones,
 } from '../utils'
 import ActivityIcon from './ActivityIcon'
+import {
+  Page,
+  PageHeader,
+  Section,
+  EmptyState,
+  Card,
+  Button,
+  IconButton,
+  Pill,
+  Chip,
+  SportPicker,
+  Toolbar,
+  ToolbarGroup,
+} from './ui'
+import './AnalysisDashboard.css'
 
 ChartJS.register(
   CategoryScale,
@@ -177,37 +192,38 @@ function HeatCell({ week, weekdayIndex, weekdayLabel }) {
   const load = week.dailyLoads[weekdayIndex] || 0
   const duration = week.dailyDurations[weekdayIndex] || 0
   const intensity = Math.min(1, load / 220)
-  const alpha = load > 0 ? 0.16 + intensity * 0.84 : 0.06
 
   return (
     <div
-      className={`analysis-heatmap-cell${load > 0 ? ' active' : ''}`}
+      className={`an-heat-cell${load > 0 ? ' has-load' : ''}`}
       title={`${weekdayLabel}: ${Math.round(load)} load · ${formatDurationLabel(duration)}`}
-      style={{ background: `rgba(37, 99, 235, ${alpha})` }}
+      style={{ '--cell-strength': intensity }}
     >
-      <span>{load > 0 ? Math.round(load) : ''}</span>
+      <span className="tp-num">{load > 0 ? Math.round(load) : ''}</span>
     </div>
   )
 }
 
-function TopWorkoutCard({ workout }) {
+function TopWorkoutRow({ workout }) {
   const activity = ACTIVITY_TAG_MAP[workout.activityTag]
 
   return (
-    <article className="analysis-top-workout">
-      <div className="analysis-top-workout-icon" style={{ '--activity-color': activity?.color || '#64748b', '--activity-bg': activity?.bg || '#f1f5f9' }}>
-        <ActivityIcon name={activity?.icon || 'annet'} className="analysis-top-workout-svg" />
-      </div>
-      <div className="analysis-top-workout-main">
-        <div className="analysis-top-workout-head">
-          <strong>{workout.title || 'Uten tittel'}</strong>
-          <span className="analysis-chip neutral">{Math.round(workout.load)} load</span>
+    <article className="an-top-row">
+      <span className="an-top-icon">
+        <ActivityIcon name={activity?.icon || 'annet'} className="tag-icon-svg" />
+      </span>
+      <div className="an-top-main">
+        <div className="an-top-head">
+          <strong className="an-top-title">{workout.title || 'Uten tittel'}</strong>
+          <Pill>{Math.round(workout.load)} load</Pill>
         </div>
-        <div className="analysis-top-workout-meta">
+        <div className="an-top-meta">
           <span>{activity?.label || 'Aktivitet'}</span>
+          <span>·</span>
           <span>{formatWorkoutSchedule(workout, { includeWeekday: true, includeDate: true })}</span>
+          <span>·</span>
           <span>{formatDurationLabel(workout.duration)}</span>
-          {workout.distance > 0 ? <span>{formatKmValue(workout.distance)}</span> : null}
+          {workout.distance > 0 ? <><span>·</span><span>{formatKmValue(workout.distance)}</span></> : null}
         </div>
       </div>
     </article>
@@ -252,6 +268,11 @@ export default function AnalysisDashboard({ weeks, workoutsByWeekKey, athleteNam
   const analysis = useMemo(() => {
     const weeklyStats = visibleWeeks.map(week => {
       let weekWorkouts = workoutsByWeekKey[week.key] || []
+
+      const isPastWeek = week.year < currentYear || (week.year === currentYear && week.week < currentWeek)
+      if (isPastWeek) {
+        weekWorkouts = weekWorkouts.filter(workout => workout.completed)
+      }
 
       if (activeTagFilter) {
         weekWorkouts = weekWorkouts.filter(workout => workout.activityTag === activeTagFilter)
@@ -815,393 +836,275 @@ export default function AnalysisDashboard({ weeks, workoutsByWeekKey, athleteNam
     cutout: '64%',
   }
 
+  const presentSports = useMemo(() => {
+    const set = new Set()
+    weeklyStats.forEach(w => Object.keys(w.activityLoad || {}).forEach(t => set.add(t)))
+    return Array.from(set)
+  }, [weeklyStats])
+
+  const sportFilter = activeTagFilter ? [activeTagFilter] : []
+
   return (
-    <section className="analysis-dashboard analysis-dashboard-advanced">
-      <div className="analysis-hero">
-        <div className="analysis-hero-copy">
-          <span className="analysis-eyebrow">Performance Lab</span>
-          <h2 className="analysis-title">Analyse</h2>
-          <p className="analysis-subtitle">
-            {athleteName ? `${athleteName} · ` : ''}
-            Multi-aktivitet analyse med fokus pa volum, belastning, frekvens og soneprofil.
-          </p>
-        </div>
+    <Page wide>
+      <PageHeader
+        eyebrow="Performance Lab"
+        title="Analyse"
+        subtitle={`${athleteName ? athleteName + ' · ' : ''}Multi-aktivitet analyse med fokus på volum, belastning, frekvens og soneprofil.`}
+      />
 
-        <div className="analysis-control-stack">
-          <div className="analysis-range-selector">
-            {RANGE_OPTIONS.map(option => (
-              <button
-                key={option.value}
-                type="button"
-                className={`range-btn${range === option.value ? ' active' : ''}`}
-                onClick={() => setRange(option.value)}
-              >
-                {option.label}
-              </button>
-            ))}
-          </div>
+      <Toolbar>
+        <ToolbarGroup label="Periode">
+          {RANGE_OPTIONS.map(option => (
+            <Chip key={option.value} active={range === option.value} onClick={() => setRange(option.value)}>
+              {option.label}
+            </Chip>
+          ))}
+        </ToolbarGroup>
+        <ToolbarGroup label="Metrikk">
+          {METRIC_OPTIONS.map(option => (
+            <Chip key={option.value} active={primaryMetric === option.value} onClick={() => setPrimaryMetric(option.value)}>
+              {option.shortLabel}
+            </Chip>
+          ))}
+        </ToolbarGroup>
+        <ToolbarGroup label="Sport">
+          <SportPicker
+            value={sportFilter}
+            onChange={(next) => setActiveTagFilter(next.length ? next[next.length - 1] : null)}
+            limitToValues={presentSports}
+          />
+        </ToolbarGroup>
+      </Toolbar>
 
-          <div className="analysis-metric-toggle" role="tablist" aria-label="Velg primarmetrikk">
-            {METRIC_OPTIONS.map(option => (
-              <button
-                key={option.value}
-                type="button"
-                className={`analysis-metric-btn${primaryMetric === option.value ? ' active' : ''}`}
-                onClick={() => setPrimaryMetric(option.value)}
-                style={{ '--metric-color': option.color }}
-              >
-                {option.shortLabel}
-              </button>
-            ))}
-          </div>
-
-          <div className="analysis-timeline-shell">
-            <div className="analysis-window-nav">
-              <button
-                type="button"
-                className="analysis-window-btn"
-                onClick={() => setWindowStart(prev => clampWindowStart(prev - Math.max(1, Math.floor(range / 2)), weeks.length, range))}
-                disabled={windowStart <= 0}
-                aria-label="Flytt analysevindu bakover"
-              >
-                &#8249;
-              </button>
-              <div className="analysis-window-meta">
-                <span className="analysis-window-kicker">Tidsvindu</span>
-                <strong>
-                  {visibleStartWeek ? getWeekLabel(visibleStartWeek) : 'Ingen data'}
-                  {visibleEndWeek ? ` - ${getWeekLabel(visibleEndWeek)}` : ''}
-                </strong>
-                <span>
-                  {isCurrentWeekVisible ? 'Navaerende uke er i vinduet' : 'Scroller du her kan du lese tidligere blokker og perioder framover'}
-                </span>
-              </div>
-              <button
-                type="button"
-                className="analysis-window-btn"
-                onClick={() => setWindowStart(prev => clampWindowStart(prev + Math.max(1, Math.floor(range / 2)), weeks.length, range))}
-                disabled={windowStart >= maxWindowStart}
-                aria-label="Flytt analysevindu fremover"
-              >
-                &#8250;
-              </button>
-            </div>
-
-            <div className="analysis-window-slider-wrap">
-              <label className="analysis-window-slider">
-                <div className="analysis-window-slider-head">
-                  <span>Historikk</span>
-                  <span>{timelineProgress}% gjennom perioden</span>
-                  <span>Framtid</span>
-                </div>
-                <input
-                  type="range"
-                  min="0"
-                  max={String(maxWindowStart)}
-                  step="1"
-                  value={windowStart}
-                  onChange={event => setWindowStart(Number(event.target.value))}
-                />
-              </label>
-
-              <button
-                type="button"
-                className="analysis-window-reset"
-                onClick={() => setWindowStart(clampWindowStart(currentIndex - Math.floor(range / 2), weeks.length, range))}
-                disabled={currentIndex === -1}
-              >
-                Sentrer pa na
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="analysis-tag-filter">
-        <button
-          type="button"
-          className={`tag-filter-btn${!activeTagFilter ? ' active' : ''}`}
-          onClick={() => setActiveTagFilter(null)}
-        >
-          Alle aktiviteter
-        </button>
-        {ACTIVITY_TAGS.map(tag => (
-          <button
-            key={tag.value}
-            type="button"
-            className={`tag-filter-btn${activeTagFilter === tag.value ? ' active' : ''}`}
-            style={{ '--tag-color': tag.color, '--tag-bg': tag.bg }}
-            onClick={() => setActiveTagFilter(activeTagFilter === tag.value ? null : tag.value)}
-          >
-            <span className="activity-tag-icon" aria-hidden="true">
-              <ActivityIcon name={tag.icon} className="tag-icon-svg" />
+      <Card className="an-window">
+        <div className="an-window-nav">
+          <IconButton
+            ariaLabel="Flytt analysevindu bakover"
+            variant="ghost"
+            disabled={windowStart <= 0}
+            onClick={() => setWindowStart(prev => clampWindowStart(prev - Math.max(1, Math.floor(range / 2)), weeks.length, range))}
+          >‹</IconButton>
+          <div className="an-window-meta">
+            <span className="an-eyebrow">Tidsvindu</span>
+            <strong className="an-window-label">
+              {visibleStartWeek ? getWeekLabel(visibleStartWeek) : 'Ingen data'}
+              {visibleEndWeek ? ` – ${getWeekLabel(visibleEndWeek)}` : ''}
+            </strong>
+            <span className="an-window-help">
+              {isCurrentWeekVisible ? 'Nåværende uke er i vinduet' : 'Bla for å se tidligere blokker eller fremover'}
             </span>
-            <span>{tag.label}</span>
-          </button>
-        ))}
-      </div>
+          </div>
+          <IconButton
+            ariaLabel="Flytt analysevindu fremover"
+            variant="ghost"
+            disabled={windowStart >= maxWindowStart}
+            onClick={() => setWindowStart(prev => clampWindowStart(prev + Math.max(1, Math.floor(range / 2)), weeks.length, range))}
+          >›</IconButton>
+        </div>
+
+        <div className="an-window-slider">
+          <div className="an-window-slider-head">
+            <span>Historikk</span>
+            <span className="tp-num">{timelineProgress}%</span>
+            <span>Framtid</span>
+          </div>
+          <input
+            type="range"
+            min="0"
+            max={String(maxWindowStart)}
+            step="1"
+            value={windowStart}
+            onChange={e => setWindowStart(Number(e.target.value))}
+            className="an-range"
+          />
+          <div className="an-window-actions">
+            <Button
+              size="sm"
+              variant="secondary"
+              disabled={currentIndex === -1}
+              onClick={() => setWindowStart(clampWindowStart(currentIndex - Math.floor(range / 2), weeks.length, range))}
+            >Sentrer på nå</Button>
+          </div>
+        </div>
+      </Card>
 
       {!hasData ? (
-        <div className="analysis-empty">
-          <div className="empty-icon">AN</div>
-          <div>Ingen okter i valgt analyseperiode.</div>
-        </div>
+        <EmptyState title="Ingen økter i analyseperioden" description="Velg en lengre periode eller en annen utøver for å se data." />
       ) : (
         <>
-          <div className="analysis-summary analysis-summary-rich">
-            <article className="summary-card highlight">
-              <span className="summary-label">{selectedMetricMeta.label}</span>
-              <strong className="summary-value">{formatMetricValue(primaryMetric, totals[primaryMetric] || 0)}</strong>
-              <span className="summary-footnote">{getMetricTooltip(primaryMetric)}</span>
-            </article>
-
-            <article className="summary-card">
-              <span className="summary-label">Trend siste 3 uker</span>
-              <strong className={`summary-value ${trendDelta >= 0 ? 'positive' : 'negative'}`}>{formatDelta(trendDelta)}</strong>
-              <span className="summary-footnote">Sammenlignet med de tre foregaende ukene.</span>
-            </article>
-
-            <article className="summary-card">
-              <span className="summary-label">Readiness ratio</span>
-              <strong className="summary-value">{focusWeek?.readinessRatio ? focusWeek.readinessRatio.toFixed(2) : '0.00'}</strong>
-              <span className="summary-footnote">Akutt / kronisk load. Rundt 0.8-1.3 er ofte robust.</span>
-            </article>
-
-            <article className="summary-card">
-              <span className="summary-label">Tetthet</span>
-              <strong className="summary-value">{density}</strong>
-              <span className="summary-footnote">Load per time. Hoy verdi betyr mye kvalitet per time.</span>
-            </article>
-
-            <article className="summary-card">
-              <span className="summary-label">Monotoni</span>
-              <strong className="summary-value">{monotony ? monotony.toFixed(2) : '0.00'}</strong>
-              <span className="summary-footnote">Lite variasjon dag til dag gir hoyere monotoni.</span>
-            </article>
-
-            <article className="summary-card">
-              <span className="summary-label">Konsistens</span>
-              <strong className="summary-value">{consistencyScore}%</strong>
-              <span className="summary-footnote">Andel uker med minst tre okter.</span>
-            </article>
+          <div className="an-summary">
+            <SummaryCell label={selectedMetricMeta.label} value={formatMetricValue(primaryMetric, totals[primaryMetric] || 0)} note={getMetricTooltip(primaryMetric)} highlight />
+            <SummaryCell label="Trend siste 3 uker" value={formatDelta(trendDelta)} note="Sammenlignet med de tre foregående ukene." trend={trendDelta} />
+            <SummaryCell label="Readiness ratio" value={focusWeek?.readinessRatio ? focusWeek.readinessRatio.toFixed(2) : '0.00'} note="Akutt/kronisk load. Rundt 0.8–1.3 er ofte robust." />
+            <SummaryCell label="Tetthet" value={density} note="Load per time." />
+            <SummaryCell label="Monotoni" value={monotony ? monotony.toFixed(2) : '0.00'} note="Lite variasjon dag til dag → høyere." />
+            <SummaryCell label="Konsistens" value={`${consistencyScore}%`} note="Andel uker med minst tre økter." />
           </div>
 
-          <div className="analysis-insight-grid">
-            <article className="analysis-insight-card emphasis">
-              <div className="analysis-section-heading">
-                <span className="analysis-section-kicker">Fokusuke</span>
-                <h3>Uke {focusWeek?.week.week}</h3>
-              </div>
-              <div className="analysis-focus-metrics">
-                <div>
-                  <span>Load</span>
-                  <strong>{Math.round(focusWeek?.load || 0)}</strong>
-                </div>
-                <div>
-                  <span>Tid</span>
-                  <strong>{formatDurationLabel(Math.round(focusWeek?.duration || 0))}</strong>
-                </div>
-                <div>
-                  <span>Distanse</span>
-                  <strong>{formatKmValue(focusWeek?.distance || 0)}</strong>
-                </div>
-                <div>
-                  <span>Harde okter</span>
-                  <strong>{focusWeek?.hardSessions || 0}</strong>
-                </div>
-              </div>
-              <div className="analysis-focus-annotations">
-                <span className="analysis-chip">Strain {strain}</span>
-                <span className="analysis-chip neutral">Mekanisk load {Math.round(focusWeek?.mechanicalLoad || 0)}</span>
+          <div className="an-insight-grid">
+            <Card className="an-insight">
+              <header className="an-insight-head">
+                <span className="an-eyebrow">Fokusuke</span>
+                <h3 className="an-insight-title">Uke {focusWeek?.week.week}</h3>
+              </header>
+              <dl className="an-stat-grid">
+                <Stat label="Load" value={Math.round(focusWeek?.load || 0)} />
+                <Stat label="Tid" value={formatDurationLabel(Math.round(focusWeek?.duration || 0))} />
+                <Stat label="Distanse" value={formatKmValue(focusWeek?.distance || 0)} />
+                <Stat label="Harde økter" value={focusWeek?.hardSessions || 0} />
+              </dl>
+              <div className="an-pill-row">
+                <Pill>Strain {strain}</Pill>
+                <Pill>Mekanisk {Math.round(focusWeek?.mechanicalLoad || 0)}</Pill>
                 {focusWeek?.longestSession ? (
-                  <span className="analysis-chip neutral">
-                    Lengste okt {formatDurationLabel(focusWeek.longestSession.duration)}
-                  </span>
+                  <Pill>Lengste {formatDurationLabel(focusWeek.longestSession.duration)}</Pill>
                 ) : null}
               </div>
-            </article>
+            </Card>
 
-            <article className="analysis-insight-card">
-              <div className="analysis-section-heading">
-                <span className="analysis-section-kicker">Peak week</span>
-                <h3>{peakWeek ? `${getWeekLabel(peakWeek.week)}` : 'Ingen data'}</h3>
-              </div>
-              <p className="analysis-panel-copy">
-                Toppuke pa valgt metrikk med {peakWeek ? formatMetricValue(primaryMetric, getWeekMetricValue(peakWeek, primaryMetric)) : '0'}.
+            <Card className="an-insight">
+              <header className="an-insight-head">
+                <span className="an-eyebrow">Peak week</span>
+                <h3 className="an-insight-title">{peakWeek ? getWeekLabel(peakWeek.week) : 'Ingen data'}</h3>
+              </header>
+              <p className="an-insight-copy">
+                Toppuke på valgt metrikk med {peakWeek ? formatMetricValue(primaryMetric, getWeekMetricValue(peakWeek, primaryMetric)) : '0'}.
               </p>
-              <div className="analysis-mini-stats">
-                <div>
-                  <span>Load</span>
-                  <strong>{Math.round(peakWeek?.load || 0)}</strong>
-                </div>
-                <div>
-                  <span>Tid</span>
-                  <strong>{formatDurationLabel(Math.round(peakWeek?.duration || 0))}</strong>
-                </div>
-                <div>
-                  <span>Harde</span>
-                  <strong>{peakWeek?.hardSessions || 0}</strong>
-                </div>
-              </div>
-            </article>
+              <dl className="an-stat-grid">
+                <Stat label="Load" value={Math.round(peakWeek?.load || 0)} />
+                <Stat label="Tid" value={formatDurationLabel(Math.round(peakWeek?.duration || 0))} />
+                <Stat label="Harde" value={peakWeek?.hardSessions || 0} />
+              </dl>
+            </Card>
 
-            <article className="analysis-insight-card">
-              <div className="analysis-section-heading">
-                <span className="analysis-section-kicker">Aktivitetssignatur</span>
-                <h3>Hvor belastningen kommer fra</h3>
-              </div>
-              <div className="analysis-activity-list">
+            <Card className="an-insight">
+              <header className="an-insight-head">
+                <span className="an-eyebrow">Aktivitetssignatur</span>
+                <h3 className="an-insight-title">Hvor belastningen kommer fra</h3>
+              </header>
+              <div className="an-activity-list">
                 {topActivityEntries.length > 0 ? topActivityEntries.map(([activityTag, stats]) => {
                   const activity = ACTIVITY_TAG_MAP[activityTag]
                   const loadShare = totals.load > 0 ? Math.round((stats.load / totals.load) * 100) : 0
                   return (
-                    <div key={activityTag} className="analysis-activity-row">
-                      <div className="analysis-activity-meta">
-                        <span className="analysis-activity-badge" style={{ '--activity-color': activity?.color || '#64748b', '--activity-bg': activity?.bg || '#f1f5f9' }}>
-                          <ActivityIcon name={activity?.icon || 'annet'} className="analysis-activity-svg" />
-                        </span>
-                        <div>
-                          <strong>{activity?.label || 'Annet'}</strong>
-                          <span>{stats.count} okter · {formatDurationLabel(Math.round(stats.duration))}</span>
-                        </div>
+                    <div key={activityTag} className="an-activity-row">
+                      <span className="an-activity-icon">
+                        <ActivityIcon name={activity?.icon || 'annet'} className="tag-icon-svg" />
+                      </span>
+                      <div className="an-activity-main">
+                        <strong>{activity?.label || 'Annet'}</strong>
+                        <span>{stats.count} økter · {formatDurationLabel(Math.round(stats.duration))}</span>
                       </div>
-                      <div className="analysis-activity-values">
-                        <strong>{loadShare}%</strong>
-                        <span>{Math.round(stats.load)} load</span>
+                      <div className="an-activity-values">
+                        <strong className="tp-num">{loadShare}%</strong>
+                        <span className="tp-num">{Math.round(stats.load)} load</span>
                       </div>
                     </div>
                   )
-                }) : <div className="chart-empty">Ingen aktivitetsdata</div>}
+                }) : <div className="an-empty-mini">Ingen aktivitetsdata</div>}
               </div>
-            </article>
+            </Card>
           </div>
 
-          <div className="analysis-chart-grid analysis-chart-grid-advanced">
-            <div className="analysis-chart-card wide feature">
-              <div className="chart-card-header">
-                <div>
-                  <h3 className="chart-title">Performance trend</h3>
-                  <p className="chart-caption">Bytt mellom load, tid, distanse og frekvens for a lese periodiseringen fra flere vinkler.</p>
-                </div>
-              </div>
-              <div className="chart-container xl">
-                <Bar data={performanceChartData} options={performanceOptions} />
-              </div>
-            </div>
-
-            <div className="analysis-chart-card wide">
-              <div className="chart-card-header">
-                <div>
-                  <h3 className="chart-title">Load balance</h3>
-                  <p className="chart-caption">Akutt og kronisk last med ratio-linje for a spotte topper, blokkperioder og behov for avlastning.</p>
-                </div>
-              </div>
-              <div className="chart-container xl">
-                <Line data={balanceChartData} options={balanceOptions} />
-              </div>
-            </div>
-
-            <div className="analysis-chart-card wide">
-              <div className="chart-card-header">
-                <div>
-                  <h3 className="chart-title">Aktivitetsmiks per uke</h3>
-                  <p className="chart-caption">Stablede load-barer viser hvordan ulike idretter bygger totalbelastningen.</p>
-                </div>
-              </div>
-              <div className="chart-container xl">
-                {activityStackChartData.datasets.length > 0
-                  ? <Bar data={activityStackChartData} options={stackedOptions} />
-                  : <div className="chart-empty">Ingen aktivitetsdata</div>}
-              </div>
-            </div>
-
-            <div className="analysis-chart-card">
-              <div className="chart-card-header">
-                <div>
-                  <h3 className="chart-title">Sonefordeling tid</h3>
-                  <p className="chart-caption">Estimert tidsbruk per sone, fordelt fra oktenes varighet og intensitetsprofil.</p>
-                </div>
-              </div>
-              <div className="chart-container doughnut">
-                {zoneDurationChartData.datasets[0].data.length > 0
-                  ? <Doughnut data={zoneDurationChartData} options={doughnutOptions} />
-                  : <div className="chart-empty">Ingen sonedata</div>}
-              </div>
-            </div>
-
-            <div className="analysis-chart-card">
-              <div className="chart-card-header">
-                <div>
-                  <h3 className="chart-title">Sonefordeling load</h3>
-                  <p className="chart-caption">Belastning splittet per sone, nyttig nar hoyintensiv jobb driver mer stress enn minuttene antyder.</p>
-                </div>
-              </div>
-              <div className="chart-container doughnut">
-                {zoneLoadChartData.datasets[0].data.length > 0
-                  ? <Doughnut data={zoneLoadChartData} options={doughnutOptions} />
-                  : <div className="chart-empty">Ingen sonedata</div>}
-              </div>
-            </div>
-
-            <div className="analysis-chart-card">
-              <div className="chart-card-header">
-                <div>
-                  <h3 className="chart-title">Load share</h3>
-                  <p className="chart-caption">Aktiviteter rangert etter hvor mye de faktisk bidrar til total treningsstress.</p>
-                </div>
-              </div>
-              <div className="chart-container doughnut">
-                {activityShareChartData.datasets[0].data.length > 0
-                  ? <Doughnut data={activityShareChartData} options={doughnutOptions} />
-                  : <div className="chart-empty">Ingen aktivitetsdata</div>}
-              </div>
-            </div>
+          <div className="an-chart-grid">
+            <ChartCard title="Performance trend" caption="Bytt mellom load, tid, distanse og frekvens for å lese periodiseringen fra flere vinkler." span="wide">
+              <Bar data={performanceChartData} options={performanceOptions} />
+            </ChartCard>
+            <ChartCard title="Load balance" caption="Akutt og kronisk last med ratio-linje for å spotte topper og avlastningsbehov." span="wide">
+              <Line data={balanceChartData} options={balanceOptions} />
+            </ChartCard>
+            <ChartCard title="Aktivitetsmiks per uke" caption="Stablede load-barer viser hvordan ulike idretter bygger totalbelastningen." span="wide">
+              {activityStackChartData.datasets.length > 0
+                ? <Bar data={activityStackChartData} options={stackedOptions} />
+                : <div className="an-empty-mini">Ingen aktivitetsdata</div>}
+            </ChartCard>
+            <ChartCard title="Sonefordeling tid" caption="Estimert tidsbruk per sone." size="doughnut">
+              {zoneDurationChartData.datasets[0].data.length > 0
+                ? <Doughnut data={zoneDurationChartData} options={doughnutOptions} />
+                : <div className="an-empty-mini">Ingen sonedata</div>}
+            </ChartCard>
+            <ChartCard title="Sonefordeling load" caption="Belastning splittet per sone." size="doughnut">
+              {zoneLoadChartData.datasets[0].data.length > 0
+                ? <Doughnut data={zoneLoadChartData} options={doughnutOptions} />
+                : <div className="an-empty-mini">Ingen sonedata</div>}
+            </ChartCard>
+            <ChartCard title="Load share" caption="Aktiviteter rangert etter bidrag til total treningsstress." size="doughnut">
+              {activityShareChartData.datasets[0].data.length > 0
+                ? <Doughnut data={activityShareChartData} options={doughnutOptions} />
+                : <div className="an-empty-mini">Ingen aktivitetsdata</div>}
+            </ChartCard>
           </div>
 
-          <div className="analysis-bottom-grid">
-            <article className="analysis-surface-card">
-              <div className="analysis-section-heading">
-                <span className="analysis-section-kicker">Ukerytme</span>
-                <h3>Load heatmap</h3>
-              </div>
-              <p className="analysis-panel-copy">
-                En rask lesning av hvor belastningen lander i uka. Morkere felt betyr hardere dager.
-              </p>
-              <div className="analysis-heatmap">
-                <div className="analysis-heatmap-header">
+          <div className="an-bottom-grid">
+            <Card className="an-surface">
+              <header className="an-insight-head">
+                <span className="an-eyebrow">Ukerytme</span>
+                <h3 className="an-insight-title">Load heatmap</h3>
+              </header>
+              <p className="an-insight-copy">Hvor belastningen lander i uka. Mørkere felt betyr hardere dager.</p>
+              <div className="an-heatmap">
+                <div className="an-heatmap-header">
                   <span>Uke</span>
-                  {['Man', 'Tir', 'Ons', 'Tor', 'Fre', 'Lor', 'Son'].map(day => (
-                    <span key={day}>{day}</span>
-                  ))}
+                  {['Man', 'Tir', 'Ons', 'Tor', 'Fre', 'Lør', 'Søn'].map(day => <span key={day}>{day}</span>)}
                 </div>
                 {weeklyStats.map(week => (
-                  <div key={week.week.key} className="analysis-heatmap-row">
-                    <span className="analysis-heatmap-week">{getWeekLabel(week.week)}</span>
-                    {['Man', 'Tir', 'Ons', 'Tor', 'Fre', 'Lor', 'Son'].map((day, index) => (
+                  <div key={week.week.key} className="an-heatmap-row">
+                    <span className="an-heatmap-label">{getWeekLabel(week.week)}</span>
+                    {['Man', 'Tir', 'Ons', 'Tor', 'Fre', 'Lør', 'Søn'].map((day, index) => (
                       <HeatCell key={`${week.week.key}-${day}`} week={week} weekdayIndex={index} weekdayLabel={day} />
                     ))}
                   </div>
                 ))}
               </div>
-            </article>
+            </Card>
 
-            <article className="analysis-surface-card">
-              <div className="analysis-section-heading">
-                <span className="analysis-section-kicker">Nokkelokter</span>
-                <h3>Toppbelastning</h3>
-              </div>
-              <p className="analysis-panel-copy">
-                Oktliste sortert pa estimert load for a finne de mest krevende stimulusene i blokka.
-              </p>
-              <div className="analysis-top-workouts">
+            <Card className="an-surface">
+              <header className="an-insight-head">
+                <span className="an-eyebrow">Nøkkeløkter</span>
+                <h3 className="an-insight-title">Toppbelastning</h3>
+              </header>
+              <p className="an-insight-copy">Liste sortert på estimert load for å finne de mest krevende stimulusene.</p>
+              <div className="an-top-list">
                 {topWorkouts.length > 0
-                  ? topWorkouts.map(workout => <TopWorkoutCard key={workout.id} workout={workout} />)
-                  : <div className="chart-empty">Ingen okter i perioden</div>}
+                  ? topWorkouts.map(workout => <TopWorkoutRow key={workout.id} workout={workout} />)
+                  : <div className="an-empty-mini">Ingen økter i perioden</div>}
               </div>
-            </article>
+            </Card>
           </div>
         </>
       )}
-    </section>
+    </Page>
+  )
+}
+
+function SummaryCell({ label, value, note, highlight, trend }) {
+  const trendClass = typeof trend === 'number' ? (trend >= 0 ? 'is-up' : 'is-down') : ''
+  return (
+    <div className={`an-summary-cell${highlight ? ' is-highlight' : ''}`}>
+      <span className="an-summary-label">{label}</span>
+      <strong className={`an-summary-value tp-num ${trendClass}`}>{value}</strong>
+      {note && <span className="an-summary-note">{note}</span>}
+    </div>
+  )
+}
+
+function Stat({ label, value }) {
+  return (
+    <div className="an-stat">
+      <dt>{label}</dt>
+      <dd className="tp-num">{value}</dd>
+    </div>
+  )
+}
+
+function ChartCard({ title, caption, children, span, size }) {
+  return (
+    <Card className={`an-chart${span ? ` is-${span}` : ''}`}>
+      <header className="an-chart-head">
+        <h3 className="an-chart-title">{title}</h3>
+        {caption && <p className="an-chart-caption">{caption}</p>}
+      </header>
+      <div className={`an-chart-body${size ? ` is-${size}` : ''}`}>{children}</div>
+    </Card>
   )
 }

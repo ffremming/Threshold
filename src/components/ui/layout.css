@@ -1,0 +1,193 @@
+/* ── Page ────────────────────────────────────────────────────────── */
+.tp-page {
+  width: 100%;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: var(--tp-space-5) var(--tp-space-5) var(--tp-space-12);
+  display: flex;
+  flex-direction: column;
+  gap: var(--tp-space-5);
+}
+
+.tp-page--wide { max-width: 100%; }
+
+@media (max-width: 640px) {
+  .tp-page { padding: var(--tp-space-4) var(--tp-space-4) var(--tp-space-12); gap: var(--tp-space-4); }
+}
+
+/* ── PageHeader ──────────────────────────────────────────────────── */
+.tp-pageheader {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--tp-space-4);
+  flex-wrap: wrap;
+}
+
+.tp-pageheader-titles {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tp-space-1);
+  min-width: 0;
+}
+
+.tp-pageheader-eyebrow {
+  font-size: var(--tp-text-2xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tp-tracking-wide);
+  font-weight: 700;
+  color: var(--tp-ink-muted);
+}
+
+.tp-pageheader-title {
+  font-size: var(--tp-text-2xl);
+  font-weight: 700;
+  letter-spacing: var(--tp-tracking-tight);
+  color: var(--tp-ink);
+  margin: 0;
+  line-height: var(--tp-leading-tight);
+}
+
+.tp-pageheader-subtitle {
+  margin: 0;
+  font-size: var(--tp-text-sm);
+  color: var(--tp-ink-muted);
+}
+
+.tp-pageheader-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--tp-space-2);
+  flex-wrap: wrap;
+}
+
+/* ── Section ─────────────────────────────────────────────────────── */
+.tp-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tp-space-3);
+}
+
+.tp-section--padded {
+  background: var(--tp-bg-elev);
+  border: 1px solid var(--tp-line);
+  border-radius: var(--tp-radius-lg);
+  padding: var(--tp-space-5);
+}
+
+.tp-section-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--tp-space-3);
+}
+
+.tp-section-title {
+  font-size: var(--tp-text-md);
+  font-weight: 700;
+  letter-spacing: var(--tp-tracking-snug);
+  color: var(--tp-ink);
+  margin: 0;
+}
+
+.tp-section-subtitle {
+  margin: 0;
+  font-size: var(--tp-text-xs);
+  color: var(--tp-ink-muted);
+}
+
+/* ── FilterBar ───────────────────────────────────────────────────── */
+.tp-filterbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--tp-space-3);
+  padding: var(--tp-space-3);
+  background: var(--tp-bg-elev);
+  border: 1px solid var(--tp-line);
+  border-radius: var(--tp-radius-lg);
+}
+
+.tp-filterbar--sticky {
+  position: sticky;
+  top: 0;
+  z-index: var(--tp-z-elevated);
+}
+
+.tp-filtergroup {
+  display: flex;
+  align-items: center;
+  gap: var(--tp-space-2);
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.tp-filtergroup-label {
+  font-size: var(--tp-text-2xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tp-tracking-wide);
+  font-weight: 700;
+  color: var(--tp-ink-muted);
+}
+
+.tp-filtergroup-items {
+  display: flex;
+  align-items: center;
+  gap: var(--tp-space-2);
+  flex-wrap: wrap;
+}
+
+/* ── Empty state ─────────────────────────────────────────────────── */
+.tp-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: var(--tp-space-3);
+  padding: var(--tp-space-10) var(--tp-space-5);
+  background: var(--tp-bg-elev);
+  border: 1px dashed var(--tp-line-strong);
+  border-radius: var(--tp-radius-lg);
+  color: var(--tp-ink-soft);
+}
+
+.tp-empty-icon {
+  width: 3rem;
+  height: 3rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--tp-radius-pill);
+  background: var(--tp-bg-sunken);
+  color: var(--tp-ink-muted);
+  font-size: 1.2rem;
+}
+
+.tp-empty-title {
+  margin: 0;
+  font-size: var(--tp-text-lg);
+  font-weight: 700;
+  letter-spacing: var(--tp-tracking-tight);
+  color: var(--tp-ink);
+}
+
+.tp-empty-desc {
+  margin: 0;
+  font-size: var(--tp-text-sm);
+  color: var(--tp-ink-muted);
+  max-width: 32rem;
+}
+
+.tp-empty-action {
+  margin-top: var(--tp-space-2);
+  display: flex;
+  gap: var(--tp-space-2);
+}
+
+/* ── Chip brand variant (chip base lives in ui.css) ──────────────── */
+.tp-chip--brand.is-active {
+  background: var(--tp-accent);
+  color: var(--tp-on-accent);
+  border-color: var(--tp-accent);
+}

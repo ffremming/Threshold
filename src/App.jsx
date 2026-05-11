@@ -7,22 +7,16 @@ import {
 import { db, auth } from './firebase'
 import {
   compareWorkoutsBySchedule,
-  TYPE_COLORS,
-  TYPE_ICONS,
-  ZONE_COLORS,
-  formatWorkoutTime,
   getDateStringForWeekday,
   getAdjacentWeek,
   getDefaultCooldown,
   getDefaultWarmup,
-  getIntensityZoneLabel,
   getWeekKey,
   getWeekNumber,
   getWeekDates,
   getWeekWindow,
   groupWorkoutsByWeekday,
   normalizeLoadTag,
-  normalizeIntensityZone,
   normalizeIntensityZones,
   normalizeWorkout,
 } from './utils'
@@ -37,16 +31,29 @@ import {
   updateUserProfile,
 } from './userService'
 import { hasRole } from './roles'
-import WorkoutCard from './components/WorkoutCard'
 import WorkoutDetail from './components/WorkoutDetail'
 import Login from './components/Login'
 import AdminDashboard from './components/AdminDashboard'
 import UserManagement from './components/UserManagement'
 import BirdsEyeOverview from './components/BirdsEyeOverview'
-import ActivityIcon from './components/ActivityIcon'
+import AthleteOverview from './components/AthleteOverview'
 import SystemIcon from './components/SystemIcon'
-import AthleteSelector from './components/AthleteSelector'
-import WorkoutLayoutToggle from './components/WorkoutLayoutToggle'
+import {
+  Button,
+  IconButton,
+  PageShell,
+  ShellBrand,
+  Page,
+  Section,
+  EmptyState,
+  WeekNav,
+  AthletePicker,
+  LayoutToggle,
+  WorkoutCard,
+  TemplateCard,
+  Modal,
+} from './components/ui'
+import './components/AthleteHome.css'
 
 export default function App() {
   const today = new Date()
@@ -65,6 +72,7 @@ export default function App() {
   const [showLogin, setShowLogin] = useState(false)
   const [showAdmin, setShowAdmin] = useState(false)
   const [showUserManagement, setShowUserManagement] = useState(false)
+  const [showAthleteOverview, setShowAthleteOverview] = useState(false)
   const [showOverview, setShowOverview] = useState(false)
   const [selectedWorkout, setSelectedWorkout] = useState(null)
   const [templates, setTemplates] = useState([])
@@ -320,6 +328,7 @@ export default function App() {
     await signOut(auth)
     setShowAdmin(false)
     setShowUserManagement(false)
+    setShowAthleteOverview(false)
     setSelectedWorkout(null)
     setReplacementTarget(null)
   }
@@ -414,43 +423,26 @@ export default function App() {
   // ─── Auth loading state ───
   if (user === undefined || (user && profileLoading)) {
     return (
-      <div className="app">
-        <div className="auth-screen">
-          <div className="auth-screen-inner">
-            <div className="login-header">
-              <span className="login-icon">TP</span>
-              <h2 className="modal-title-h2">Treningsplan</h2>
-            </div>
-            <div className="empty-state">Laster...</div>
-          </div>
+      <div className="ah-status">
+        <div className="ah-status-card">
+          <span className="tp-shell-mark" aria-hidden="true">TP</span>
+          <h2 className="ah-status-title">Training Planner</h2>
+          <p className="ah-status-text">Laster…</p>
         </div>
       </div>
     )
   }
 
-  // ─── Not authenticated: show login ───
-  if (!user) {
-    return (
-      <div className="app">
-        <Login fullScreen onClose={() => {}} />
-      </div>
-    )
-  }
+  if (!user) return <Login fullScreen onClose={() => {}} />
 
   if (profileError) {
     return (
-      <div className="app">
-        <div className="auth-screen">
-          <div className="auth-screen-inner">
-            <div className="login-header">
-              <span className="login-icon">TP</span>
-              <h2 className="modal-title-h2">Treningsplan</h2>
-            </div>
-            <div className="empty-state">{profileError}</div>
-            <button className="admin-btn" onClick={handleLogout}>
-              Logg ut
-            </button>
-          </div>
+      <div className="ah-status">
+        <div className="ah-status-card">
+          <span className="tp-shell-mark" aria-hidden="true">TP</span>
+          <h2 className="ah-status-title">Training Planner</h2>
+          <p className="ah-status-text">{profileError}</p>
+          <Button variant="secondary" onClick={handleLogout}>Logg ut</Button>
         </div>
       </div>
     )
@@ -462,6 +454,18 @@ export default function App() {
       <UserManagement
         currentUser={userProfile}
         onClose={() => setShowUserManagement(false)}
+      />
+    )
+  }
+
+  // ─── Athlete Overview (coach/superadmin) ───
+  if (showAthleteOverview && canManageWorkouts) {
+    return (
+      <AthleteOverview
+        user={user}
+        userProfile={userProfile}
+        athletes={athletes}
+        onClose={() => setShowAthleteOverview(false)}
       />
     )
   }
@@ -490,199 +494,145 @@ export default function App() {
     )
   }
 
-  // ─── Athlete name for display ───
   return (
-    <div className="app">
-      <header className="header">
-        <div className="header-top">
-          <div className="brand-block">
-            <span className="brand-eyebrow">Training Planner</span>
-            <div className="brand-row">
-              <h1 className="app-title">Treningsplan</h1>
-            </div>
-          </div>
-          <div className="header-actions">
-            {isSuperadmin && (
-              <button
-                className="admin-btn"
-                onClick={() => setShowUserManagement(true)}
-                title="Brukere"
-              >
-                <SystemIcon name="users" className="system-icon" />
-              </button>
-            )}
-            {canManageWorkouts && (
-              <button className="admin-btn active" onClick={() => setShowAdmin(true)} title="Admin">
-                <SystemIcon name="settings" className="system-icon" />
-              </button>
-            )}
-            <button className="admin-btn" onClick={handleLogout} title="Logg ut" aria-label="Logg ut">
-              Logg ut
-            </button>
-          </div>
-        </div>
-
-        <div className="week-nav-shell shell-card">
-          <div className="week-nav">
-            <button className="nav-btn" onClick={prevWeek}>‹</button>
-            <div className="week-info" onClick={goToToday}>
-              <span className="week-label">
-                Uke {currentWeek}
-                {isThisWeek && <span className="this-week-dot" aria-hidden="true" />}
-              </span>
-              <span className="week-dates">
-                {monday.getDate()}.{monday.getMonth() + 1} – {sunday.getDate()}.{sunday.getMonth() + 1}.{sunday.getFullYear()}
-              </span>
-            </div>
-            <button className="nav-btn" onClick={nextWeek}>›</button>
-            <button
-              type="button"
-              className={`nav-btn overview-nav-btn${showOverview ? ' active' : ''}`}
-              onClick={() => setShowOverview(prev => !prev)}
-              aria-expanded={showOverview}
-              aria-controls="birds-eye-overview"
-              aria-label="Vis oversikt for siste 4 og neste 4 uker"
-              title="Siste 4 og neste 4 uker"
+    <PageShell
+      brand={
+        <ShellBrand
+          eyebrow="Training Planner"
+          title={canManageWorkouts && activeHomeAthlete?.displayName ? `Plan: ${activeHomeAthlete.displayName}` : 'Treningsplan'}
+        />
+      }
+      actions={
+        <>
+          {isSuperadmin && (
+            <IconButton ariaLabel="Brukere" onClick={() => setShowUserManagement(true)}>
+              <SystemIcon name="users" className="system-icon" />
+            </IconButton>
+          )}
+          {canManageWorkouts && (
+            <Button variant="secondary" size="sm" onClick={() => setShowAthleteOverview(true)}>
+              <SystemIcon name="users" className="button-icon" />
+              Utøvere
+            </Button>
+          )}
+          {canManageWorkouts && (
+            <Button variant="secondary" size="sm" onClick={() => setShowAdmin(true)}>
+              <SystemIcon name="settings" className="button-icon" />
+              Admin
+            </Button>
+          )}
+          <Button variant="ghost" size="sm" onClick={handleLogout}>Logg ut</Button>
+        </>
+      }
+    >
+      <Page>
+        <WeekNav
+          week={currentWeek}
+          year={currentYear}
+          monday={monday}
+          sunday={sunday}
+          isThisWeek={isThisWeek}
+          onPrev={prevWeek}
+          onNext={nextWeek}
+          onToday={goToToday}
+          rightSlot={
+            <IconButton
+              ariaLabel="Vis oversikt for siste 4 og neste 4 uker"
+              onClick={() => setShowOverview(p => !p)}
+              variant={showOverview ? undefined : 'ghost'}
             >
-              <span className="overview-icon" aria-hidden="true">
-                <span />
-                <span />
-                <span />
-                <span />
-              </span>
-            </button>
-          </div>
-        </div>
+              <span className="ah-overview-glyph" aria-hidden="true"><span /><span /><span /><span /></span>
+            </IconButton>
+          }
+        />
 
-      </header>
-
-      <main className="main">
         {canManageWorkouts && athletes.length > 0 && (
-          <div className="main-athlete-selector shell-card">
-            <div className="selector-meta">
-              <span className="selector-label">Aktiv bruker</span>
-              <span className="selector-help">Bytt hvilken utøver du ser i appen.</span>
-            </div>
-            <AthleteSelector
+          <div className="ah-controls">
+            <AthletePicker
               athletes={athletes}
-              selectedAthleteId={selectedAthleteId}
+              selectedId={selectedAthleteId}
               onSelect={setSelectedAthleteId}
               currentUserProfile={userProfile}
-              hideLabel
             />
-            <WorkoutLayoutToggle
-              value={homeWorkoutLayout}
-              onChange={handleWorkoutLayoutChange}
-              compact
-            />
+            <LayoutToggle value={homeWorkoutLayout} onChange={handleWorkoutLayoutChange} />
           </div>
         )}
 
         {showOverview && (
           overviewLoading ? (
-            <div className="birds-eye-loading" id="birds-eye-overview">Laster ukeoversikt...</div>
+            <Section title="Mengdeoversikt"><div className="ah-loading">Laster…</div></Section>
           ) : (
             <BirdsEyeOverview
               weeks={overviewWeeks}
               workoutsByWeekKey={overviewByWeekKey}
               selectedWeekKey={selectedWeekKey}
-              onSelectWeek={(week, year) => {
-                handleWeekChange(week, year)
-                setShowOverview(false)
-              }}
+              onSelectWeek={(week, year) => { handleWeekChange(week, year); setShowOverview(false) }}
             />
           )
         )}
 
         {loading ? (
-          <div className="empty-state shell-card">Laster...</div>
+          <EmptyState title="Laster økter…" />
         ) : workouts.length === 0 ? (
-          <div className="empty-state shell-card">
-            <div className="empty-icon">WK</div>
-            <div>
-              Ingen økter denne uken
-              {canManageWorkouts && activeHomeAthlete?.displayName ? ` for ${activeHomeAthlete.displayName}` : ''}
-            </div>
-          </div>
+          <EmptyState
+            icon="•"
+            title="Ingen økter denne uken"
+            description={canManageWorkouts && activeHomeAthlete?.displayName ? `Ingen økter for ${activeHomeAthlete.displayName}.` : 'Sjekk en annen uke eller spør treneren din.'}
+          />
         ) : (
-          <section className="content-section shell-card">
-            {canManageWorkouts && activeHomeAthlete?.displayName && (
-              <div className="admin-athlete-banner">
-                Viser plan for <strong>{activeHomeAthlete.displayName}</strong>
+          <>
+            <Section padded>
+              <div className="ah-summary">
+                <div className="ah-summary-text">
+                  <span className="tp-num">{doneCount}/{workouts.length}</span> fullført
+                </div>
+                <div className="ah-progress" aria-hidden="true">
+                  <div className="ah-progress-fill" style={{ width: `${(doneCount / workouts.length) * 100}%` }} />
+                </div>
               </div>
-            )}
-            <div className="week-summary">
-              {doneCount}/{workouts.length} fullført denne uken
-              <div className="progress-bar">
-                <div
-                  className="progress-fill"
-                  style={{ width: `${(doneCount / workouts.length) * 100}%` }}
-                />
-              </div>
-            </div>
+            </Section>
+
             {homeWorkoutLayout === 'calendar' ? (
-              <div className="program-day-list">
+              <div className="ah-day-list">
                 {workoutDays.map(day => (
-                  <section key={day.value} className="program-day-section">
-                    <div className="program-day-header">
-                      <div>
-                        <h2 className="program-day-title">{day.label}</h2>
-                        <div className="program-day-meta">
-                          {day.workouts.length > 0 ? `${day.workouts.length} økt${day.workouts.length > 1 ? 'er' : ''}` : 'Hvile / ingen økter'}
-                        </div>
-                      </div>
-                    </div>
-
+                  <Section
+                    key={day.value}
+                    title={day.label}
+                    subtitle={day.workouts.length > 0 ? `${day.workouts.length} økt${day.workouts.length > 1 ? 'er' : ''}` : 'Hvile / ingen økter'}
+                  >
                     {day.workouts.length === 0 ? (
-                      <div className="program-day-slots" style={{ '--slot-count': 2 }}>
-                        <div className="program-day-empty-slot">Ledig slot</div>
-                        <div className="program-day-empty-slot">Ledig slot</div>
-                      </div>
+                      <div className="ah-empty-slot">Ledig slot</div>
                     ) : (
-                      <div
-                        className="program-day-slots"
-                        style={{ '--slot-count': Math.max(2, day.workouts.length) }}
-                      >
-                        {Array.from({ length: Math.max(2, day.workouts.length) }, (_, idx) => {
-                          const workout = day.workouts[idx]
-                          if (!workout) {
-                            return <div key={`empty-${day.value}-${idx}`} className="program-day-empty-slot">Ledig slot</div>
-                          }
-
-                          return (
-                            <WorkoutCard
-                              key={workout.id}
-                              workout={workout}
-                              index={idx}
-                              indexLabel={formatWorkoutTime(workout)}
-                              showSchedule={false}
-                              slotLayout
-                              onClick={setSelectedWorkout}
-                              onToggleComplete={handleToggleComplete}
-                            />
-                          )
-                        })}
+                      <div className="ah-day-stack">
+                        {day.workouts.map(workout => (
+                          <WorkoutCard
+                            key={workout.id}
+                            workout={workout}
+                            onClick={() => setSelectedWorkout(workout)}
+                            onToggleComplete={() => handleToggleComplete(workout)}
+                          />
+                        ))}
                       </div>
                     )}
-                  </section>
+                  </Section>
                 ))}
               </div>
             ) : (
-              <div className="workout-list">
-                {workouts.map((workout, index) => (
+              <div className="ah-day-stack">
+                {workouts.map(workout => (
                   <WorkoutCard
                     key={workout.id}
                     workout={workout}
-                    index={index}
-                    onClick={setSelectedWorkout}
-                    onToggleComplete={handleToggleComplete}
+                    onClick={() => setSelectedWorkout(workout)}
+                    onToggleComplete={() => handleToggleComplete(workout)}
+                    showSchedule={false}
                   />
                 ))}
               </div>
             )}
-          </section>
+          </>
         )}
-      </main>
+      </Page>
 
       {selectedWorkout && (
         <WorkoutDetail
@@ -724,81 +674,35 @@ export default function App() {
       )}
 
       {showLogin && <Login onClose={() => setShowLogin(false)} />}
-    </div>
+    </PageShell>
   )
 }
 
 function TemplatePickerModal({ targetWorkout, templates, loading, onClose, onPick }) {
-  function handleBackdrop(e) {
-    if (e.target === e.currentTarget) onClose()
-  }
-
   return (
-    <div className="modal-backdrop" onClick={handleBackdrop}>
-      <div className="modal add-modal">
-        <button className="modal-close" onClick={onClose}><SystemIcon name="close" className="system-icon" /></button>
-        <h2 className="modal-title-h2">Bytt økt</h2>
-        <p className="template-picker-subtitle">
-          Velg en ny økt fra øktbanken for å erstatte &quot;{targetWorkout.title}&quot;.
-        </p>
-
-        {loading ? (
-          <div className="empty-state">Laster øktbank...</div>
-        ) : templates.length === 0 ? (
-          <div className="empty-state">Ingen økter tilgjengelig i øktbanken.</div>
-        ) : (
-          <div className="template-list template-picker-list">
-            {templates.map(template => (
-              <TemplatePickerCard
-                key={template.id}
-                template={template}
-                onPick={() => onPick(template)}
-              />
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
-  )
-}
-
-function TemplatePickerCard({ template, onPick }) {
-  const typeColors = TYPE_COLORS[template.type] || TYPE_COLORS.annet
-  const zone = normalizeIntensityZone(template.type, template.intensityZone)
-  const zoneColors = zone ? ZONE_COLORS[zone] : null
-  const zoneLabel = getIntensityZoneLabel(template)
-  const icon = TYPE_ICONS[template.type] || 'AN'
-
-  return (
-    <div
-      className="template-card"
-      style={{ backgroundColor: typeColors.bg, borderLeftColor: typeColors.border }}
+    <Modal
+      open
+      onClose={onClose}
+      eyebrow="Bytt økt"
+      title={`Erstatt «${targetWorkout.title}»`}
+      size="lg"
     >
-      <div className="template-card-top">
-        <div className="template-card-left">
-          <span className="template-icon"><ActivityIcon name={icon} className="ui-icon" /></span>
-          <div>
-            <div className="template-title">{template.title}</div>
-            {template.category && <div className="template-category">{template.category}</div>}
-          </div>
+      {loading ? (
+        <EmptyState title="Laster øktbank…" />
+      ) : templates.length === 0 ? (
+        <EmptyState title="Tom øktbank" description="Du har ingen økter i banken ennå." />
+      ) : (
+        <div className="ah-template-grid">
+          {templates.map(template => (
+            <TemplateCard
+              key={template.id}
+              template={template}
+              primaryLabel="Bytt til denne"
+              onPrimary={() => onPick(template)}
+            />
+          ))}
         </div>
-        {zone && zoneLabel && zoneColors && (
-          <span
-            className="zone-badge"
-            style={{ backgroundColor: zoneColors.border, color: zoneColors.text }}
-          >
-            {zoneLabel}
-          </span>
-        )}
-      </div>
-
-      {template.description && <div className="template-desc">{template.description}</div>}
-
-      <div className="template-actions">
-        <button className="btn-template-pick" onClick={onPick}>
-          Bytt til denne
-        </button>
-      </div>
-    </div>
+      )}
+    </Modal>
   )
 }

@@ -1,0 +1,102 @@
+.tp-athlete-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tp-space-2);
+}
+
+.tp-athlete-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--tp-space-3);
+  width: 100%;
+  text-align: left;
+  appearance: none;
+  cursor: pointer;
+  padding: var(--tp-space-3) var(--tp-space-4);
+  background: var(--tp-surface);
+  border: 1px solid var(--tp-line);
+  border-radius: var(--tp-radius-lg);
+  box-shadow: var(--tp-shadow-xs);
+  font: inherit;
+  color: var(--tp-ink);
+  transition: background var(--tp-dur-fast) var(--tp-ease),
+              border-color var(--tp-dur-fast) var(--tp-ease),
+              transform var(--tp-dur-fast) var(--tp-ease);
+}
+
+.tp-athlete-row:hover {
+  background: var(--tp-hover);
+  border-color: var(--tp-line-strong);
+}
+
+.tp-athlete-row:active {
+  transform: scale(0.998);
+}
+
+.tp-athlete-row--alert {
+  border-color: color-mix(in srgb, #c0392b 25%, transparent);
+  background: color-mix(in srgb, #c0392b 4%, var(--tp-surface));
+}
+
+.tp-athlete-row-main {
+  display: flex;
+  align-items: center;
+  gap: var(--tp-space-3);
+  flex: 1;
+  min-width: 0;
+}
+
+.tp-athlete-row-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--tp-accent-soft);
+  color: var(--tp-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.tp-athlete-row-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.tp-athlete-row-name {
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--tp-space-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tp-athlete-row-meta {
+  color: var(--tp-ink-muted);
+  font-size: 0.85rem;
+}
+
+.tp-athlete-alert-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #c0392b;
+}
+
+.tp-athlete-alert-badge {
+  background: color-mix(in srgb, #c0392b 12%, transparent);
+  color: #b03020;
+  border-color: color-mix(in srgb, #c0392b 30%, transparent);
+}
+
+.tp-athlete-row-side {
+  display: flex;
+  align-items: center;
+  gap: var(--tp-space-2);
+}

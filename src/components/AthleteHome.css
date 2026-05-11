@@ -1,0 +1,121 @@
+/* Athlete home — only the page-specific bits. Cards, shell etc come from /ui. */
+
+.ah-status {
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--tp-space-6);
+  background: var(--tp-bg);
+}
+
+.ah-status-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--tp-space-4);
+  padding: var(--tp-space-8);
+  background: var(--tp-surface);
+  border: 1px solid var(--tp-line);
+  border-radius: var(--tp-radius-xl);
+  box-shadow: var(--tp-shadow-sm);
+  max-width: 22rem;
+  text-align: center;
+}
+
+.ah-status-title {
+  font-size: var(--tp-text-xl);
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: var(--tp-tracking-tight);
+}
+
+.ah-status-text {
+  font-size: var(--tp-text-md);
+  color: var(--tp-ink-muted);
+  margin: 0;
+}
+
+.ah-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--tp-space-3);
+  flex-wrap: wrap;
+}
+
+/* Summary bar */
+.ah-summary { display: flex; flex-direction: column; gap: var(--tp-space-2); }
+
+.ah-summary-text {
+  font-size: var(--tp-text-md);
+  font-weight: 600;
+  color: var(--tp-ink);
+}
+
+.ah-progress {
+  width: 100%;
+  height: 6px;
+  background: var(--tp-hover);
+  border-radius: var(--tp-radius-pill);
+  overflow: hidden;
+}
+
+.ah-progress-fill {
+  height: 100%;
+  background: var(--tp-zone-2);
+  transition: width var(--tp-dur-slow) var(--tp-ease);
+}
+
+/* Day calendar list */
+.ah-day-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tp-space-3);
+}
+
+.ah-day-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tp-space-2);
+}
+
+.ah-empty-slot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--tp-space-4);
+  background: var(--tp-bg);
+  border: 1px dashed var(--tp-line-strong);
+  border-radius: var(--tp-radius-md);
+  color: var(--tp-ink-muted);
+  font-size: var(--tp-text-sm);
+}
+
+/* Overview toggle glyph */
+.ah-overview-glyph {
+  width: 0.95rem;
+  height: 0.95rem;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.12rem;
+}
+
+.ah-overview-glyph span {
+  display: block;
+  border-radius: 0.16rem;
+  background: currentColor;
+  opacity: 0.9;
+}
+
+.ah-loading {
+  padding: var(--tp-space-6);
+  text-align: center;
+  color: var(--tp-ink-muted);
+}
+
+/* Template picker grid (used in TemplatePickerModal) */
+.ah-template-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--tp-space-3);
+}

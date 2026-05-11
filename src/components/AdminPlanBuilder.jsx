@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import './AdminPlanBuilder.css'
 import {
   ArcElement,
   BarElement,
@@ -16,9 +17,6 @@ import { Bar, Doughnut, Line } from 'react-chartjs-2'
 import {
   ACTIVITY_TAGS,
   ACTIVITY_TAG_MAP,
-  LOAD_TAG_MAP,
-  ZONE_COLORS,
-  TYPE_COLORS,
   TYPE_ICONS,
   compareWorkoutsBySchedule,
   estimateMechanicalLoad,
@@ -32,6 +30,7 @@ import {
   getAdjacentWeek,
   getWorkoutDistance,
   getWeekKey,
+  getWeekNumber,
   isHardWorkout,
   groupWorkoutsByWeekday,
   normalizeIntensityZones,
@@ -39,6 +38,7 @@ import {
 import ActivityIcon from './ActivityIcon'
 import BirdsEyeOverview from './BirdsEyeOverview'
 import SystemIcon from './SystemIcon'
+import { IconButton, WeekNav } from './ui'
 
 const BUILDER_LAYOUT_STORAGE_KEY = 'training-planner:builder-layout:v1'
 const DEFAULT_PANEL_ORDER = ['bank', 'extra', 'calendar', 'insights']
@@ -47,6 +47,23 @@ const DEFAULT_PANEL_SIZES = {
   extra: 360,
   calendar: 980,
   insights: 420,
+}
+
+const VISIBLE_ACTIVITIES_STORAGE_KEY = 'training-planner:builder-visible-activities:v1'
+const PINNED_ACTIVITY_TAGS = ['run', 'walking', 'strength']
+const DEFAULT_VISIBLE_ACTIVITIES = [...PINNED_ACTIVITY_TAGS]
+
+function readVisibleActivities() {
+  if (typeof window === 'undefined') return DEFAULT_VISIBLE_ACTIVITIES
+  try {
+    const saved = JSON.parse(window.localStorage.getItem(VISIBLE_ACTIVITIES_STORAGE_KEY) || 'null')
+    if (!Array.isArray(saved)) return DEFAULT_VISIBLE_ACTIVITIES
+    const valid = saved.filter(value => ACTIVITY_TAG_MAP[value])
+    const withPinned = Array.from(new Set([...PINNED_ACTIVITY_TAGS, ...valid]))
+    return withPinned
+  } catch {
+    return DEFAULT_VISIBLE_ACTIVITIES
+  }
 }
 
 ChartJS.register(
@@ -223,6 +240,21 @@ export default function AdminPlanBuilder({
     }
   })
   const [activeResizer, setActiveResizer] = useState(null)
+  const [visibleActivities, setVisibleActivities] = useState(readVisibleActivities)
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    window.localStorage.setItem(VISIBLE_ACTIVITIES_STORAGE_KEY, JSON.stringify(visibleActivities))
+  }, [visibleActivities])
+
+  function addVisibleActivity(value) {
+    setVisibleActivities(prev => (prev.includes(value) ? prev : [...prev, value]))
+  }
+
+  function removeVisibleActivity(value) {
+    if (PINNED_ACTIVITY_TAGS.includes(value)) return
+    setVisibleActivities(prev => prev.filter(item => item !== value))
+  }
 
   const isDesktopBuilder = viewportWidth >= 1280
 
@@ -252,6 +284,45 @@ export default function AdminPlanBuilder({
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
   }, [])
+
+  useEffect(() => {
+    if (!dragState) return
+
+    const EDGE = 90
+    const MAX_SPEED = 22
+    let pointerY = null
+    let frame = null
+
+    function step() {
+      if (pointerY == null) {
+        frame = null
+        return
+      }
+      const viewportH = window.innerHeight
+      let delta = 0
+      if (pointerY < EDGE) {
+        delta = -MAX_SPEED * (1 - pointerY / EDGE)
+      } else if (pointerY > viewportH - EDGE) {
+        delta = MAX_SPEED * (1 - (viewportH - pointerY) / EDGE)
+      }
+      if (delta !== 0) {
+        window.scrollBy(0, delta)
+      }
+      frame = window.requestAnimationFrame(step)
+    }
+
+    function handleDragOver(event) {
+      pointerY = event.clientY
+      if (frame == null) frame = window.requestAnimationFrame(step)
+    }
+
+    window.addEventListener('dragover', handleDragOver)
+
+    return () => {
+      window.removeEventListener('dragover', handleDragOver)
+      if (frame != null) window.cancelAnimationFrame(frame)
+    }
+  }, [dragState])
 
   useEffect(() => {
     if (!activeResizer) return
@@ -571,7 +642,7 @@ export default function AdminPlanBuilder({
   }
 
   const bankPanel = (
-    <aside className="admin-builder-panel admin-builder-bank">
+    <aside className="pb-panel pb-panel--bank">
       <BuilderPanelHeader
         title="Øktvelger"
         panelId="bank"
@@ -579,19 +650,19 @@ export default function AdminPlanBuilder({
         onMove={movePanel}
       >
         {onCreateTemplate && (
-          <button type="button" className="builder-new-template-btn" onClick={onCreateTemplate}>
+          <button type="button" className="pb-mini-btn" onClick={onCreateTemplate}>
             + Ny mal
           </button>
         )}
-        <button type="button" className="builder-add-window-btn" onClick={handleAddBankWindow}>
+        <button type="button" className="pb-mini-btn" onClick={handleAddBankWindow}>
           + Vindu
         </button>
       </BuilderPanelHeader>
 
       {loadingTemplates ? (
-        <div className="empty-state">Laster økter...</div>
+        <div className="pb-empty-state">Laster økter…</div>
       ) : (
-        <div className="admin-builder-bank-grid">
+        <div className="pb-bank-grid">
           <BankPickerWindow
             isPrimary
             templates={templates}
@@ -602,6 +673,9 @@ export default function AdminPlanBuilder({
             onRemove={() => {}}
             onEditTemplate={onEditTemplate}
             onDeleteTemplate={onDeleteTemplate}
+            visibleActivities={visibleActivities}
+            onAddActivity={addVisibleActivity}
+            onRemoveActivity={removeVisibleActivity}
           />
         </div>
       )}
@@ -609,7 +683,7 @@ export default function AdminPlanBuilder({
   )
 
   const extraPanel = bankWindows.length > 0 ? (
-    <aside className="admin-builder-panel admin-builder-extra-windows">
+    <aside className="pb-panel pb-panel--extra">
       <BuilderPanelHeader
         title="Vinduer"
         panelId="extra"
@@ -617,7 +691,7 @@ export default function AdminPlanBuilder({
         onMove={movePanel}
       />
 
-      <div className="admin-builder-extra-windows-list">
+      <div className="pb-extra-list">
         {bankWindows.map((window, index) => (
           <BankPickerWindow
             key={window.id}
@@ -630,6 +704,9 @@ export default function AdminPlanBuilder({
             onRemove={() => handleRemoveBankWindow(window.id)}
             onEditTemplate={onEditTemplate}
             onDeleteTemplate={onDeleteTemplate}
+            visibleActivities={visibleActivities}
+            onAddActivity={addVisibleActivity}
+            onRemoveActivity={removeVisibleActivity}
           />
         ))}
       </div>
@@ -637,7 +714,7 @@ export default function AdminPlanBuilder({
   ) : null
 
   const calendarPanel = (
-    <main className="admin-builder-panel admin-builder-calendar">
+    <main className="pb-panel pb-panel--calendar">
       <BuilderPanelHeader
         title={workoutLayout === 'calendar' ? 'Kalender' : 'Liste'}
         copy={workoutLayout === 'calendar'
@@ -649,13 +726,13 @@ export default function AdminPlanBuilder({
       />
 
       {loadingWorkouts ? (
-        <div className="empty-state">Laster uke...</div>
+        <div className="pb-empty-state">Laster uke…</div>
       ) : workoutLayout === 'calendar' ? (
-        <div className="admin-builder-calendar-days">
+        <div className="pb-calendar-days">
           {groupedWorkouts.map(day => (
             <section
               key={day.value}
-              className={`program-day-section admin-program-day-section${dropTarget?.weekday === day.value ? ' drag-over' : ''}`}
+              className={`pb-day${dropTarget?.weekday === day.value ? ' is-target' : ''}`}
               onDragOver={event => {
                 if (!dragState) return
                 event.preventDefault()
@@ -669,19 +746,19 @@ export default function AdminPlanBuilder({
                 await handleDrop(day.value)
               }}
             >
-              <div className="program-day-header">
-                <div>
-                  <h3 className="program-day-title">{day.label}</h3>
-                  <div className="program-day-meta">
+              <header className="pb-day-head">
+                <div className="pb-day-titles">
+                  <h3 className="pb-day-title">{day.label}</h3>
+                  <div className="pb-day-meta">
                     {day.workouts.length > 0 ? `${day.workouts.length} økt${day.workouts.length > 1 ? 'er' : ''}` : 'Ingen økter'}
                   </div>
                 </div>
-              </div>
+              </header>
 
-              <div className="program-day-slots admin-program-day-slots" style={{ '--slot-count': Math.max(2, day.workouts.length) }}>
+              <div className="pb-day-slots">
                 {day.workouts.length === 0 ? (
                   <div
-                    className={`program-day-empty-slot admin-program-day-empty-slot${dropTarget?.weekday === day.value && !dropTarget?.beforeWorkoutId ? ' drag-over' : ''}`}
+                    className={`pb-empty-slot${dropTarget?.weekday === day.value && !dropTarget?.beforeWorkoutId ? ' is-target' : ''}`}
                     onDragOver={event => {
                       if (!dragState) return
                       event.preventDefault()
@@ -737,9 +814,9 @@ export default function AdminPlanBuilder({
           ))}
         </div>
       ) : sortedWorkouts.length === 0 ? (
-        <div className="empty-state">Ingen økter denne uken</div>
+        <div className="pb-empty-state">Ingen økter denne uken</div>
       ) : (
-        <div className="workout-list admin-workout-list admin-builder-workout-list">
+        <div className="pb-workout-list">
           {sortedWorkouts.map((workout, index) => (
             <BuilderWorkoutSlot
               key={workout.id}
@@ -775,7 +852,7 @@ export default function AdminPlanBuilder({
   )
 
   const insightsPanel = (
-    <aside className="admin-builder-panel admin-builder-insights">
+    <aside className="pb-panel pb-panel--insights">
       <BuilderPanelHeader
         title="Ukeoversikt"
         copy="Belastning og distanse oppdateres fortløpende."
@@ -784,91 +861,86 @@ export default function AdminPlanBuilder({
         onMove={movePanel}
       />
 
-      <div className="builder-summary-grid">
+      <div className="pb-metric-grid">
         <MetricCard label="Økter" value={String(weekStats.sessionCount)} helper={`${weekStats.hardCount} harde / ${weekStats.easyCount} rolige`} />
-        <MetricCard label="Tid" value={formatDurationLabel(weekStats.totalDuration)} helper="Estimert ut fra øktinnhold" />
-        <MetricCard label="Load" value={String(weekStats.totalLoad)} helper="Tid vektet med intensitet" />
-        <MetricCard label="Mekanisk load" value={String(weekStats.totalMechanicalLoad)} helper="Aktivitet, distanse og intensitet" />
+        <MetricCard label="Tid" value={formatDurationLabel(weekStats.totalDuration)} helper="Estimert" />
+        <MetricCard label="Load" value={String(weekStats.totalLoad)} helper="Tid × intensitet" />
+        <MetricCard label="Mek. load" value={String(weekStats.totalMechanicalLoad)} helper="Aktivitet × distanse" />
       </div>
 
-      <div className="builder-distance-panel">
-        <div className="builder-section-title">Distanse per aktivitet</div>
+      <div className="pb-distance">
+        <div className="pb-section-title">Distanse per aktivitet</div>
         {weekStats.distanceByActivity.length === 0 ? (
-          <div className="builder-empty-copy">Ingen distanse registrert ennå denne uken.</div>
+          <div className="pb-empty-copy">Ingen distanse registrert ennå denne uken.</div>
         ) : (
-          <div className="builder-distance-list">
+          <ul className="pb-distance-list">
             {weekStats.distanceByActivity.map(activity => (
-              <div key={activity.value} className="builder-distance-row">
-                <div className="builder-distance-label">
-                  <span
-                    className="activity-tag-pill compact"
-                    style={{ '--tag-color': activity.color, '--tag-bg': activity.bg }}
-                  >
-                    <span className="activity-tag-icon" aria-hidden="true"><ActivityIcon name={activity.icon} className="tag-icon-svg" /></span>
-                    <span>{activity.label}</span>
-                  </span>
-                </div>
-                <strong>{formatKmValue(activity.total)}</strong>
-              </div>
+              <li key={activity.value} className="pb-distance-row">
+                <span className="pb-distance-label">
+                  <span className="pb-card-icon"><ActivityIcon name={activity.icon} className="tag-icon-svg" /></span>
+                  <span>{activity.label}</span>
+                </span>
+                <strong className="tp-num">{formatKmValue(activity.total)}</strong>
+              </li>
             ))}
-          </div>
+          </ul>
         )}
       </div>
 
-      <div className="builder-chart-card">
-        <div className="builder-section-title">Belastning per dag</div>
-        <div className="builder-chart-shell">
+      <div className="pb-chart">
+        <div className="pb-section-title">Belastning per dag</div>
+        <div className="pb-chart-shell">
           <Bar data={dailyLoadChartData} options={builderChartOptions} />
         </div>
       </div>
 
-      <div className="builder-chart-card">
-        <div className="builder-section-title">Trend rundt valgt uke</div>
-        <p className="builder-chart-copy">
-          Viser noen uker før og etter med acute load, km og training readiness.
+      <div className="pb-chart">
+        <div className="pb-section-title">Trend rundt valgt uke</div>
+        <p className="pb-chart-copy">
+          Noen uker før og etter med acute load, km og readiness.
         </p>
         {loadingAnalysis ? (
-          <div className="builder-empty-copy">Laster trend...</div>
+          <div className="pb-empty-copy">Laster trend…</div>
         ) : (
           <>
-            <div className="builder-trend-summary">
-              <span>Acute <strong>{Math.round(focusTrendWeek?.acuteLoad || 0)}</strong></span>
-              <span>Km <strong>{Number((focusTrendWeek?.distance || 0).toFixed(1))}</strong></span>
-              <span>Readiness <strong>{Number((focusTrendWeek?.trainingReadiness || 0).toFixed(2))}</strong></span>
+            <div className="pb-trend-summary">
+              <span>Acute <strong className="tp-num">{Math.round(focusTrendWeek?.acuteLoad || 0)}</strong></span>
+              <span>Km <strong className="tp-num">{Number((focusTrendWeek?.distance || 0).toFixed(1))}</strong></span>
+              <span>Readiness <strong className="tp-num">{Number((focusTrendWeek?.trainingReadiness || 0).toFixed(2))}</strong></span>
             </div>
-            <div className="builder-chart-shell builder-chart-shell-tall">
+            <div className="pb-chart-shell pb-chart-shell--tall">
               <Line data={trendChartData} options={trendChartOptions} />
             </div>
           </>
         )}
       </div>
 
-      <div className="builder-chart-card">
-        <div className="builder-section-title">Belastningsmiks</div>
+      <div className="pb-chart">
+        <div className="pb-section-title">Belastningsmiks</div>
         {workouts.length === 0 ? (
-          <div className="builder-empty-copy">Legg inn økter for å se fordeling.</div>
+          <div className="pb-empty-copy">Legg inn økter for å se fordeling.</div>
         ) : (
-          <div className="builder-chart-shell">
+          <div className="pb-chart-shell">
             <Doughnut data={loadMixChartData} options={doughnutOptions} />
           </div>
         )}
       </div>
 
-      <div className="builder-chart-card">
-        <div className="builder-section-title">Distansefordeling</div>
+      <div className="pb-chart">
+        <div className="pb-section-title">Distansefordeling</div>
         {weekStats.distanceByActivity.length === 0 ? (
-          <div className="builder-empty-copy">Ingen distanse tilgjengelig for denne uken.</div>
+          <div className="pb-empty-copy">Ingen distanse for denne uken.</div>
         ) : (
-          <div className="builder-chart-shell">
+          <div className="pb-chart-shell">
             <Doughnut data={distanceDistributionChartData} options={doughnutOptions} />
           </div>
         )}
       </div>
 
-      <div className="builder-generator-card">
-        <div className="builder-section-title">Automatisk generering</div>
-        <p>Plassholder for automatisk generering av treningsplan. Denne kommer i neste iterasjon.</p>
-        <button type="button" className="program-day-btn" disabled>
+      <div className="pb-generator">
+        <div className="pb-section-title">Automatisk generering</div>
+        <p className="pb-empty-copy">Plassholder for automatisk generering av treningsplan. Kommer i neste iterasjon.</p>
+        <button type="button" className="pb-mini-btn" disabled>
           Generer plan senere
         </button>
       </div>
@@ -883,47 +955,38 @@ export default function AdminPlanBuilder({
   }
 
   return (
-    <div className="admin-builder">
+    <div className="pb-shell">
       {selectedAthleteName && (
-        <div className="admin-athlete-banner">
+        <div className="pb-athlete-banner">
           Planbygger for <strong>{selectedAthleteName}</strong>
         </div>
       )}
 
-      <div className="admin-week-nav">
-        <button className="nav-btn" onClick={prevWeek}>‹</button>
-        <div className="week-info">
-          <span className="week-label">
-            Uke {currentWeek}
-            {isThisWeek && <span className="this-week-dot" aria-hidden="true" />}
-          </span>
-          <span className="week-dates">
-            {monday.getDate()}.{monday.getMonth() + 1} – {sunday.getDate()}.{sunday.getMonth() + 1}.{sunday.getFullYear()}
-          </span>
-        </div>
-        <button className="nav-btn" onClick={nextWeek}>›</button>
-        <button
-          type="button"
-          className={`nav-btn overview-nav-btn${showOverview ? ' active' : ''}`}
-          onClick={() => setShowOverview(prev => !prev)}
-          aria-expanded={showOverview}
-          aria-controls="admin-builder-overview"
-          title="Vis ukeoversikt"
-        >
-          <span className="overview-icon" aria-hidden="true">
-            <span />
-            <span />
-            <span />
-            <span />
-          </span>
-        </button>
-      </div>
+      <WeekNav
+        week={currentWeek}
+        year={currentYear}
+        monday={monday}
+        sunday={sunday}
+        isThisWeek={isThisWeek}
+        onPrev={prevWeek}
+        onNext={nextWeek}
+        onToday={() => onWeekChange(getWeekNumber(new Date()), new Date().getFullYear())}
+        rightSlot={
+          <IconButton
+            ariaLabel="Vis ukeoversikt"
+            variant={showOverview ? undefined : 'ghost'}
+            onClick={() => setShowOverview(p => !p)}
+          >
+            <span className="pb-overview-glyph" aria-hidden="true"><span /><span /><span /><span /></span>
+          </IconButton>
+        }
+      />
 
       {showOverview && (
         loadingOverview ? (
-          <div className="birds-eye-loading admin-overview-loading" id="admin-builder-overview">Laster mengdeoversikt...</div>
+          <div className="pb-overview-loading" id="admin-builder-overview">Laster ukeoversikt…</div>
         ) : (
-          <div className="admin-overview-wrap" id="admin-builder-overview">
+          <div className="pb-overview-wrap" id="admin-builder-overview">
             <BirdsEyeOverview
               weeks={overviewWeeks}
               workoutsByWeekKey={overviewWorkoutsByWeekKey}
@@ -937,18 +1000,18 @@ export default function AdminPlanBuilder({
         )
       )}
 
-      <div className={`admin-builder-layout${isDesktopBuilder ? ' is-desktop' : ''}`} style={builderLayoutStyle}>
-        {visiblePanelIds.map((panelId, index) => (
+      <div className={`pb-layout${isDesktopBuilder ? ' is-desktop' : ''}`} style={builderLayoutStyle}>
+        {visiblePanelIds.map(panelId => (
           <section
             key={panelId}
-            className={`admin-builder-panel-shell panel-${panelId}`}
+            className={`pb-panel-shell pb-panel-${panelId}`}
             style={getPanelShellStyle(panelId)}
           >
             {panelMap[panelId]}
             {isDesktopBuilder && (
               <button
                 type="button"
-                className="builder-panel-resize-handle"
+                className="pb-resize-handle"
                 aria-label={`Juster bredde for ${panelId}`}
                 onPointerDown={event => startResize(panelId, event)}
               />
@@ -959,7 +1022,7 @@ export default function AdminPlanBuilder({
 
       {dragState?.kind === 'workout' && (
         <div
-          className="builder-trash-zone visible"
+          className="pb-trash"
           onDragOver={event => {
             event.preventDefault()
             if (event.dataTransfer) event.dataTransfer.dropEffect = 'move'
@@ -983,17 +1046,17 @@ function BuilderPanelHeader({ title, copy, panelId, visiblePanelIds, onMove, chi
   const canMoveRight = panelIndex >= 0 && panelIndex < visiblePanelIds.length - 1
 
   return (
-    <div className="admin-builder-panel-head">
-      <div>
-        <h2>{title}</h2>
-        {copy ? <p>{copy}</p> : null}
+    <div className="pb-panel-head">
+      <div className="pb-panel-titles">
+        <h2 className="pb-panel-title">{title}</h2>
+        {copy ? <p className="pb-panel-copy">{copy}</p> : null}
       </div>
-      <div className="builder-panel-tools">
-        <div className="builder-panel-move">
-          <button type="button" className="builder-panel-move-btn" onClick={() => onMove(panelId, -1)} disabled={!canMoveLeft} aria-label={`Flytt ${title} til venstre`}>
+      <div className="pb-panel-tools">
+        <div className="pb-panel-move">
+          <button type="button" className="pb-panel-move-btn" onClick={() => onMove(panelId, -1)} disabled={!canMoveLeft} aria-label={`Flytt ${title} til venstre`}>
             ←
           </button>
-          <button type="button" className="builder-panel-move-btn" onClick={() => onMove(panelId, 1)} disabled={!canMoveRight} aria-label={`Flytt ${title} til høyre`}>
+          <button type="button" className="pb-panel-move-btn" onClick={() => onMove(panelId, 1)} disabled={!canMoveRight} aria-label={`Flytt ${title} til høyre`}>
             →
           </button>
         </div>
@@ -1005,16 +1068,16 @@ function BuilderPanelHeader({ title, copy, panelId, visiblePanelIds, onMove, chi
 
 function SessionColumn({ title, subtitle, sessions, onDragStart, onDragEnd, onAddTemplate, onEditTemplate, onDeleteTemplate }) {
   return (
-    <section className="builder-session-column">
-      <div className="builder-session-column-head">
-        <h3>{title}</h3>
-        <span>{subtitle}</span>
-      </div>
+    <section className="pb-column">
+      <header className="pb-column-head">
+        <h3 className="pb-column-title">{title}</h3>
+        <span className="pb-column-count">{subtitle}</span>
+      </header>
 
       {sessions.length === 0 ? (
-        <div className="builder-empty-copy">Ingen økter i denne kolonnen.</div>
+        <div className="pb-empty-copy">Ingen økter i denne kolonnen.</div>
       ) : (
-        <div className="builder-session-list">
+        <div className="pb-card-list">
           {sessions.map(session => (
             <TemplateDragCard
               key={session.id}
@@ -1043,12 +1106,44 @@ function BankPickerWindow({
   onRemove,
   onEditTemplate,
   onDeleteTemplate,
+  visibleActivities = DEFAULT_VISIBLE_ACTIVITIES,
+  onAddActivity,
+  onRemoveActivity,
 }) {
   const [activeTagFilter, setActiveTagFilter] = useState(null)
   const [activeIntensityFilters, setActiveIntensityFilters] = useState([])
+  const [showActivityPicker, setShowActivityPicker] = useState(false)
+
+  const visibleTags = useMemo(() => (
+    visibleActivities
+      .map(value => ACTIVITY_TAG_MAP[value])
+      .filter(Boolean)
+  ), [visibleActivities])
+
+  const hiddenTags = useMemo(() => (
+    ACTIVITY_TAGS.filter(tag => !visibleActivities.includes(tag.value))
+  ), [visibleActivities])
+
+  useEffect(() => {
+    if (activeTagFilter && !visibleActivities.includes(activeTagFilter)) {
+      setActiveTagFilter(null)
+    }
+  }, [activeTagFilter, visibleActivities])
+
+  useEffect(() => {
+    if (!showActivityPicker) return
+    function handleDocClick(event) {
+      if (!event.target.closest?.('.pb-activity-picker')) {
+        setShowActivityPicker(false)
+      }
+    }
+    document.addEventListener('mousedown', handleDocClick)
+    return () => document.removeEventListener('mousedown', handleDocClick)
+  }, [showActivityPicker])
 
   const filteredTemplates = useMemo(() => (
     templates
+      .filter(template => !template.activityTag || visibleActivities.includes(template.activityTag))
       .filter(template => !activeTagFilter || template.activityTag === activeTagFilter)
       .filter(template => {
         if (activeIntensityFilters.length === 0) return true
@@ -1056,7 +1151,7 @@ function BankPickerWindow({
         return activeIntensityFilters.some(zone => zones.includes(zone))
       })
       .sort((a, b) => a.title.localeCompare(b.title, 'nb'))
-  ), [activeIntensityFilters, activeTagFilter, templates])
+  ), [activeIntensityFilters, activeTagFilter, templates, visibleActivities])
 
   const hardTemplates = useMemo(() => (
     filteredTemplates.filter(template => isHardWorkout(template))
@@ -1075,64 +1170,99 @@ function BankPickerWindow({
   }
 
   return (
-    <section className="builder-picker-window">
+    <section className="pb-picker">
       {!isPrimary && (
-        <div className="builder-session-column-head builder-bank-window-head">
+        <header className="pb-picker-head">
           <div>
-            <h3>Vindu {windowNumber}</h3>
-            <span>{filteredTemplates.length} økter</span>
+            <h3 className="pb-column-title">Vindu {windowNumber}</h3>
+            <span className="pb-column-count">{filteredTemplates.length} økter</span>
           </div>
-          {canRemove ? <button type="button" className="builder-window-remove-btn" onClick={onRemove}>×</button> : <div />}
-        </div>
+          {canRemove ? (
+            <button type="button" className="pb-mini-btn pb-mini-btn--icon" onClick={onRemove} aria-label="Lukk vindu">×</button>
+          ) : null}
+        </header>
       )}
 
-      <div className="admin-tag-filter admin-builder-filter">
+      <div className="pb-filter-row">
         <button
           type="button"
-          className={`admin-tag-filter-btn${!activeTagFilter ? ' active' : ''}`}
+          className={`pb-filter-chip${!activeTagFilter ? ' is-active' : ''}`}
           onClick={() => setActiveTagFilter(null)}
-        >
-          Alle aktiviteter
-        </button>
-        {ACTIVITY_TAGS.map(tag => (
+        >Alle</button>
+        {visibleTags.map(tag => {
+          const isPinned = PINNED_ACTIVITY_TAGS.includes(tag.value)
+          return (
+            <span key={tag.value} className="pb-filter-chip-wrap">
+              <button
+                type="button"
+                className={`pb-filter-chip${activeTagFilter === tag.value ? ' is-active' : ''}`}
+                onClick={() => setActiveTagFilter(activeTagFilter === tag.value ? null : tag.value)}
+              >
+                <span className="pb-filter-icon" aria-hidden="true"><ActivityIcon name={tag.icon} className="tag-icon-svg" /></span>
+                <span>{tag.label}</span>
+              </button>
+              {!isPinned && onRemoveActivity ? (
+                <button
+                  type="button"
+                  className="pb-filter-chip-remove"
+                  onClick={() => onRemoveActivity(tag.value)}
+                  aria-label={`Skjul ${tag.label}`}
+                  title={`Skjul ${tag.label}`}
+                >×</button>
+              ) : null}
+            </span>
+          )
+        })}
+        {hiddenTags.length > 0 && onAddActivity ? (
+          <div className="pb-activity-picker">
+            <button
+              type="button"
+              className="pb-filter-chip pb-filter-chip--add"
+              onClick={() => setShowActivityPicker(value => !value)}
+              aria-expanded={showActivityPicker}
+            >+ Aktivitet</button>
+            {showActivityPicker ? (
+              <div className="pb-activity-menu" role="menu">
+                {hiddenTags.map(tag => (
+                  <button
+                    key={tag.value}
+                    type="button"
+                    role="menuitem"
+                    className="pb-activity-menu-item"
+                    onClick={() => {
+                      onAddActivity(tag.value)
+                      setShowActivityPicker(false)
+                    }}
+                  >
+                    <span className="pb-filter-icon" aria-hidden="true"><ActivityIcon name={tag.icon} className="tag-icon-svg" /></span>
+                    <span>{tag.label}</span>
+                  </button>
+                ))}
+              </div>
+            ) : null}
+          </div>
+        ) : null}
+      </div>
+
+      <div className="pb-filter-row">
+        <button
+          type="button"
+          className={`pb-filter-chip${activeIntensityFilters.length === 0 ? ' is-active' : ''}`}
+          onClick={() => setActiveIntensityFilters([])}
+        >Alle</button>
+        {[1, 2, 3, 4, 5].map(zone => (
           <button
-            key={tag.value}
+            key={zone}
             type="button"
-            className={`admin-tag-filter-btn${activeTagFilter === tag.value ? ' active' : ''}`}
-            style={{ '--tag-color': tag.color, '--tag-bg': tag.bg }}
-            onClick={() => setActiveTagFilter(activeTagFilter === tag.value ? null : tag.value)}
+            className={`pb-zone-chip pb-zone-${zone}${activeIntensityFilters.includes(zone) ? ' is-active' : ''}`}
+            onClick={() => toggleIntensityFilter(zone)}
           >
-            <span className="activity-tag-icon" aria-hidden="true"><ActivityIcon name={tag.icon} className="tag-icon-svg" /></span>
-            <span>{tag.label}</span>
+            S{zone}
           </button>
         ))}
       </div>
 
-      <div className="builder-intensity-filter">
-        <button
-          type="button"
-          className={`admin-tag-filter-btn${activeIntensityFilters.length === 0 ? ' active' : ''}`}
-          onClick={() => setActiveIntensityFilters([])}
-        >
-          Alle intensiteter
-        </button>
-        {[1, 2, 3, 4, 5].map(zone => {
-          const colors = ZONE_COLORS[zone]
-          return (
-            <button
-              key={zone}
-              type="button"
-              className={`zone-btn zone-btn-${zone}${activeIntensityFilters.includes(zone) ? ' active' : ''}`}
-              onClick={() => toggleIntensityFilter(zone)}
-              style={{ '--tag-color': colors.text, '--tag-bg': colors.bg }}
-            >
-              S{zone}
-            </button>
-          )
-        })}
-      </div>
-
-      <div className="builder-picker-window-grid">
+      <div className="pb-picker-grid">
         <SessionColumn
           title="Hardøkter"
           subtitle={`${hardTemplates.length} økter`}
@@ -1159,51 +1289,35 @@ function BankPickerWindow({
 }
 
 function TemplateDragCard({ session, onDragStart, onDragEnd, onAdd, onEdit, onDelete }) {
-  const typeColors = TYPE_COLORS[session.type] || TYPE_COLORS.annet
   const icon = TYPE_ICONS[session.type] || 'AN'
-  const loadTag = session.loadTag ? LOAD_TAG_MAP[session.loadTag] : null
   const intensityLabel = formatIntensityZoneLabel(normalizeIntensityZones(session.type, session.intensityZone))
   const isCustomTemplate = session.source === 'custom'
 
   return (
     <div
-      className="builder-session-card"
-      style={{
-        borderLeftColor: loadTag?.color || typeColors.border,
-        background: loadTag?.bg || '#fff',
-      }}
+      className="pb-card"
       draggable
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
     >
-      <div className="builder-session-card-top">
-        <span className="card-icon"><ActivityIcon name={icon} className="ui-icon" /></span>
-        <div className="builder-session-card-actions">
+      <div className="pb-card-top">
+        <span className="pb-card-icon"><ActivityIcon name={icon} className="tag-icon-svg" /></span>
+        <div className="pb-card-actions">
           {onAdd ? (
             <button
               type="button"
-              className="builder-template-add-btn"
-              onClick={event => {
-                event.preventDefault()
-                event.stopPropagation()
-                onAdd(session)
-              }}
+              className="pb-card-action pb-card-action--add"
+              onClick={event => { event.preventDefault(); event.stopPropagation(); onAdd(session) }}
               draggable={false}
               title="Legg til i plan"
               aria-label={`Legg ${session.title} til i plan`}
-            >
-              +
-            </button>
+            >+</button>
           ) : null}
           {isCustomTemplate && onEdit ? (
             <button
               type="button"
-              className="builder-template-edit-btn"
-              onClick={event => {
-                event.preventDefault()
-                event.stopPropagation()
-                onEdit(session)
-              }}
+              className="pb-card-action"
+              onClick={event => { event.preventDefault(); event.stopPropagation(); onEdit(session) }}
               draggable={false}
               title="Rediger mal"
               aria-label={`Rediger malen ${session.title}`}
@@ -1214,12 +1328,8 @@ function TemplateDragCard({ session, onDragStart, onDragEnd, onAdd, onEdit, onDe
           {isCustomTemplate && onDelete ? (
             <button
               type="button"
-              className="builder-template-delete-btn"
-              onClick={event => {
-                event.preventDefault()
-                event.stopPropagation()
-                onDelete(session)
-              }}
+              className="pb-card-action pb-card-action--danger"
+              onClick={event => { event.preventDefault(); event.stopPropagation(); onDelete(session) }}
               draggable={false}
               title="Slett mal"
               aria-label={`Slett malen ${session.title}`}
@@ -1227,12 +1337,12 @@ function TemplateDragCard({ session, onDragStart, onDragEnd, onAdd, onEdit, onDe
               <SystemIcon name="delete" className="system-icon" />
             </button>
           ) : null}
-          <span className="drag-handle" title="Dra inn i kalender">⋮⋮</span>
+          <span className="pb-card-grip" title="Dra inn i kalender" aria-hidden="true">⋮⋮</span>
         </div>
       </div>
-      <div className="admin-row-info">
-        <span className="card-title">{session.title}</span>
-        {intensityLabel && <span className="builder-intensity-chip">{intensityLabel}</span>}
+      <div className="pb-card-meta">
+        <span className="pb-card-title">{session.title}</span>
+        {intensityLabel && <span className="pb-card-zone">{intensityLabel}</span>}
       </div>
     </div>
   )
@@ -1252,51 +1362,43 @@ function BuilderWorkoutSlot({
   onDragOver,
   onDrop,
 }) {
-  const typeColors = TYPE_COLORS[workout.type] || TYPE_COLORS.annet
   const icon = TYPE_ICONS[workout.type] || 'AN'
-  const loadTag = workout.loadTag ? LOAD_TAG_MAP[workout.loadTag] : null
   const scheduleLabel = formatWorkoutTime(workout) || formatWorkoutSchedule(workout, { includeWeekday: false })
   const intensityLabel = formatIntensityZoneLabel(normalizeIntensityZones(workout.type, workout.intensityZone))
 
   return (
     <div
-      className={`admin-workout-slot${workout.completed ? ' completed' : ''}${isDragging ? ' dragging' : ''}${isDropTarget ? ' drag-over' : ''}`}
-      style={{
-        borderLeftColor: loadTag?.color || typeColors.border,
-        background: loadTag?.bg || '#fff',
-      }}
+      className={`pb-slot${workout.completed ? ' is-completed' : ''}${isDragging ? ' is-dragging' : ''}${isDropTarget ? ' is-target' : ''}`}
       draggable
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
       onDragOver={onDragOver}
       onDrop={onDrop}
     >
-      <div className="admin-slot-top">
-        <span className="card-icon"><ActivityIcon name={icon} className="ui-icon" /></span>
-        <div className="admin-slot-actions">
-          <span className="drag-handle" title="Dra for å flytte">⋮⋮</span>
-          <button className="reorder-btn" onClick={onMoveUp} disabled={index === 0} title="Flytt opp"><SystemIcon name="up" className="system-icon" /></button>
-          <button className="reorder-btn" onClick={onMoveDown} disabled={index === total - 1} title="Flytt ned"><SystemIcon name="down" className="system-icon" /></button>
+      <div className="pb-slot-top">
+        <span className="pb-card-icon"><ActivityIcon name={icon} className="tag-icon-svg" /></span>
+        <div className="pb-slot-actions">
+          <span className="pb-card-grip" title="Dra for å flytte" aria-hidden="true">⋮⋮</span>
+          <button className="pb-slot-reorder" onClick={onMoveUp} disabled={index === 0} title="Flytt opp"><SystemIcon name="up" className="system-icon" /></button>
+          <button className="pb-slot-reorder" onClick={onMoveDown} disabled={index === total - 1} title="Flytt ned"><SystemIcon name="down" className="system-icon" /></button>
         </div>
       </div>
 
-      <div className="admin-slot-main" onClick={onClick}>
-        <div className="admin-row-info">
-          {scheduleLabel && <span className="card-date">{scheduleLabel}</span>}
-          <span className="card-title">{workout.title}</span>
-          {intensityLabel && <span className="builder-intensity-chip">{intensityLabel}</span>}
-        </div>
-      </div>
+      <button type="button" className="pb-slot-main" onClick={onClick}>
+        {scheduleLabel && <span className="pb-slot-time">{scheduleLabel}</span>}
+        <span className="pb-slot-title">{workout.title}</span>
+        {intensityLabel && <span className="pb-slot-zone">{intensityLabel}</span>}
+      </button>
     </div>
   )
 }
 
 function MetricCard({ label, value, helper }) {
   return (
-    <div className="builder-metric-card">
-      <span>{label}</span>
-      <strong>{value}</strong>
-      <small>{helper}</small>
+    <div className="pb-metric">
+      <span className="pb-metric-label">{label}</span>
+      <strong className="pb-metric-value tp-num">{value}</strong>
+      {helper && <small className="pb-metric-helper">{helper}</small>}
     </div>
   )
 }

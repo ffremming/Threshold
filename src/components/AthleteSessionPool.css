@@ -1,0 +1,94 @@
+.tp-athlete-pool {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tp-space-3);
+}
+
+.tp-athlete-pool-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--tp-space-3);
+}
+
+.tp-athlete-pool-count {
+  color: var(--tp-ink-muted);
+  font-size: 0.9rem;
+}
+
+.tp-athlete-pool-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tp-space-2);
+}
+
+.tp-pool-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--tp-space-3) var(--tp-space-4);
+  gap: var(--tp-space-3);
+}
+
+.tp-pool-card-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.tp-pool-card-title {
+  margin: 0 0 var(--tp-space-1);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.tp-pool-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--tp-space-2);
+  align-items: center;
+  color: var(--tp-ink-muted);
+  font-size: 0.85rem;
+}
+
+.tp-pool-card-stat {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--tp-ink);
+}
+
+.tp-pool-card-desc {
+  margin: var(--tp-space-1) 0 0;
+  color: var(--tp-ink-muted);
+  font-size: 0.9rem;
+}
+
+.tp-pool-card-actions {
+  display: flex;
+  gap: var(--tp-space-1);
+}
+
+.tp-pool-picker {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tp-space-3);
+}
+
+.tp-pool-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--tp-space-3);
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.tp-pool-edit {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tp-space-3);
+}
+
+.tp-pool-edit-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--tp-space-3);
+}

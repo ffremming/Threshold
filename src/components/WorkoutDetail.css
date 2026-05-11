@@ -1,0 +1,69 @@
+/* WorkoutDetail modal — page-specific bits.
+   Modal shell + form-actions etc. live in legacy.css. */
+
+.workout-detail-form-actions {
+  margin-top: var(--tp-space-4);
+}
+
+.workout-pretext,
+[data-pre-line] { white-space: pre-line; }
+
+/* Zone summary card inside the detail modal — uses dynamic --zone-color */
+.zone-summary {
+  background: color-mix(in srgb, var(--zone-color, var(--tp-ink)) 10%, var(--tp-surface));
+  border: 1px solid color-mix(in srgb, var(--zone-color, var(--tp-ink)) 28%, transparent);
+  border-radius: var(--tp-radius-md);
+  padding: var(--tp-space-3);
+  cursor: pointer;
+  transition: background-color var(--tp-dur-fast) var(--tp-ease);
+}
+
+.zone-summary:hover {
+  background: color-mix(in srgb, var(--zone-color, var(--tp-ink)) 16%, var(--tp-surface));
+}
+
+.zone-summary .section-label {
+  color: color-mix(in srgb, var(--zone-color, var(--tp-ink)) 80%, var(--tp-ink));
+  margin-bottom: var(--tp-space-2);
+}
+
+.zone-summary-hint {
+  font-size: var(--tp-text-2xs);
+  color: var(--tp-ink-muted);
+  margin-top: var(--tp-space-2);
+}
+
+/* Border-top accent on the detail modal driven by --zone-color */
+.workout-detail-modal {
+  border-top: 3px solid var(--zone-color, var(--tp-ink));
+}
+
+/* Mark complete button */
+.btn-complete {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--tp-space-2);
+  height: 2rem;
+  padding: 0 var(--tp-space-3);
+  border-radius: var(--tp-radius-sm);
+  border: 1px solid var(--tp-line-strong);
+  background: var(--tp-surface);
+  color: var(--tp-ink);
+  font-family: var(--tp-font-sans);
+  font-size: var(--tp-text-xs);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color var(--tp-dur-fast) var(--tp-ease),
+              border-color var(--tp-dur-fast) var(--tp-ease),
+              color var(--tp-dur-fast) var(--tp-ease);
+}
+
+.btn-complete:hover { border-color: var(--tp-success); color: var(--tp-success); }
+
+.btn-complete.done {
+  background: var(--tp-success-bg);
+  border-color: color-mix(in srgb, var(--tp-success) 35%, transparent);
+  color: var(--tp-success);
+}
+

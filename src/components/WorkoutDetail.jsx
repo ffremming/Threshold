@@ -16,6 +16,7 @@ import WorkoutForm from './WorkoutForm'
 import IntensityScaleModal from './IntensityScaleModal'
 import ActivityIcon from './ActivityIcon'
 import SystemIcon from './SystemIcon'
+import './WorkoutDetail.css'
 
 export default function WorkoutDetail({ workout, onClose, canEdit, onDelete, onToggleComplete, onEdit, onSaveComment, onReplace }) {
   const [editing, setEditing] = useState(false)
@@ -78,7 +79,7 @@ export default function WorkoutDetail({ workout, onClose, canEdit, onDelete, onT
           <h2 className="modal-title-h2">Rediger økt</h2>
           <form onSubmit={handleSave}>
             <WorkoutForm value={form} onChange={setForm} showScheduleFields />
-            <div className="form-actions" style={{ marginTop: '1rem' }}>
+            <div className="form-actions workout-detail-form-actions">
               <button type="button" className="btn-cancel" onClick={() => setEditing(false)}>Avbryt</button>
               <button type="submit" className="btn-save">Lagre</button>
             </div>
@@ -88,9 +89,11 @@ export default function WorkoutDetail({ workout, onClose, canEdit, onDelete, onT
     )
   }
 
+  const zoneColorVar = zone && colors ? colors.border : typeColors.border
+
   return (
     <div className="modal-backdrop" onClick={handleBackdrop}>
-      <div className="modal" style={{ borderTop: `4px solid ${zone && colors ? colors.border : typeColors.border}` }}>
+      <div className="modal workout-detail-modal" style={{ '--zone-color': zoneColorVar }}>
         <button className="modal-close" onClick={onClose}><SystemIcon name="close" className="system-icon" /></button>
 
         <div className="modal-header">
@@ -133,7 +136,7 @@ export default function WorkoutDetail({ workout, onClose, canEdit, onDelete, onT
             {runningDetails && (
               <div className="modal-section">
                 <div className="section-label">Hva skal gjøres</div>
-                <div className="section-content workout-desc" style={{ whiteSpace: 'pre-line' }}>
+                <div className="section-content workout-desc" data-pre-line>
                   {runningDetails}
                 </div>
               </div>
@@ -144,7 +147,7 @@ export default function WorkoutDetail({ workout, onClose, canEdit, onDelete, onT
         {!isRunningWorkout && workout.description && (!isStrengthWorkout || workout.exercises) && (
           <div className="modal-section">
             <div className="section-label">Treningsøkt</div>
-            <div className="section-content workout-desc" style={{ whiteSpace: 'pre-line' }}>{workout.description}</div>
+            <div className="section-content workout-desc" data-pre-line>{workout.description}</div>
           </div>
         )}
 
@@ -183,7 +186,7 @@ export default function WorkoutDetail({ workout, onClose, canEdit, onDelete, onT
         {workout.notes && (
           <div className="modal-section">
             <div className="section-label">Notater</div>
-            <div className="section-content" style={{ whiteSpace: 'pre-line' }}>{workout.notes}</div>
+            <div className="section-content" data-pre-line>{workout.notes}</div>
           </div>
         )}
 
@@ -212,14 +215,12 @@ export default function WorkoutDetail({ workout, onClose, canEdit, onDelete, onT
 
         {zone && colors && zoneLabel && (
           <div
-            className="modal-section zone-section"
-            style={{ backgroundColor: colors.bg, borderColor: colors.border, cursor: 'pointer' }}
+            className="modal-section zone-summary"
+            style={{ '--zone-color': colors.border }}
             onClick={() => setShowScale(true)}
             title="Trykk for å se din intensitetsskala"
           >
-            <div className="section-label" style={{ color: colors.text }}>
-              {zoneLabel}
-            </div>
+            <div className="section-label">{zoneLabel}</div>
             <div className="zone-multi-stats">
               {zones.map(selectedZone => {
                 const zoneInfo = ZONE_INFO[selectedZone]
@@ -229,16 +230,16 @@ export default function WorkoutDetail({ workout, onClose, canEdit, onDelete, onT
                   <div
                     key={selectedZone}
                     className="zone-mini-card"
-                    style={{ backgroundColor: zoneColors.bg, borderColor: zoneColors.border }}
+                    style={{ '--zone-color': zoneColors.border }}
                   >
-                    <strong style={{ color: zoneColors.text }}>{zoneColors.label}</strong>
+                    <strong>{zoneColors.label}</strong>
                     <span>HR {zoneInfo.hr} bpm</span>
                     <span>Pust {zoneInfo.breathing}</span>
                   </div>
                 )
               })}
             </div>
-            <div style={{ fontSize: '0.7rem', color: colors.text, marginTop: '0.35rem', opacity: 0.7 }}>
+            <div className="zone-summary-hint">
               Trykk for å se full intensitetsskala
             </div>
           </div>

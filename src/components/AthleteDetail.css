@@ -1,0 +1,85 @@
+.tp-athlete-profile {
+  padding: var(--tp-space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--tp-space-3);
+}
+
+.tp-athlete-profile-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--tp-space-3);
+}
+
+.tp-athlete-profile-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.tp-athlete-results {
+  padding: var(--tp-space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--tp-space-4);
+}
+
+.tp-athlete-results-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--tp-space-3);
+  align-items: end;
+}
+
+.tp-athlete-results-form-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.tp-athlete-results-empty {
+  color: var(--tp-ink-muted);
+  margin: 0;
+  text-align: center;
+  padding: var(--tp-space-3);
+}
+
+.tp-athlete-results-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tp-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tp-athlete-result-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--tp-space-3);
+  padding: var(--tp-space-2) var(--tp-space-3);
+  background: var(--tp-surface-2);
+  border-radius: var(--tp-radius-md);
+}
+
+.tp-athlete-result-main {
+  display: flex;
+  align-items: center;
+  gap: var(--tp-space-3);
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.tp-athlete-result-dist {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.tp-athlete-result-time {
+  font-variant-numeric: tabular-nums;
+  color: var(--tp-ink-muted);
+}
+
+.tp-athlete-result-note {
+  color: var(--tp-ink-muted);
+  font-size: 0.85rem;
+}

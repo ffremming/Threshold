@@ -2,7 +2,8 @@ import { useState } from 'react'
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth'
 import { auth } from '../firebase'
 import { createUserProfile } from '../userService'
-import SystemIcon from './SystemIcon'
+import { Button, Field, Input, Modal } from './ui'
+import './Login.css'
 
 export default function Login({ onClose, fullScreen }) {
   const [email, setEmail] = useState('')
@@ -18,26 +19,18 @@ export default function Login({ onClose, fullScreen }) {
     setError('')
     try {
       if (isRegistering) {
-        if (!displayName.trim()) {
-          setError('Skriv inn navnet ditt')
-          setLoading(false)
-          return
-        }
+        if (!displayName.trim()) { setError('Skriv inn navnet ditt'); setLoading(false); return }
         const cred = await createUserWithEmailAndPassword(auth, email, password)
         await createUserProfile(cred.user.uid, email, displayName.trim(), 'athlete')
       } else {
         await signInWithEmailAndPassword(auth, email, password)
       }
-      if (onClose) onClose()
+      onClose?.()
     } catch (err) {
       if (isRegistering) {
-        if (err.code === 'auth/email-already-in-use') {
-          setError('Denne e-posten er allerede registrert')
-        } else if (err.code === 'auth/weak-password') {
-          setError('Passordet må være minst 6 tegn')
-        } else {
-          setError('Kunne ikke registrere. Prøv igjen.')
-        }
+        if (err.code === 'auth/email-already-in-use') setError('Denne e-posten er allerede registrert')
+        else if (err.code === 'auth/weak-password')   setError('Passordet må være minst 6 tegn')
+        else                                          setError('Kunne ikke registrere. Prøv igjen.')
       } else {
         setError('Feil e-post eller passord')
       }
@@ -45,34 +38,25 @@ export default function Login({ onClose, fullScreen }) {
     }
   }
 
-  function handleBackdrop(e) {
-    if (e.target === e.currentTarget && onClose) onClose()
-  }
-
-  function toggleMode() {
-    setIsRegistering(prev => !prev)
-    setError('')
-  }
+  function toggleMode() { setIsRegistering(p => !p); setError('') }
 
   const form = (
-    <form onSubmit={handleSubmit} className="add-form auth-form">
+    <form onSubmit={handleSubmit} className="tp-login-form">
       {isRegistering && (
-        <label>
-          Navn
-          <input
+        <Field label="Navn">
+          <Input
             type="text"
             value={displayName}
             onChange={e => setDisplayName(e.target.value)}
             placeholder="Ditt fulle navn"
             autoComplete="name"
             required
-            autoFocus={isRegistering}
+            autoFocus
           />
-        </label>
+        </Field>
       )}
-      <label>
-        E-post
-        <input
+      <Field label="E-post">
+        <Input
           type="email"
           value={email}
           onChange={e => setEmail(e.target.value)}
@@ -81,10 +65,9 @@ export default function Login({ onClose, fullScreen }) {
           required
           autoFocus={!isRegistering}
         />
-      </label>
-      <label>
-        Passord
-        <input
+      </Field>
+      <Field label="Passord" hint={isRegistering ? 'Minst 6 tegn' : null}>
+        <Input
           type="password"
           value={password}
           onChange={e => setPassword(e.target.value)}
@@ -92,50 +75,63 @@ export default function Login({ onClose, fullScreen }) {
           autoComplete={isRegistering ? 'new-password' : 'current-password'}
           required
         />
-      </label>
-      {error && <div className="login-error">{error}</div>}
-      <button type="submit" className="btn-save" disabled={loading}>
-        {!loading && <SystemIcon name="login" className="button-icon" />}
+      </Field>
+
+      {error && <div className="tp-login-error" role="alert">{error}</div>}
+
+      <Button type="submit" size="lg" block disabled={loading}>
         {loading
-          ? (isRegistering ? 'Registrerer...' : 'Logger inn...')
-          : (isRegistering ? 'Registrer deg' : 'Logg inn')
-        }
-      </button>
-      <div className="auth-footer">
-        <span className="auth-footer-text">
-          {isRegistering ? 'Har allerede konto?' : 'Har ikke konto?'}
-        </span>
-        <button type="button" className="register-toggle" onClick={toggleMode}>
-          {isRegistering ? 'Logg inn' : 'Registrer deg'}
+          ? (isRegistering ? 'Registrerer…' : 'Logger inn…')
+          : (isRegistering ? 'Opprett konto' : 'Logg inn')}
+      </Button>
+
+      <p className="tp-login-toggle">
+        <span>{isRegistering ? 'Har allerede konto?' : 'Ny her?'}</span>
+        <button type="button" className="tp-login-toggle-btn" onClick={toggleMode}>
+          {isRegistering ? 'Logg inn' : 'Opprett en konto'}
         </button>
-      </div>
+      </p>
     </form>
   )
 
   if (fullScreen) {
     return (
-      <div className="auth-screen">
-        <div className="auth-screen-inner">
-          <div className="auth-form-shell">
+      <div className="tp-login-shell">
+        <main className="tp-login-stage">
+          <section className="tp-login-hero">
+            <div className="tp-login-brand">
+              <span className="tp-login-mark" aria-hidden="true">TP</span>
+              <span className="tp-login-brand-text">Training Planner</span>
+            </div>
+
+            <h1 className="tp-login-headline">
+              Bygg uka. Vinn løpet.
+            </h1>
+            <p className="tp-login-tagline">
+              Et profesjonelt verktøy for trenere og utøvere — planlegg økter, følg belastning og bygg form mot målet.
+            </p>
+          </section>
+
+          <section className="tp-login-card">
+            <header className="tp-login-card-head">
+              <span className="tp-login-eyebrow">{isRegistering ? 'Ny bruker' : 'Velkommen tilbake'}</span>
+              <h2 className="tp-login-card-title">{isRegistering ? 'Opprett konto' : 'Logg inn'}</h2>
+            </header>
             {form}
-          </div>
-        </div>
+          </section>
+        </main>
+
+        <footer className="tp-login-foot">
+          <span>© Training Planner</span>
+          <span className="tp-num">v1</span>
+        </footer>
       </div>
     )
   }
 
   return (
-    <div className="modal-backdrop" onClick={handleBackdrop}>
-      <div className="modal login-modal">
-        <button className="modal-close" onClick={onClose}><SystemIcon name="close" className="system-icon" /></button>
-        <div className="login-header">
-          <span className="login-icon"><SystemIcon name="login" className="hero-icon" /></span>
-          <h2 className="modal-title-h2">
-            {isRegistering ? 'Registrer deg' : 'Logg inn'}
-          </h2>
-        </div>
-        {form}
-      </div>
-    </div>
+    <Modal open onClose={onClose} title={isRegistering ? 'Registrer deg' : 'Logg inn'}>
+      {form}
+    </Modal>
   )
 }

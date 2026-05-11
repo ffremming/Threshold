@@ -1,0 +1,94 @@
+.tp-toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--tp-space-3);
+  padding: var(--tp-space-3);
+  background: var(--tp-surface);
+  border: 1px solid var(--tp-line);
+  border-radius: var(--tp-radius-lg);
+  flex-wrap: wrap;
+}
+
+.tp-toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: var(--tp-space-2);
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.tp-toolbar-label {
+  font-size: var(--tp-text-2xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tp-tracking-wide);
+  font-weight: 700;
+  color: var(--tp-ink-muted);
+}
+
+.tp-toolbar-items {
+  display: flex;
+  align-items: center;
+  gap: var(--tp-space-2);
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+/* ── SearchBox ────────────────────────────────────────────────── */
+.tp-searchbox {
+  position: relative;
+  flex: 1 1 14rem;
+  min-width: 12rem;
+  max-width: 100%;
+}
+
+.tp-searchbox-icon {
+  position: absolute;
+  left: var(--tp-space-3);
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--tp-ink-muted);
+  font-size: 1rem;
+  pointer-events: none;
+}
+
+.tp-searchbox-input {
+  width: 100%;
+  height: 2.5rem;
+  padding: 0 2.5rem 0 2.25rem;
+  font-family: var(--tp-font-sans);
+  font-size: var(--tp-text-sm);
+  color: var(--tp-ink);
+  background: var(--tp-surface);
+  border: 1px solid var(--tp-line-strong);
+  border-radius: var(--tp-radius-md);
+  transition: border-color var(--tp-dur-fast) var(--tp-ease),
+              box-shadow var(--tp-dur-fast) var(--tp-ease);
+}
+
+.tp-searchbox-input:hover { border-color: color-mix(in srgb, var(--tp-ink) 30%, transparent); }
+
+.tp-searchbox-input:focus {
+  outline: none;
+  border-color: var(--tp-ink);
+  box-shadow: 0 0 0 3px var(--tp-focus);
+}
+
+.tp-searchbox-input::-webkit-search-cancel-button { display: none; }
+
+.tp-searchbox-clear {
+  position: absolute;
+  right: var(--tp-space-2);
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: var(--tp-radius-pill);
+  border: none;
+  background: var(--tp-hover);
+  color: var(--tp-ink-muted);
+  cursor: pointer;
+  font-size: 0.95rem;
+  line-height: 1;
+}
+
+.tp-searchbox-clear:hover { background: var(--tp-pressed); color: var(--tp-ink); }

@@ -201,13 +201,7 @@ export function estimateWorkoutDuration(workout) {
 export function getWorkoutIntensityFactor(workout) {
   const zones = normalizeIntensityZones(workout?.type, workout?.intensityZone)
   const peakZone = zones.length > 0 ? Math.max(...zones) : 2
-  const typeBoost = workout?.type === 'interval'
-    ? 0.45
-    : workout?.type === 'terskel'
-      ? 0.3
-      : workout?.type === 'styrke'
-        ? 0.2
-        : 0
+  const typeBoost = migrateWorkoutType(workout?.type) === 'interval' ? 0.45 : 0
 
   return Number((0.75 + peakZone * 0.35 + typeBoost).toFixed(2))
 }
@@ -249,7 +243,7 @@ export function formatDurationLabel(minutes) {
 
 export function isHardWorkout(workout) {
   const topZone = normalizeIntensityZone(workout?.type, workout?.intensityZone) || 0
-  return workout?.type === 'interval' || workout?.type === 'terskel' || topZone >= 3
+  return migrateWorkoutType(workout?.type) === 'interval' || topZone >= 3
 }
 
 export function formatKmValue(value) {
@@ -330,57 +324,70 @@ export const TYPE_COLORS = {
   annet:    { bg: '#f3f4f6', border: '#9ca3af', text: '#374151' },
 }
 
+export const ACTIVITY_GROUPS = [
+  { value: 'endurance',  label: 'Utholdenhet' },
+  { value: 'team',       label: 'Lag' },
+  { value: 'racquet',    label: 'Racket' },
+  { value: 'combat',     label: 'Kamp & klatring' },
+  { value: 'winter',     label: 'Vinter' },
+  { value: 'water',      label: 'Vann' },
+  { value: 'strength',   label: 'Styrke & mobilitet' },
+  { value: 'other',      label: 'Annet' },
+]
+
+export const ACTIVITY_GROUP_MAP = Object.fromEntries(ACTIVITY_GROUPS.map(g => [g.value, g]))
+
 export const ACTIVITY_TAGS = [
-  { value: 'strength',     label: 'Styrke',         icon: 'strength',     color: '#ec4899', bg: '#fce7f3' },
-  { value: 'run',          label: 'Løping',         icon: 'run',          color: '#3b82f6', bg: '#dbeafe' },
-  { value: 'trail_run',    label: 'Terrengløping',  icon: 'trail_run',    color: '#65a30d', bg: '#ecfccb' },
-  { value: 'walking',      label: 'Gåing',          icon: 'walking',      color: '#f59e0b', bg: '#fef3c7' },
-  { value: 'hiking',       label: 'Tur/fjelltur',   icon: 'hiking',       color: '#a16207', bg: '#fef9c3' },
-  { value: 'xc_skiing',    label: 'Langrenn',       icon: 'xc_skiing',    color: '#0ea5e9', bg: '#e0f2fe' },
-  { value: 'alpine',       label: 'Alpint',         icon: 'alpine',       color: '#0284c7', bg: '#e0f2fe' },
-  { value: 'snowboard',    label: 'Snowboard',      icon: 'snowboard',    color: '#1d4ed8', bg: '#dbeafe' },
-  { value: 'biathlon',     label: 'Skiskyting',     icon: 'biathlon',     color: '#0369a1', bg: '#e0f2fe' },
-  { value: 'bike',         label: 'Sykkel',         icon: 'bike',         color: '#10b981', bg: '#d1fae5' },
-  { value: 'mtb',          label: 'Terrengsykkel',  icon: 'mtb',          color: '#15803d', bg: '#dcfce7' },
-  { value: 'gravel',       label: 'Gravel',         icon: 'gravel',       color: '#84cc16', bg: '#ecfccb' },
-  { value: 'spinning',     label: 'Spinning',       icon: 'spinning',     color: '#059669', bg: '#d1fae5' },
-  { value: 'swim',         label: 'Svømming',       icon: 'swim',         color: '#6366f1', bg: '#e0e7ff' },
-  { value: 'openwater',    label: 'Åpent vann',     icon: 'openwater',    color: '#0e7490', bg: '#cffafe' },
-  { value: 'triathlon',    label: 'Triatlon',       icon: 'triathlon',    color: '#7c3aed', bg: '#ede9fe' },
-  { value: 'rowing',       label: 'Roing',          icon: 'rowing',       color: '#0d9488', bg: '#ccfbf1' },
-  { value: 'kayak',        label: 'Kajakk',         icon: 'kayak',        color: '#0891b2', bg: '#cffafe' },
-  { value: 'sup',          label: 'SUP/Padling',    icon: 'sup',          color: '#06b6d4', bg: '#cffafe' },
-  { value: 'surf',         label: 'Surfing',        icon: 'surf',         color: '#22d3ee', bg: '#cffafe' },
-  { value: 'sailing',      label: 'Seiling',        icon: 'sailing',      color: '#1e40af', bg: '#dbeafe' },
-  { value: 'freedive',     label: 'Fridykking',     icon: 'freedive',     color: '#0c4a6e', bg: '#e0f2fe' },
-  { value: 'yoga',         label: 'Yoga',           icon: 'yoga',         color: '#a855f7', bg: '#f3e8ff' },
-  { value: 'pilates',      label: 'Pilates',        icon: 'pilates',      color: '#c026d3', bg: '#fae8ff' },
-  { value: 'mobility',     label: 'Mobilitet',      icon: 'mobility',     color: '#9333ea', bg: '#f3e8ff' },
-  { value: 'calisthenics', label: 'Kroppsvekt',     icon: 'calisthenics', color: '#db2777', bg: '#fce7f3' },
-  { value: 'plyometric',   label: 'Spenst',         icon: 'plyometric',   color: '#e11d48', bg: '#ffe4e6' },
-  { value: 'crossfit',     label: 'CrossFit/HIIT',  icon: 'crossfit',     color: '#dc2626', bg: '#fee2e2' },
-  { value: 'football',     label: 'Fotball',        icon: 'football',     color: '#16a34a', bg: '#dcfce7' },
-  { value: 'basketball',   label: 'Basketball',     icon: 'basketball',   color: '#ea580c', bg: '#ffedd5' },
-  { value: 'volleyball',   label: 'Volleyball',     icon: 'volleyball',   color: '#facc15', bg: '#fef9c3' },
-  { value: 'handball',     label: 'Håndball',       icon: 'handball',     color: '#f97316', bg: '#ffedd5' },
-  { value: 'hockey',       label: 'Ishockey',       icon: 'hockey',       color: '#1e3a8a', bg: '#dbeafe' },
-  { value: 'rugby',        label: 'Rugby',          icon: 'rugby',        color: '#7f1d1d', bg: '#fee2e2' },
-  { value: 'tennis',       label: 'Tennis',         icon: 'tennis',       color: '#ca8a04', bg: '#fef9c3' },
-  { value: 'badminton',    label: 'Badminton',      icon: 'badminton',    color: '#fbbf24', bg: '#fef9c3' },
-  { value: 'padel',        label: 'Padel',          icon: 'padel',        color: '#fde047', bg: '#fef9c3' },
-  { value: 'squash',       label: 'Squash',         icon: 'squash',       color: '#a16207', bg: '#fef3c7' },
-  { value: 'table_tennis', label: 'Bordtennis',     icon: 'table_tennis', color: '#d97706', bg: '#fef3c7' },
-  { value: 'boxing',       label: 'Boksing',        icon: 'boxing',       color: '#991b1b', bg: '#fee2e2' },
-  { value: 'mma',          label: 'MMA',            icon: 'mma',          color: '#7f1d1d', bg: '#fee2e2' },
-  { value: 'martial_arts', label: 'Kampsport',      icon: 'martial_arts', color: '#b91c1c', bg: '#fee2e2' },
-  { value: 'climbing',     label: 'Klatring',       icon: 'climbing',     color: '#92400e', bg: '#fef3c7' },
-  { value: 'bouldering',   label: 'Buldring',       icon: 'bouldering',   color: '#78350f', bg: '#fef3c7' },
-  { value: 'skating',      label: 'Skøyter',        icon: 'skating',      color: '#0284c7', bg: '#e0f2fe' },
-  { value: 'inline',       label: 'Rulleski/Inline', icon: 'inline',      color: '#0ea5e9', bg: '#e0f2fe' },
-  { value: 'horse',        label: 'Ridning',        icon: 'horse',        color: '#92400e', bg: '#fef3c7' },
-  { value: 'golf',         label: 'Golf',           icon: 'golf',         color: '#16a34a', bg: '#dcfce7' },
-  { value: 'dance',        label: 'Dans',           icon: 'dance',        color: '#d946ef', bg: '#fae8ff' },
-  { value: 'rest',         label: 'Hvile/Restitusjon', icon: 'rest',      color: '#64748b', bg: '#f1f5f9' },
+  { value: 'strength',     label: 'Styrke',         icon: 'strength',     color: '#ec4899', bg: '#fce7f3', group: 'strength' },
+  { value: 'run',          label: 'Løping',         icon: 'run',          color: '#3b82f6', bg: '#dbeafe', group: 'endurance' },
+  { value: 'trail_run',    label: 'Terrengløping',  icon: 'trail_run',    color: '#65a30d', bg: '#ecfccb', group: 'endurance' },
+  { value: 'walking',      label: 'Gåing',          icon: 'walking',      color: '#f59e0b', bg: '#fef3c7', group: 'endurance' },
+  { value: 'hiking',       label: 'Tur/fjelltur',   icon: 'hiking',       color: '#a16207', bg: '#fef9c3', group: 'endurance' },
+  { value: 'xc_skiing',    label: 'Langrenn',       icon: 'xc_skiing',    color: '#0ea5e9', bg: '#e0f2fe', group: 'winter' },
+  { value: 'alpine',       label: 'Alpint',         icon: 'alpine',       color: '#0284c7', bg: '#e0f2fe', group: 'winter' },
+  { value: 'snowboard',    label: 'Snowboard',      icon: 'snowboard',    color: '#1d4ed8', bg: '#dbeafe', group: 'winter' },
+  { value: 'biathlon',     label: 'Skiskyting',     icon: 'biathlon',     color: '#0369a1', bg: '#e0f2fe', group: 'winter' },
+  { value: 'bike',         label: 'Sykkel',         icon: 'bike',         color: '#10b981', bg: '#d1fae5', group: 'endurance' },
+  { value: 'mtb',          label: 'Terrengsykkel',  icon: 'mtb',          color: '#15803d', bg: '#dcfce7', group: 'endurance' },
+  { value: 'gravel',       label: 'Gravel',         icon: 'gravel',       color: '#84cc16', bg: '#ecfccb', group: 'endurance' },
+  { value: 'spinning',     label: 'Spinning',       icon: 'spinning',     color: '#059669', bg: '#d1fae5', group: 'endurance' },
+  { value: 'swim',         label: 'Svømming',       icon: 'swim',         color: '#6366f1', bg: '#e0e7ff', group: 'water' },
+  { value: 'openwater',    label: 'Åpent vann',     icon: 'openwater',    color: '#0e7490', bg: '#cffafe', group: 'water' },
+  { value: 'triathlon',    label: 'Triatlon',       icon: 'triathlon',    color: '#7c3aed', bg: '#ede9fe', group: 'endurance' },
+  { value: 'rowing',       label: 'Roing',          icon: 'rowing',       color: '#0d9488', bg: '#ccfbf1', group: 'water' },
+  { value: 'kayak',        label: 'Kajakk',         icon: 'kayak',        color: '#0891b2', bg: '#cffafe', group: 'water' },
+  { value: 'sup',          label: 'SUP/Padling',    icon: 'sup',          color: '#06b6d4', bg: '#cffafe', group: 'water' },
+  { value: 'surf',         label: 'Surfing',        icon: 'surf',         color: '#22d3ee', bg: '#cffafe', group: 'water' },
+  { value: 'sailing',      label: 'Seiling',        icon: 'sailing',      color: '#1e40af', bg: '#dbeafe', group: 'water' },
+  { value: 'freedive',     label: 'Fridykking',     icon: 'freedive',     color: '#0c4a6e', bg: '#e0f2fe', group: 'water' },
+  { value: 'yoga',         label: 'Yoga',           icon: 'yoga',         color: '#a855f7', bg: '#f3e8ff', group: 'strength' },
+  { value: 'pilates',      label: 'Pilates',        icon: 'pilates',      color: '#c026d3', bg: '#fae8ff', group: 'strength' },
+  { value: 'mobility',     label: 'Mobilitet',      icon: 'mobility',     color: '#9333ea', bg: '#f3e8ff', group: 'strength' },
+  { value: 'calisthenics', label: 'Kroppsvekt',     icon: 'calisthenics', color: '#db2777', bg: '#fce7f3', group: 'strength' },
+  { value: 'plyometric',   label: 'Spenst',         icon: 'plyometric',   color: '#e11d48', bg: '#ffe4e6', group: 'strength' },
+  { value: 'crossfit',     label: 'CrossFit/HIIT',  icon: 'crossfit',     color: '#dc2626', bg: '#fee2e2', group: 'strength' },
+  { value: 'football',     label: 'Fotball',        icon: 'football',     color: '#16a34a', bg: '#dcfce7', group: 'team' },
+  { value: 'basketball',   label: 'Basketball',     icon: 'basketball',   color: '#ea580c', bg: '#ffedd5', group: 'team' },
+  { value: 'volleyball',   label: 'Volleyball',     icon: 'volleyball',   color: '#facc15', bg: '#fef9c3', group: 'team' },
+  { value: 'handball',     label: 'Håndball',       icon: 'handball',     color: '#f97316', bg: '#ffedd5', group: 'team' },
+  { value: 'hockey',       label: 'Ishockey',       icon: 'hockey',       color: '#1e3a8a', bg: '#dbeafe', group: 'team' },
+  { value: 'rugby',        label: 'Rugby',          icon: 'rugby',        color: '#7f1d1d', bg: '#fee2e2', group: 'team' },
+  { value: 'tennis',       label: 'Tennis',         icon: 'tennis',       color: '#ca8a04', bg: '#fef9c3', group: 'racquet' },
+  { value: 'badminton',    label: 'Badminton',      icon: 'badminton',    color: '#fbbf24', bg: '#fef9c3', group: 'racquet' },
+  { value: 'padel',        label: 'Padel',          icon: 'padel',        color: '#fde047', bg: '#fef9c3', group: 'racquet' },
+  { value: 'squash',       label: 'Squash',         icon: 'squash',       color: '#a16207', bg: '#fef3c7', group: 'racquet' },
+  { value: 'table_tennis', label: 'Bordtennis',     icon: 'table_tennis', color: '#d97706', bg: '#fef3c7', group: 'racquet' },
+  { value: 'boxing',       label: 'Boksing',        icon: 'boxing',       color: '#991b1b', bg: '#fee2e2', group: 'combat' },
+  { value: 'mma',          label: 'MMA',            icon: 'mma',          color: '#7f1d1d', bg: '#fee2e2', group: 'combat' },
+  { value: 'martial_arts', label: 'Kampsport',      icon: 'martial_arts', color: '#b91c1c', bg: '#fee2e2', group: 'combat' },
+  { value: 'climbing',     label: 'Klatring',       icon: 'climbing',     color: '#92400e', bg: '#fef3c7', group: 'combat' },
+  { value: 'bouldering',   label: 'Buldring',       icon: 'bouldering',   color: '#78350f', bg: '#fef3c7', group: 'combat' },
+  { value: 'skating',      label: 'Skøyter',        icon: 'skating',      color: '#0284c7', bg: '#e0f2fe', group: 'winter' },
+  { value: 'inline',       label: 'Rulleski/Inline', icon: 'inline',      color: '#0ea5e9', bg: '#e0f2fe', group: 'endurance' },
+  { value: 'horse',        label: 'Ridning',        icon: 'horse',        color: '#92400e', bg: '#fef3c7', group: 'other' },
+  { value: 'golf',         label: 'Golf',           icon: 'golf',         color: '#16a34a', bg: '#dcfce7', group: 'other' },
+  { value: 'dance',        label: 'Dans',           icon: 'dance',        color: '#d946ef', bg: '#fae8ff', group: 'other' },
+  { value: 'rest',         label: 'Hvile/Restitusjon', icon: 'rest',      color: '#64748b', bg: '#f1f5f9', group: 'other' },
 ]
 
 export const ACTIVITY_TAG_MAP = Object.fromEntries(
@@ -427,20 +434,26 @@ export const LOAD_TAG_MAP = Object.fromEntries(
 
 export const WORKOUT_TYPES = [
   { value: 'interval', label: 'Intervall' },
-  { value: 'terskel', label: 'Terskel' },
-  { value: 'rolig', label: 'Rolig løping' },
-  { value: 'styrke', label: 'Styrke' },
-  { value: 'molle', label: 'Mølle + styrke' },
-  { value: 'annet', label: 'Annet' },
+  { value: 'continuous', label: 'Kontinuerlig' },
 ]
+
+const LEGACY_TYPE_MAP = {
+  terskel: 'interval',
+  rolig: 'continuous',
+  styrke: 'continuous',
+  molle: 'continuous',
+  annet: 'continuous',
+}
+
+export function migrateWorkoutType(type) {
+  if (!type) return 'continuous'
+  if (type === 'interval' || type === 'continuous') return type
+  return LEGACY_TYPE_MAP[type] || 'continuous'
+}
 
 export const TYPE_ICONS = {
   interval: 'interval',
-  terskel: 'terskel',
-  rolig: 'rolig',
-  styrke: 'strength',
-  molle: 'molle',
-  annet: 'annet',
+  continuous: 'rolig',
 }
 
 export const ZONE_INFO = {
@@ -451,20 +464,18 @@ export const ZONE_INFO = {
   5: { hr: '198–215', rpe: 'Veldig anstrengende', breathing: 'Kan kun si ett ord eller to, samtidig som man puster tungt' },
 }
 
-export function hasIntensityZone(type) {
-  return type !== 'styrke'
+export function hasIntensityZone(_type) {
+  return true
 }
 
 export function getAllowedIntensityZones(type) {
-  if (!hasIntensityZone(type)) return []
-  if (type === 'interval' || type === 'terskel') return [3, 4, 5]
+  const migrated = migrateWorkoutType(type)
+  if (migrated === 'interval') return [3, 4, 5]
   return [1, 2, 3, 4]
 }
 
 export function getDefaultIntensityZones(type) {
-  if (!hasIntensityZone(type)) return []
-  if (type === 'interval' || type === 'terskel') return [3]
-  return [2]
+  return migrateWorkoutType(type) === 'interval' ? [3] : [2]
 }
 
 export function normalizeIntensityZones(type, intensityZone) {
@@ -493,32 +504,31 @@ export function normalizeIntensityZone(type, intensityZone) {
   return zones.length > 0 ? zones[zones.length - 1] : null
 }
 
-export function getDefaultWarmup(type, activityTag = '') {
-  if (type === 'styrke') return '10-15 min generell oppvarming + aktivering'
-  if (type === 'molle') return '10-15 min rolig oppvarming på mølle + mobilitet'
+export function getDefaultWarmup(_type, activityTag = '') {
   if (activityTag === 'run') return '10-15 min rolig jogg + 3-4 stigningsløp'
   if (activityTag === 'walking') return '10-15 min rolig gange med gradvis progresjon'
   if (activityTag === 'bike') return '10-15 min rolig sykling med gradvis progresjon'
   if (activityTag === 'swim') return '200-400 m rolig innsvømming + teknikk'
   if (activityTag === 'xc_skiing') return '10-15 min rolig diagonalgang/skøyting + drill'
+  if (activityTag === 'strength') return '10-15 min generell oppvarming + aktivering'
   return '10-15 min rolig oppvarming'
 }
 
-export function getDefaultCooldown(type, activityTag = '') {
-  if (type === 'styrke') return '5-10 min rolig nedtrapping og lett mobilitet'
-  if (type === 'molle') return '5-10 min rolig nedjogg/gange og lett mobilitet'
+export function getDefaultCooldown(_type, activityTag = '') {
   if (activityTag === 'run') return '5-10 min rolig jogg eller gange'
   if (activityTag === 'walking') return '5-10 min rolig gange og lett mobilitet'
   if (activityTag === 'bike') return '10 min rolig sykling'
   if (activityTag === 'swim') return '100-200 m rolig utsvømming'
   if (activityTag === 'xc_skiing') return '5-10 min rolig nedkjøring'
+  if (activityTag === 'strength') return '5-10 min rolig nedtrapping og lett mobilitet'
   return '5-10 min rolig nedkjøling'
 }
 
 export function getDefaultLoadTag(type, intensityZone) {
-  const peakZone = normalizeIntensityZone(type, intensityZone) || 0
-  if (type === 'interval' || peakZone >= 5) return 'high'
-  if (type === 'terskel' || type === 'styrke' || type === 'molle' || peakZone >= 3) return 'medium'
+  const migrated = migrateWorkoutType(type)
+  const peakZone = normalizeIntensityZone(migrated, intensityZone) || 0
+  if (migrated === 'interval' || peakZone >= 5) return 'high'
+  if (peakZone >= 3) return 'medium'
   return 'low'
 }
 
@@ -554,6 +564,7 @@ export function normalizeWorkout(workout) {
     weekday: normalizedWeekday,
     intensityZone: intensityZones,
     userComment: workout.userComment || '',
+    blocks: workout.blocks || null,
   }
 }
 

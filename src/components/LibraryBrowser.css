@@ -1,0 +1,140 @@
+/* Library / Øktbank — card grid + LibraryTemplateCard */
+
+.tp-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--tp-space-3);
+}
+
+.tp-results-count {
+  font-size: var(--tp-text-2xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tp-tracking-wide);
+  font-weight: 600;
+  color: var(--tp-ink-muted);
+}
+
+/* ─── LibraryTemplateCard ──────────────────────────────────────── */
+.lib-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tp-space-3);
+  background: var(--tp-surface);
+  border: 1px solid var(--tp-line);
+  border-radius: var(--tp-radius-lg);
+  padding: var(--tp-space-4);
+  transition: border-color var(--tp-dur-fast) var(--tp-ease),
+              box-shadow var(--tp-dur-fast) var(--tp-ease);
+}
+
+.lib-card:hover {
+  border-color: var(--tp-line-strong);
+  box-shadow: var(--tp-shadow-xs);
+}
+
+.lib-card-head {
+  display: flex;
+  gap: var(--tp-space-3);
+  align-items: flex-start;
+}
+
+.lib-card-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--tp-radius-sm);
+  background: var(--tp-surface-2);
+  color: var(--tp-ink-muted);
+  flex-shrink: 0;
+}
+
+.lib-card-titles {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.lib-card-title {
+  font-size: var(--tp-text-md);
+  font-weight: 600;
+  letter-spacing: var(--tp-tracking-snug);
+  color: var(--tp-ink);
+  margin: 0;
+}
+
+.lib-card-meta {
+  font-size: var(--tp-text-xs);
+  color: var(--tp-ink-muted);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--tp-space-1);
+}
+
+.lib-card-desc {
+  font-size: var(--tp-text-sm);
+  color: var(--tp-ink-muted);
+  line-height: var(--tp-leading-snug);
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.lib-card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--tp-space-1);
+}
+
+.lib-card-tag {
+  display: inline-flex;
+  align-items: center;
+  height: 1.4rem;
+  padding: 0 var(--tp-space-2);
+  border-radius: var(--tp-radius-xs);
+  background: var(--tp-surface-2);
+  border: 1px solid var(--tp-line);
+  color: var(--tp-ink-muted);
+  font-size: var(--tp-text-2xs);
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+.lib-card-tag--neutral {
+  background: var(--tp-surface-2);
+  color: var(--tp-ink-muted);
+  border-color: var(--tp-line);
+}
+
+.lib-card-tag--accent {
+  background: color-mix(in srgb, var(--tag-bg, var(--tp-surface-2)) 100%, transparent);
+  color: var(--tag-color, var(--tp-ink-muted));
+  border-color: color-mix(in srgb, var(--tag-color, var(--tp-ink-muted)) 30%, transparent);
+}
+
+.lib-card-meta-zone {
+  color: color-mix(in srgb, var(--zone-color, var(--tp-ink-muted)) 70%, var(--tp-ink-muted));
+}
+
+.lib-card-meta--flex { flex: 1; }
+
+.lib-card-foot {
+  display: flex;
+  align-items: center;
+  gap: var(--tp-space-2);
+  margin-top: auto;
+  padding-top: var(--tp-space-1);
+}
+
+.lib-card-foot .lib-card-meta { flex: 1; }
+
+.lib-card-danger:hover {
+  background: var(--tp-danger-bg);
+  color: var(--tp-danger);
+  border-color: color-mix(in srgb, var(--tp-danger) 35%, transparent);
+}

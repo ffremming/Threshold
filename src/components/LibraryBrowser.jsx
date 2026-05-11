@@ -1,14 +1,23 @@
 import { useMemo, useState } from 'react'
 import {
-  ACTIVITY_TAGS,
   ACTIVITY_TAG_MAP,
-  LOAD_TAG_MAP,
   formatIntensityZoneLabel,
   normalizeIntensityZones,
 } from '../utils'
 import { TEMPLATE_CATEGORIES } from '../workoutTemplates'
-import ActivityIcon from './ActivityIcon'
-import SystemIcon from './SystemIcon'
+import {
+  Button,
+  Page,
+  PageHeader,
+  Toolbar,
+  ToolbarGroup,
+  SearchBox,
+  Chip,
+  EmptyState,
+  SportPicker,
+  TemplateCard,
+} from './ui'
+import './LibraryBrowser.css'
 
 const INTENSITY_ZONES = [1, 2, 3, 4, 5]
 
@@ -39,31 +48,19 @@ export default function LibraryBrowser({
   onCreateGlobal,
 }) {
   const [search, setSearch] = useState('')
-  const [activitySet, setActivitySet] = useState(() => new Set())
+  const [activitySet, setActivitySet] = useState([])
   const [category, setCategory] = useState('Alle')
   const [zoneSet, setZoneSet] = useState(() => new Set())
   const [pendingAddIds, setPendingAddIds] = useState(() => new Set())
 
-  function toggleSet(setter, value) {
-    setter(prev => {
+  function toggleZone(value) {
+    setZoneSet(prev => {
       const next = new Set(prev)
       if (next.has(value)) next.delete(value)
       else next.add(value)
       return next
     })
   }
-
-  const filtered = useMemo(() => {
-    return globalTemplates
-      .filter(t => matchesSearch(t, search.trim()))
-      .filter(t => activitySet.size === 0 || activitySet.has(t.activityTag))
-      .filter(t => category === 'Alle' || t.category === category)
-      .filter(t => {
-        if (zoneSet.size === 0) return true
-        const zones = normalizeIntensityZones(t.type, t.intensityZone)
-        return zones.some(z => zoneSet.has(z))
-      })
-  }, [globalTemplates, search, activitySet, category, zoneSet])
 
   const sportCounts = useMemo(() => {
     const counts = new Map()
@@ -73,6 +70,20 @@ export default function LibraryBrowser({
     })
     return counts
   }, [globalTemplates])
+
+  const filtered = useMemo(() => {
+    return globalTemplates
+      .filter(t => matchesSearch(t, search.trim()))
+      .filter(t => activitySet.length === 0 || activitySet.includes(t.activityTag))
+      .filter(t => category === 'Alle' || t.category === category)
+      .filter(t => {
+        if (zoneSet.size === 0) return true
+        const zones = normalizeIntensityZones(t.type, t.intensityZone)
+        return zones.some(z => zoneSet.has(z))
+      })
+  }, [globalTemplates, search, activitySet, category, zoneSet])
+
+  const presentSportValues = useMemo(() => Array.from(sportCounts.keys()), [sportCounts])
 
   async function handleAdd(template) {
     if (pendingAddIds.has(template.id)) return
@@ -88,195 +99,102 @@ export default function LibraryBrowser({
     }
   }
 
+  function clearAll() {
+    setSearch('')
+    setActivitySet([])
+    setCategory('Alle')
+    setZoneSet(new Set())
+  }
+
+  const filtersActive =
+    search.length > 0 ||
+    activitySet.length > 0 ||
+    category !== 'Alle' ||
+    zoneSet.size > 0
+
   return (
-    <div className="library-browser">
-      <header className="library-header">
-        <div className="library-header-titles">
-          <h2 className="library-title">Bibliotek</h2>
-          <p className="library-subtitle">
-            {globalTemplates.length} økter · søk og filtrer · legg til i din øktbank
-          </p>
-        </div>
-        {isSuperadmin && onCreateGlobal && (
-          <button type="button" className="library-admin-btn" onClick={onCreateGlobal}>
-            + Ny i bibliotek
-          </button>
-        )}
-      </header>
+    <Page>
+      <PageHeader
+        eyebrow="Bibliotek"
+        title="Globalt øktbibliotek"
+        subtitle={`${globalTemplates.length} økter · søk og filtrer · legg til i din øktbank`}
+        actions={isSuperadmin && onCreateGlobal ? (
+          <Button onClick={onCreateGlobal}>+ Ny i bibliotek</Button>
+        ) : null}
+      />
 
-      <div className="library-search-row">
-        <input
-          type="search"
-          className="library-search"
-          placeholder="Søk i økter (tittel, beskrivelse, kategori, sport)..."
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-        />
-        {search && (
-          <button type="button" className="library-clear-btn" onClick={() => setSearch('')}>
-            Tøm
-          </button>
-        )}
-      </div>
+      <Toolbar>
+        <SearchBox value={search} onChange={setSearch} placeholder="Søk økter (tittel, beskrivelse, sport)…" />
 
-      <div className="library-filters">
-        <div className="library-filter-block">
-          <span className="library-filter-label">Kategori</span>
-          <div className="library-filter-row">
+        <ToolbarGroup label="Sport">
+          <SportPicker
+            value={activitySet}
+            onChange={setActivitySet}
+            counts={sportCounts}
+            limitToValues={presentSportValues}
+          />
+        </ToolbarGroup>
+
+        <ToolbarGroup label="Kategori">
+          <Chip active={category === 'Alle'} onClick={() => setCategory('Alle')}>Alle</Chip>
+          {TEMPLATE_CATEGORIES.filter(cat => cat !== 'Alle').map(cat => (
+            <Chip key={cat} active={category === cat} onClick={() => setCategory(cat)}>{cat}</Chip>
+          ))}
+        </ToolbarGroup>
+
+        <ToolbarGroup label="Sone">
+          {INTENSITY_ZONES.map(zone => (
             <button
+              key={zone}
               type="button"
-              className={`library-chip${category === 'Alle' ? ' active' : ''}`}
-              onClick={() => setCategory('Alle')}
-            >
-              Alle
-            </button>
-            {TEMPLATE_CATEGORIES.map(cat => (
-              <button
-                key={cat}
-                type="button"
-                className={`library-chip${category === cat ? ' active' : ''}`}
-                onClick={() => setCategory(cat)}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
-        </div>
+              className={`tp-zone-btn tp-zone-${zone}${zoneSet.has(zone) ? ' is-active' : ''}`}
+              onClick={() => toggleZone(zone)}
+            >S{zone}</button>
+          ))}
+        </ToolbarGroup>
 
-        <div className="library-filter-block">
-          <span className="library-filter-label">Sport</span>
-          <div className="library-filter-row">
-            {ACTIVITY_TAGS.map(tag => {
-              const count = sportCounts.get(tag.value) || 0
-              if (count === 0 && !activitySet.has(tag.value)) return null
-              const active = activitySet.has(tag.value)
+        {filtersActive && (
+          <Button variant="ghost" size="sm" onClick={clearAll}>Tøm filter</Button>
+        )}
+      </Toolbar>
+
+      {loading ? (
+        <EmptyState title="Laster bibliotek…" description="Henter globale øktmaler." />
+      ) : filtered.length === 0 ? (
+        <EmptyState
+          title="Ingen økter matcher filteret"
+          description={
+            globalTemplates.length === 0
+              ? 'Bibliotek-collection er tom. Kjør seed-skriptet (npm run seed-global-templates).'
+              : 'Prøv å fjerne et filter eller endre søket.'
+          }
+          action={filtersActive ? <Button variant="secondary" onClick={clearAll}>Tøm filter</Button> : null}
+        />
+      ) : (
+        <>
+          <div className="tp-results-count">
+            {filtered.length} av {globalTemplates.length} økter
+          </div>
+          <div className="tp-card-grid">
+            {filtered.map(template => {
+              const inBank = isAlreadyInBank(template)
               return (
-                <button
-                  key={tag.value}
-                  type="button"
-                  className={`library-chip library-chip-sport${active ? ' active' : ''}`}
-                  style={active ? { background: tag.bg, color: tag.color, borderColor: tag.color } : undefined}
-                  onClick={() => toggleSet(setActivitySet, tag.value)}
-                >
-                  <span className="library-chip-icon" aria-hidden="true">
-                    <ActivityIcon name={tag.icon} className="tag-icon-svg" />
-                  </span>
-                  <span>{tag.label}</span>
-                  <span className="library-chip-count">{count}</span>
-                </button>
+                <TemplateCard
+                  key={template.id}
+                  template={template}
+                  primaryLabel={inBank ? '✓ Lagt til (legg til igjen)' : '+ Legg til min øktbank'}
+                  primaryActive={inBank}
+                  primaryVariant={inBank ? 'secondary' : 'primary'}
+                  primaryDisabled={pendingAddIds.has(template.id)}
+                  onPrimary={() => handleAdd(template)}
+                  onEdit={isSuperadmin && onEditGlobal ? () => onEditGlobal(template) : null}
+                  onDelete={isSuperadmin && onDeleteGlobal ? () => onDeleteGlobal(template) : null}
+                />
               )
             })}
           </div>
-        </div>
-
-        <div className="library-filter-block">
-          <span className="library-filter-label">Intensitetssone</span>
-          <div className="library-filter-row">
-            {INTENSITY_ZONES.map(zone => (
-              <button
-                key={zone}
-                type="button"
-                className={`zone-btn zone-btn-${zone}${zoneSet.has(zone) ? ' active' : ''}`}
-                onClick={() => toggleSet(setZoneSet, zone)}
-              >
-                S{zone}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {loading ? (
-        <div className="empty-state">Laster bibliotek...</div>
-      ) : filtered.length === 0 ? (
-        <div className="empty-state">
-          <div>Ingen økter matcher filteret.</div>
-          {globalTemplates.length === 0 && (
-            <p className="library-empty-hint">
-              Bibliotek-collection er tom. Kjør seed-skriptet (scripts/seed-global-templates.mjs).
-            </p>
-          )}
-        </div>
-      ) : (
-        <div className="library-grid">
-          {filtered.map(template => (
-            <LibraryCard
-              key={template.id}
-              template={template}
-              onAdd={() => handleAdd(template)}
-              alreadyInBank={isAlreadyInBank(template)}
-              pending={pendingAddIds.has(template.id)}
-              showAdminTools={isSuperadmin}
-              onEdit={onEditGlobal ? () => onEditGlobal(template) : null}
-              onDelete={onDeleteGlobal ? () => onDeleteGlobal(template) : null}
-            />
-          ))}
-        </div>
+        </>
       )}
-    </div>
-  )
-}
-
-function LibraryCard({ template, onAdd, alreadyInBank, pending, showAdminTools, onEdit, onDelete }) {
-  const tag = ACTIVITY_TAG_MAP[template.activityTag]
-  const loadTag = template.loadTag ? LOAD_TAG_MAP[template.loadTag] : null
-  const intensityLabel = formatIntensityZoneLabel(normalizeIntensityZones(template.type, template.intensityZone))
-
-  return (
-    <article
-      className="library-card"
-      style={{
-        borderLeftColor: loadTag?.color || tag?.color || '#cbd5e1',
-      }}
-    >
-      <div className="library-card-head">
-        <span className="library-card-icon" style={tag ? { background: tag.bg, color: tag.color } : undefined}>
-          <ActivityIcon name={tag?.icon || 'annet'} className="ui-icon" />
-        </span>
-        <div className="library-card-titles">
-          <h3 className="library-card-title">{template.title}</h3>
-          <div className="library-card-meta">
-            {tag?.label && <span>{tag.label}</span>}
-            {template.category && <span>· {template.category}</span>}
-            {intensityLabel && <span>· {intensityLabel}</span>}
-          </div>
-        </div>
-      </div>
-
-      {template.description && (
-        <p className="library-card-desc">{template.description}</p>
-      )}
-
-      <div className="library-card-tags">
-        {loadTag && (
-          <span className="library-load-pill" style={{ background: loadTag.bg, color: loadTag.color }}>
-            {loadTag.label}
-          </span>
-        )}
-        {template.distance && <span className="library-meta-pill">{template.distance}</span>}
-        {template.warmup && <span className="library-meta-pill">Oppv: {template.warmup}</span>}
-      </div>
-
-      <div className="library-card-actions">
-        <button
-          type="button"
-          className={`library-add-btn${alreadyInBank ? ' added' : ''}`}
-          onClick={onAdd}
-          disabled={pending}
-        >
-          {pending ? 'Legger til...' : alreadyInBank ? '✓ Lagt til (legg til igjen)' : '+ Legg til min øktbank'}
-        </button>
-        {showAdminTools && onEdit && (
-          <button type="button" className="library-icon-btn" onClick={onEdit} title="Rediger i bibliotek">
-            <SystemIcon name="edit" className="system-icon" />
-          </button>
-        )}
-        {showAdminTools && onDelete && (
-          <button type="button" className="library-icon-btn library-danger-btn" onClick={onDelete} title="Slett fra bibliotek">
-            <SystemIcon name="delete" className="system-icon" />
-          </button>
-        )}
-      </div>
-    </article>
+    </Page>
   )
 }

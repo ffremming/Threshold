@@ -1,24 +1,23 @@
+import { useMemo, useState } from 'react'
 import {
   WORKOUT_TYPES,
-  TEMPLATE_CATEGORIES,
   ACTIVITY_TAGS,
-  LOAD_TAGS,
+  ACTIVITY_TAG_MAP,
   WEEKDAY_OPTIONS,
-  getDefaultCooldown,
   getDefaultLoadTag,
-  getDefaultWarmup,
   getAllowedIntensityZones,
   getDefaultIntensityZones,
-  hasIntensityZone,
+  migrateWorkoutType,
   normalizeIntensityZones,
 } from '../utils'
 import ActivityIcon from './ActivityIcon'
+import SessionEditor from './SessionEditor'
 
-export default function WorkoutForm({ value, onChange, showCategory = false, showScheduleFields = false }) {
-  const isStrengthWorkout = value.type === 'styrke' || value.type === 'molle'
-  const isRunningWorkout = ['interval', 'terskel', 'rolig', 'molle'].includes(value.type)
-  const showIntensityZone = hasIntensityZone(value.type)
-  const allowedZones = getAllowedIntensityZones(value.type)
+const PINNED_ACTIVITY_TAGS = ['run', 'strength']
+
+export default function WorkoutForm({ value, onChange, showScheduleFields = false }) {
+  const type = migrateWorkoutType(value.type)
+  const allowedZones = getAllowedIntensityZones(type)
 
   function set(key, val) {
     onChange({ ...value, [key]: val })
@@ -26,28 +25,21 @@ export default function WorkoutForm({ value, onChange, showCategory = false, sho
 
   function setActivityTag(activityTag) {
     const nextActivityTag = value.activityTag === activityTag ? '' : activityTag
-    onChange({
-      ...value,
-      activityTag: nextActivityTag,
-      warmup: value.warmup || getDefaultWarmup(value.type, nextActivityTag),
-      cooldown: value.cooldown || getDefaultCooldown(value.type, nextActivityTag),
-    })
+    onChange({ ...value, activityTag: nextActivityTag })
   }
 
-  function setType(type) {
-    const intensityZone = normalizeIntensityZones(type, value.intensityZone ?? getDefaultIntensityZones(type))
+  function setType(nextType) {
+    const intensityZone = normalizeIntensityZones(nextType, value.intensityZone ?? getDefaultIntensityZones(nextType))
     onChange({
       ...value,
-      type,
+      type: nextType,
       intensityZone,
-      loadTag: getDefaultLoadTag(type, intensityZone),
-      warmup: value.warmup || getDefaultWarmup(type, value.activityTag),
-      cooldown: value.cooldown || getDefaultCooldown(type, value.activityTag),
+      loadTag: getDefaultLoadTag(nextType, intensityZone),
     })
   }
 
   function toggleIntensityZone(zone) {
-    const currentZones = normalizeIntensityZones(value.type, value.intensityZone)
+    const currentZones = normalizeIntensityZones(type, value.intensityZone)
     const nextZones = currentZones.includes(zone)
       ? (currentZones.length > 1 ? currentZones.filter(currentZone => currentZone !== zone) : currentZones)
       : [...currentZones, zone].sort((a, b) => a - b)
@@ -57,47 +49,17 @@ export default function WorkoutForm({ value, onChange, showCategory = false, sho
 
   return (
     <div className="add-form">
-      <div className="form-intro">
-        <span className="section-eyebrow">Workout setup</span>
-        <p className="form-intro-text">Definer okttype, aktivitet og detaljer i et konsistent oppsett.</p>
-      </div>
-
-      {showCategory && (
-        <label>
-          Kategori
-          <select value={value.category || ''} onChange={e => set('category', e.target.value)}>
-            <option value="">Velg kategori</option>
-            {TEMPLATE_CATEGORIES.map(c => (
-              <option key={c} value={c}>{c}</option>
-            ))}
-          </select>
-        </label>
-      )}
-
       <label>
         Aktivitet
-        <div className="activity-tag-picker">
-          {ACTIVITY_TAGS.map(tag => (
-            <button
-              key={tag.value}
-              type="button"
-              className={`activity-tag-btn${value.activityTag === tag.value ? ' active' : ''}`}
-              style={{
-                '--tag-color': tag.color,
-                '--tag-bg': tag.bg,
-              }}
-              onClick={() => setActivityTag(tag.value)}
-            >
-              <span className="activity-tag-icon"><ActivityIcon name={tag.icon} className="tag-icon-svg" /></span>
-              <span>{tag.label}</span>
-            </button>
-          ))}
-        </div>
+        <ActivityPicker
+          selected={value.activityTag}
+          onSelect={setActivityTag}
+        />
       </label>
 
       <label>
         Type
-        <select value={value.type || 'rolig'} onChange={e => setType(e.target.value)}>
+        <select value={type} onChange={e => setType(e.target.value)}>
           {WORKOUT_TYPES.map(t => (
             <option key={t.value} value={t.value}>{t.label}</option>
           ))}
@@ -145,111 +107,39 @@ export default function WorkoutForm({ value, onChange, showCategory = false, sho
         />
       </label>
 
-      {showIntensityZone && (
-        <label>
-          Intensitetssone
-          <div className="field-hint">Velg en eller flere soner</div>
-          <div className="zone-picker">
-            {allowedZones.map(z => (
-              <button
-                key={z}
-                type="button"
-                className={`zone-btn zone-btn-${z}${normalizeIntensityZones(value.type, value.intensityZone).includes(z) ? ' active' : ''}`}
-                onClick={() => toggleIntensityZone(z)}
-              >
-                Sone {z}
-              </button>
-            ))}
-          </div>
-        </label>
-      )}
-
       <label>
-        Load
-        <select value={value.loadTag || getDefaultLoadTag(value.type, value.intensityZone)} onChange={e => set('loadTag', e.target.value)}>
-          {LOAD_TAGS.map(tag => (
-            <option key={tag.value} value={tag.value}>{tag.label}</option>
+        Intensitetssone
+        <div className="field-hint">Velg en eller flere soner</div>
+        <div className="zone-picker">
+          {allowedZones.map(z => (
+            <button
+              key={z}
+              type="button"
+              className={`zone-btn zone-btn-${z}${normalizeIntensityZones(type, value.intensityZone).includes(z) ? ' active' : ''}`}
+              onClick={() => toggleIntensityZone(z)}
+            >
+              Sone {z}
+            </button>
           ))}
-        </select>
+        </div>
       </label>
 
       <label>
-        Beskrivelse / Økt
+        Beskrivelse
         <textarea
           placeholder="F.eks. 4 x 1km @ 11.5 km/t, 5:15 pace, 2 min pause"
           value={value.description || ''}
           onChange={e => set('description', e.target.value)}
-          rows={4}
+          rows={3}
         />
       </label>
 
-      {isRunningWorkout && (
-        <>
-          <label>
-            Antall km
-            <input
-              type="text"
-              placeholder="F.eks. 8 km"
-              value={value.distance || ''}
-              onChange={e => set('distance', e.target.value)}
-            />
-          </label>
-
-          <label>
-            Hva skal gjøres
-            <textarea
-              placeholder="F.eks. 4 x 1 km i sone 4 med 2 min pause mellom dragene"
-              value={value.sessionDetails || ''}
-              onChange={e => set('sessionDetails', e.target.value)}
-              rows={3}
-            />
-          </label>
-        </>
-      )}
-
-      <label>
-        Oppvarming
-        <input
-          type="text"
-          placeholder="F.eks. 2 km rolig"
-          value={value.warmup || getDefaultWarmup(value.type, value.activityTag)}
-          onChange={e => set('warmup', e.target.value)}
-        />
-      </label>
-
-      <label>
-        Nedkjøling
-        <input
-          type="text"
-          placeholder="F.eks. 1 km rolig"
-          value={value.cooldown || getDefaultCooldown(value.type, value.activityTag)}
-          onChange={e => set('cooldown', e.target.value)}
-        />
-      </label>
-
-      {isStrengthWorkout && (
-        <>
-          <label>
-            Øvelser
-            <textarea
-              placeholder={'Én øvelse per linje\nF.eks. Knebøy 3 x 8'}
-              value={value.exercises || ''}
-              onChange={e => set('exercises', e.target.value)}
-              rows={6}
-            />
-          </label>
-
-          <label>
-            Pause mellom sett
-            <input
-              type="text"
-              placeholder="F.eks. 60-90 sek"
-              value={value.rest || ''}
-              onChange={e => set('rest', e.target.value)}
-            />
-          </label>
-        </>
-      )}
+      <SessionEditor
+        value={value.blocks}
+        activityTag={value.activityTag}
+        workoutType={type}
+        onChange={(blocks) => set('blocks', blocks)}
+      />
 
       <label>
         Notater
@@ -261,5 +151,78 @@ export default function WorkoutForm({ value, onChange, showCategory = false, sho
         />
       </label>
     </div>
+  )
+}
+
+function ActivityPicker({ selected, onSelect }) {
+  const [query, setQuery] = useState('')
+
+  const pinned = useMemo(() => (
+    PINNED_ACTIVITY_TAGS.map(value => ACTIVITY_TAG_MAP[value]).filter(Boolean)
+  ), [])
+
+  const searchResults = useMemo(() => {
+    const trimmed = query.trim().toLowerCase()
+    if (!trimmed) return []
+    return ACTIVITY_TAGS
+      .filter(tag => !PINNED_ACTIVITY_TAGS.includes(tag.value))
+      .filter(tag => (
+        tag.label.toLowerCase().includes(trimmed) ||
+        tag.value.toLowerCase().includes(trimmed)
+      ))
+      .slice(0, 8)
+  }, [query])
+
+  const selectedOutsidePinned = selected && !PINNED_ACTIVITY_TAGS.includes(selected)
+    ? ACTIVITY_TAG_MAP[selected]
+    : null
+
+  return (
+    <div className="activity-picker">
+      <div className="activity-picker-chips">
+        {pinned.map(tag => (
+          <ActivityChip key={tag.value} tag={tag} active={selected === tag.value} onClick={() => onSelect(tag.value)} />
+        ))}
+        {selectedOutsidePinned && (
+          <ActivityChip tag={selectedOutsidePinned} active onClick={() => onSelect(selectedOutsidePinned.value)} />
+        )}
+      </div>
+      <input
+        type="search"
+        className="activity-picker-search"
+        placeholder="Søk etter annen aktivitet…"
+        value={query}
+        onChange={e => setQuery(e.target.value)}
+      />
+      {searchResults.length > 0 && (
+        <div className="activity-picker-results">
+          {searchResults.map(tag => (
+            <button
+              key={tag.value}
+              type="button"
+              className="activity-picker-result"
+              onClick={() => { onSelect(tag.value); setQuery('') }}
+            >
+              <span className="activity-tag-icon"><ActivityIcon name={tag.icon} className="tag-icon-svg" /></span>
+              <span>{tag.label}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function ActivityChip({ tag, active, onClick }) {
+  return (
+    <button
+      type="button"
+      className={`activity-tag-btn${active ? ' active' : ''}`}
+      style={{ '--tag-color': tag.color, '--tag-bg': tag.bg }}
+      onClick={onClick}
+    >
+      <span className="activity-tag-icon"><ActivityIcon name={tag.icon} className="tag-icon-svg" /></span>
+      <span>{tag.label}</span>
+    </button>
   )
 }

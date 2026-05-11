@@ -9,6 +9,7 @@ import {
 } from '../userService'
 import { compareUsersByRole, getUserRoles, hasRole, ROLE_LABELS, ROLE_OPTIONS } from '../roles'
 import SystemIcon from './SystemIcon'
+import { Button, IconButton, Page, PageHeader, PageShell, ShellBrand, EmptyState } from './ui'
 
 export default function UserManagement({ currentUser, onClose }) {
   const [users, setUsers] = useState([])
@@ -95,19 +96,8 @@ export default function UserManagement({ currentUser, onClose }) {
       : []
 
     return (
-      <div className="admin-dashboard user-management">
-        <header className="admin-header">
-          <button className="admin-back-btn" onClick={() => { setSelectedUser(null); setAssigningCoach(false) }}>
-            ‹ Tilbake
-          </button>
-          <div className="admin-header-copy">
-            <span className="brand-eyebrow">User Management</span>
-            <span className="admin-header-title">{selectedUser.displayName}</span>
-          </div>
-          <div style={{ width: 72 }} />
-        </header>
-
-        <div className="admin-scroll-area" style={{ padding: '1rem' }}>
+      <PageShell brand={<ShellBrand onBack={() => { setSelectedUser(null); setAssigningCoach(false) }} eyebrow="Brukerprofil" title={selectedUser.displayName} />}>
+        <Page>
           <div className="user-detail-card">
             <div className="user-detail-row">
               <span className="user-detail-label">E-post</span>
@@ -239,27 +229,20 @@ export default function UserManagement({ currentUser, onClose }) {
               )}
             </div>
           )}
-        </div>
-      </div>
+        </Page>
+      </PageShell>
     )
   }
 
   // ─── User List View ───
   return (
-    <div className="admin-dashboard user-management">
-      <header className="admin-header">
-        <button className="admin-back-btn" onClick={onClose}>‹ Tilbake</button>
-        <div className="admin-header-copy">
-          <span className="brand-eyebrow">Training Planner</span>
-          <span className="admin-header-title">Brukere</span>
-        </div>
-        <div style={{ width: 72 }} />
-      </header>
-
-      <div className="admin-scroll-area">
-        <div className="user-management-info">
-          <p>Nye brukere registrerer seg selv og får rollen &laquo;Utøver&raquo;. Du kan kombinere roller og tildele trenere her.</p>
-        </div>
+    <PageShell brand={<ShellBrand onBack={onClose} eyebrow="Training Planner" title="Brukere" />}>
+      <Page>
+        <PageHeader
+          eyebrow="User management"
+          title="Alle brukere"
+          subtitle="Nye brukere registrerer seg selv og får rollen «Utøver». Kombiner roller og tildel trenere her."
+        />
 
         {loading ? (
           <div className="empty-state">Laster brukere...</div>
@@ -299,7 +282,7 @@ export default function UserManagement({ currentUser, onClose }) {
             }
           </div>
         )}
-      </div>
-    </div>
+      </Page>
+    </PageShell>
   )
 }

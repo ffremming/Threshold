@@ -230,10 +230,41 @@ function TopWorkoutRow({ workout }) {
   )
 }
 
+const FILTERS_STORAGE_KEY = 'analysisDashboard.filters.v1'
+
+function loadStoredFilters() {
+  if (typeof window === 'undefined') return null
+  try {
+    const raw = window.localStorage.getItem(FILTERS_STORAGE_KEY)
+    if (!raw) return null
+    const parsed = JSON.parse(raw)
+    return parsed && typeof parsed === 'object' ? parsed : null
+  } catch {
+    return null
+  }
+}
+
 export default function AnalysisDashboard({ weeks, workoutsByWeekKey, athleteName, currentWeek, currentYear }) {
-  const [range, setRange] = useState(12)
-  const [activeTagFilter, setActiveTagFilter] = useState(null)
-  const [primaryMetric, setPrimaryMetric] = useState('load')
+  const stored = useMemo(loadStoredFilters, [])
+  const storedRange = RANGE_OPTIONS.some(o => o.value === stored?.range) ? stored.range : 12
+  const storedMetric = METRIC_OPTIONS.some(o => o.value === stored?.primaryMetric) ? stored.primaryMetric : 'load'
+  const storedTag = typeof stored?.activeTagFilter === 'string' ? stored.activeTagFilter : null
+
+  const [range, setRange] = useState(storedRange)
+  const [activeTagFilter, setActiveTagFilter] = useState(storedTag)
+  const [primaryMetric, setPrimaryMetric] = useState(storedMetric)
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    try {
+      window.localStorage.setItem(
+        FILTERS_STORAGE_KEY,
+        JSON.stringify({ range, primaryMetric, activeTagFilter })
+      )
+    } catch {
+      // ignore quota / disabled storage
+    }
+  }, [range, primaryMetric, activeTagFilter])
   const currentIndex = useMemo(
     () => weeks.findIndex(week => week.week === currentWeek && week.year === currentYear),
     [weeks, currentWeek, currentYear]

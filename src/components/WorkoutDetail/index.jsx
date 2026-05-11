@@ -3,7 +3,6 @@ import {
   ACTIVITY_TAG_MAP,
   LOAD_TAG_MAP,
   ZONE_COLORS,
-  ZONE_INFO,
   TYPE_COLORS,
   TYPE_ICONS,
   WORKOUT_TYPES,
@@ -11,12 +10,14 @@ import {
   formatWorkoutSchedule,
   normalizeIntensityZone,
   normalizeIntensityZones,
-} from '../utils'
-import WorkoutForm from './WorkoutForm'
-import IntensityScaleModal from './IntensityScaleModal'
-import ActivityIcon from './ActivityIcon'
-import SystemIcon from './SystemIcon'
-import './WorkoutDetail.css'
+} from '../../utils'
+import WorkoutForm from '../WorkoutForm'
+import IntensityScaleModal from '../IntensityScaleModal'
+import SystemIcon from '../SystemIcon'
+import WorkoutDetailHeader from './WorkoutDetailHeader'
+import WorkoutDetailSections from './WorkoutDetailSections'
+import ZoneSummary from './ZoneSummary'
+import '../WorkoutDetail.css'
 
 export default function WorkoutDetail({ workout, onClose, canEdit, onDelete, onToggleComplete, onEdit, onSaveComment, onReplace }) {
   const [editing, setEditing] = useState(false)
@@ -94,101 +95,23 @@ export default function WorkoutDetail({ workout, onClose, canEdit, onDelete, onT
   return (
     <div className="modal-backdrop" onClick={handleBackdrop}>
       <div className="modal workout-detail-modal" style={{ '--zone-color': zoneColorVar }}>
-        <button className="modal-close" onClick={onClose}><SystemIcon name="close" className="system-icon" /></button>
+        <WorkoutDetailHeader
+          onClose={onClose}
+          icon={icon}
+          scheduleLabel={scheduleLabel}
+          title={workout.title}
+          typeLabel={typeLabel}
+          activityTag={activityTag}
+          loadTag={loadTag}
+        />
 
-        <div className="modal-header">
-          <span className="modal-icon"><ActivityIcon name={icon} className="ui-icon" /></span>
-          <div>
-            {scheduleLabel && <div className="modal-date">{scheduleLabel}</div>}
-            <div className="modal-title">{workout.title}</div>
-            <div className="modal-type">
-              {typeLabel}
-              {activityTag && (
-                <span
-                  className="activity-tag-pill"
-                  style={{ '--tag-color': activityTag.color, '--tag-bg': activityTag.bg }}
-                >
-                  <span className="activity-tag-icon" aria-hidden="true"><ActivityIcon name={activityTag.icon} className="tag-icon-svg" /></span>
-                  <span>{activityTag.label}</span>
-                </span>
-              )}
-              {loadTag && (
-                <span
-                  className="load-tag-pill"
-                  style={{ '--load-color': loadTag.color, '--load-bg': loadTag.bg }}
-                >
-                  <span>{loadTag.label}</span>
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {isRunningWorkout && (
-          <>
-            {workout.distance && (
-              <div className="modal-section">
-                <div className="section-label">Antall km</div>
-                <div className="section-content">{workout.distance}</div>
-              </div>
-            )}
-
-            {runningDetails && (
-              <div className="modal-section">
-                <div className="section-label">Hva skal gjøres</div>
-                <div className="section-content workout-desc" data-pre-line>
-                  {runningDetails}
-                </div>
-              </div>
-            )}
-          </>
-        )}
-
-        {!isRunningWorkout && workout.description && (!isStrengthWorkout || workout.exercises) && (
-          <div className="modal-section">
-            <div className="section-label">Treningsøkt</div>
-            <div className="section-content workout-desc" data-pre-line>{workout.description}</div>
-          </div>
-        )}
-
-        {workout.warmup && (
-          <div className="modal-section">
-            <div className="section-label">Oppvarming</div>
-            <div className="section-content">{workout.warmup}</div>
-          </div>
-        )}
-
-        {workout.cooldown && (
-          <div className="modal-section">
-            <div className="section-label">Nedkjøling</div>
-            <div className="section-content">{workout.cooldown}</div>
-          </div>
-        )}
-
-        {isStrengthWorkout && exerciseLines.length > 0 && (
-          <div className="modal-section">
-            <div className="section-label">Øvelser</div>
-            <ul className="detail-list">
-              {exerciseLines.map((line, index) => (
-                <li key={`${line}-${index}`}>{line}</li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        {isStrengthWorkout && workout.rest && (
-          <div className="modal-section">
-            <div className="section-label">Pause</div>
-            <div className="section-content">{workout.rest}</div>
-          </div>
-        )}
-
-        {workout.notes && (
-          <div className="modal-section">
-            <div className="section-label">Notater</div>
-            <div className="section-content" data-pre-line>{workout.notes}</div>
-          </div>
-        )}
+        <WorkoutDetailSections
+          workout={workout}
+          isRunningWorkout={isRunningWorkout}
+          isStrengthWorkout={isStrengthWorkout}
+          runningDetails={runningDetails}
+          exerciseLines={exerciseLines}
+        />
 
         <div className="modal-section">
           <div className="section-label">Kommentar på økten</div>
@@ -214,35 +137,12 @@ export default function WorkoutDetail({ workout, onClose, canEdit, onDelete, onT
         </div>
 
         {zone && colors && zoneLabel && (
-          <div
-            className="modal-section zone-summary"
-            style={{ '--zone-color': colors.border }}
+          <ZoneSummary
+            zones={zones}
+            colors={colors}
+            zoneLabel={zoneLabel}
             onClick={() => setShowScale(true)}
-            title="Trykk for å se din intensitetsskala"
-          >
-            <div className="section-label">{zoneLabel}</div>
-            <div className="zone-multi-stats">
-              {zones.map(selectedZone => {
-                const zoneInfo = ZONE_INFO[selectedZone]
-                const zoneColors = ZONE_COLORS[selectedZone]
-
-                return (
-                  <div
-                    key={selectedZone}
-                    className="zone-mini-card"
-                    style={{ '--zone-color': zoneColors.border }}
-                  >
-                    <strong>{zoneColors.label}</strong>
-                    <span>HR {zoneInfo.hr} bpm</span>
-                    <span>Pust {zoneInfo.breathing}</span>
-                  </div>
-                )
-              })}
-            </div>
-            <div className="zone-summary-hint">
-              Trykk for å se full intensitetsskala
-            </div>
-          </div>
+          />
         )}
 
         {zone && showScale && <IntensityScaleModal onClose={() => setShowScale(false)} />}

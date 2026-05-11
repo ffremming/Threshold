@@ -1,0 +1,33 @@
+export const ROLIG_TEMPLATES = [
+  {
+    id: 'rolig ',
+    category: 'Rolig',
+    type: 'rolig',
+    activityTag: 'run',
+    title: 'Rolig jogg',
+    description: 'Rolig jogg, sone 1–2',
+    sessionDetails: 'Rolig jogg i sone 1-2. Hold pratenivå hele veien.',
+    intensityZone: [1, 2],
+  },
+  {
+    id: 'rolig langtur',
+    category: 'Rolig',
+    type: 'rolig',
+    activityTag: 'run',
+    title: 'Rolig løp – 6km',
+    description: 'Sone 1–2 rolig 10 km',
+    distance: '6 km',
+    sessionDetails: 'Rolig løping i sone 1-2 over 10 km.',
+    intensityZone: [1, 2],
+  },
+  {
+    id: 'kontinuerlig tempo',
+    category: 'Rolig',
+    type: 'terskel',
+    activityTag: 'run',
+    title: 'Kontinuerlig tempo',
+    description: '30 min kontinuerlig. Starte på 9 km/t, øke gradvis. Start i lav sone 3, avslutte i lav/moderat sone 4.',
+    sessionDetails: '30 min kontinuerlig på mølle. Start på 9 km/t og øk gradvis. Start i lav sone 3 og avslutt i lav/moderat sone 4.',
+    intensityZone: [3, 4],
+  },
+]

@@ -67,3 +67,56 @@
   color: var(--tp-success);
 }
 
+
+/* Structured session blocks view (athlete-facing) */
+.session-blocks-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--tp-space-2);
+}
+
+.session-block-row {
+  border: 1px solid var(--tp-line);
+  border-radius: var(--tp-radius-sm);
+  padding: var(--tp-space-2) var(--tp-space-3);
+  background: var(--tp-surface);
+}
+
+.session-block-row-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--tp-space-3);
+  flex-wrap: wrap;
+}
+
+.session-block-row-label {
+  font-weight: 600;
+  color: var(--tp-ink);
+}
+
+.session-block-row-main {
+  color: var(--tp-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.session-block-row-meta {
+  margin-top: var(--tp-space-1);
+  font-size: var(--tp-text-2xs);
+  color: var(--tp-ink-muted);
+  display: flex;
+  gap: var(--tp-space-3);
+  flex-wrap: wrap;
+}
+
+.session-blocks-totals {
+  margin-top: var(--tp-space-2);
+  display: flex;
+  gap: var(--tp-space-3);
+  font-size: var(--tp-text-2xs);
+  color: var(--tp-ink-muted);
+  font-variant-numeric: tabular-nums;
+}

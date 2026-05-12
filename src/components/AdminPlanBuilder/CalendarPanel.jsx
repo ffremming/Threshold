@@ -50,7 +50,25 @@ export default function CalendarPanel({
           ))}
         </div>
       ) : sortedWorkouts.length === 0 ? (
-        <div className="pb-empty-state">Ingen økter denne uken</div>
+        <div
+          className={`pb-empty-state pb-empty-slot${dropTarget && !dropTarget?.beforeWorkoutId ? ' is-target' : ''}`}
+          onDragOver={event => {
+            if (!dragState) return
+            event.preventDefault()
+            event.stopPropagation()
+            if (event.dataTransfer) {
+              event.dataTransfer.dropEffect = dragState.kind === 'template' ? 'copy' : 'move'
+            }
+            handleDropTargetChange(1)
+          }}
+          onDrop={async event => {
+            event.preventDefault()
+            event.stopPropagation()
+            await handleDrop(1)
+          }}
+        >
+          {dragState ? 'Slipp økt her' : 'Ingen økter denne uken'}
+        </div>
       ) : (
         <div className="pb-workout-list">
           {sortedWorkouts.map((workout, index) => (

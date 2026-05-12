@@ -1,3 +1,6 @@
+import { hasStructuredBlocks } from '../../sessionBlocks'
+import SessionBlocksView from './SessionBlocksView'
+
 export default function WorkoutDetailSections({
   workout,
   isRunningWorkout,
@@ -5,11 +8,14 @@ export default function WorkoutDetailSections({
   runningDetails,
   exerciseLines,
 }) {
+  const showBlocks = hasStructuredBlocks(workout)
   return (
     <>
+      {showBlocks && <SessionBlocksView workout={workout} />}
+
       {isRunningWorkout && (
         <>
-          {workout.distance && (
+          {!showBlocks && workout.distance && (
             <div className="modal-section">
               <div className="section-label">Antall km</div>
               <div className="section-content">{workout.distance}</div>

@@ -110,7 +110,7 @@ export default function AddFromTemplate({ template, initialDate, onSave, onClose
                   <button
                     key={z}
                     type="button"
-                    className={`zone-btn zone-btn-${z}${normalizeIntensityZones(form.type, form.intensityZone).includes(z) ? ' active' : ''}`}
+                    className={`tp-zone-btn tp-zone-${z}${normalizeIntensityZones(form.type, form.intensityZone).includes(z) ? ' is-active' : ''}`}
                     onClick={() => toggleIntensityZone(z)}
                   >
                     Sone {z}

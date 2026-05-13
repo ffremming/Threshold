@@ -43,6 +43,47 @@
   flex-wrap: wrap;
 }
 
+/* Weekly summary strip */
+.ah-week-strip {
+  display: flex;
+  align-items: center;
+  gap: var(--tp-space-4);
+  flex-wrap: wrap;
+  padding: var(--tp-space-2) var(--tp-space-3);
+  margin-bottom: var(--tp-space-3);
+  background: var(--tp-bg);
+  border: 1px solid var(--tp-line);
+  border-radius: var(--tp-radius-md);
+}
+
+.ah-week-stat {
+  display: flex;
+  align-items: baseline;
+  gap: var(--tp-space-1);
+}
+
+.ah-week-stat-value {
+  font-size: var(--tp-text-md);
+  font-weight: 700;
+  color: var(--tp-ink);
+  letter-spacing: var(--tp-tracking-tight);
+}
+
+.ah-week-stat-label {
+  font-size: var(--tp-text-sm);
+  color: var(--tp-ink-muted);
+}
+
+.ah-week-breakdown {
+  margin-left: auto;
+  font-size: var(--tp-text-sm);
+  color: var(--tp-ink-muted);
+}
+
+@media (max-width: 480px) {
+  .ah-week-breakdown { margin-left: 0; width: 100%; }
+}
+
 /* Summary bar */
 .ah-summary { display: flex; flex-direction: column; gap: var(--tp-space-2); }
 

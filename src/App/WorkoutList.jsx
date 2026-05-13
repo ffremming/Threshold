@@ -1,5 +1,35 @@
 import { Section, EmptyState, WorkoutCard } from '../components/ui'
 
+const TYPE_LABELS = {
+  rolig: 'rolig',
+  molle: 'mølle',
+  terskel: 'terskel',
+  interval: 'intervall',
+  styrke: 'styrke',
+  annet: 'annet',
+}
+
+function formatDuration(totalMinutes) {
+  if (!totalMinutes) return '0 min'
+  const hours = Math.floor(totalMinutes / 60)
+  const mins = totalMinutes % 60
+  if (hours === 0) return `${mins} min`
+  if (mins === 0) return `${hours} t`
+  return `${hours} t ${mins} min`
+}
+
+function buildTypeBreakdown(workouts) {
+  const counts = new Map()
+  for (const w of workouts) {
+    const key = w.type || 'annet'
+    counts.set(key, (counts.get(key) || 0) + 1)
+  }
+  return [...counts.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .map(([type, count]) => `${count} ${TYPE_LABELS[type] || type}`)
+    .join(', ')
+}
+
 export default function WorkoutList({
   loading,
   workouts,
@@ -22,9 +52,30 @@ export default function WorkoutList({
     )
   }
 
+  const totalMinutes = workouts.reduce((sum, w) => sum + (Number(w.duration) || 0), 0)
+  const typeBreakdown = buildTypeBreakdown(workouts)
+
   return (
     <>
       <Section padded>
+        <div className="ah-week-strip">
+          <div className="ah-week-stat">
+            <span className="ah-week-stat-value">{formatDuration(totalMinutes)}</span>
+            <span className="ah-week-stat-label">planlagt</span>
+          </div>
+          <div className="ah-week-stat">
+            <span className="ah-week-stat-value">{workouts.length}</span>
+            <span className="ah-week-stat-label">økter</span>
+          </div>
+          <div className="ah-week-stat">
+            <span className="ah-week-stat-value">{doneCount}</span>
+            <span className="ah-week-stat-label">fullført</span>
+          </div>
+          {typeBreakdown && (
+            <div className="ah-week-breakdown" title="Fordeling per type">{typeBreakdown}</div>
+          )}
+        </div>
+
         <div className="ah-summary">
           <div className="ah-summary-text">
             <span className="tp-num">{doneCount}/{workouts.length}</span> fullført

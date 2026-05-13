@@ -10,13 +10,17 @@ import '../LibraryBrowser.css'
 
 function matchesSearch(template, term) {
   if (!term) return true
+  const tags = Array.isArray(template.tags) ? template.tags : []
   const haystack = [
     template.title,
     template.description,
     template.sessionDetails,
     template.notes,
     template.category,
+    template.type,
+    template.activityTag,
     ACTIVITY_TAG_MAP[template.activityTag]?.label,
+    ...tags,
   ]
     .filter(Boolean)
     .join(' ')

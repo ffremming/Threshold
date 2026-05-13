@@ -19,7 +19,6 @@ import { createHandlers } from './handlers'
 import LoadingScreen from './LoadingScreen'
 import ProfileErrorScreen from './ProfileErrorScreen'
 import MainShell from './MainShell'
-import { subscribeWeekNote } from '../weekNotes'
 import {
   UserManagementScreen,
   AthleteOverviewScreen,
@@ -77,21 +76,6 @@ export default function App() {
     viewedAthleteId, currentWeek, currentYear, overviewWeeks, overviewWeekKeys,
     canManageWorkouts, userProfile, user,
   })
-
-  const [weekNote, setWeekNote] = useState(null)
-
-  useEffect(() => {
-    if (!viewedAthleteId) {
-      setWeekNote(null)
-      return
-    }
-    setWeekNote(null)
-    const unsubscribe = subscribeWeekNote(
-      { athleteId: viewedAthleteId, week: currentWeek, year: currentYear },
-      setWeekNote
-    )
-    return unsubscribe
-  }, [viewedAthleteId, currentWeek, currentYear])
 
   useEffect(() => {
     if (!selectedWorkout) return
@@ -259,7 +243,6 @@ export default function App() {
         showLogin, setShowLogin,
         setShowUserManagement, setShowAthleteOverview, setShowAdmin,
         handleLogout: handlers.handleLogout,
-        viewedAthleteId, weekNote,
       }}
     />
     {showShortcutsHelp && <ShortcutsHelp onClose={() => setShowShortcutsHelp(false)} />}

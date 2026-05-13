@@ -26,7 +26,7 @@ export default function MainShell(props) {
     homeWorkoutLayout, handleWorkoutLayoutChange,
     loading, workouts, doneCount, workoutDays,
     selectedWorkout, setSelectedWorkout,
-    handleToggleComplete, handleSaveComment, handleStartReplaceWorkout,
+    handleToggleComplete, handleSaveComment, handleStartReplaceWorkout, handleDuplicateWorkout,
     replacementTarget, templates, loadingTemplates, closeTemplatePicker, handleReplaceWithTemplate,
     showLogin, setShowLogin,
     setShowUserManagement, setShowAthleteOverview, setShowAdmin, handleLogout,
@@ -126,6 +126,7 @@ export default function MainShell(props) {
           setSelectedWorkout={setSelectedWorkout}
           canManageWorkouts={canManageWorkouts}
           handleStartReplaceWorkout={handleStartReplaceWorkout}
+          handleDuplicateWorkout={handleDuplicateWorkout}
           handleToggleComplete={handleToggleComplete}
           handleSaveComment={handleSaveComment}
         />

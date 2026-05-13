@@ -19,7 +19,7 @@ import WorkoutDetailSections from './WorkoutDetailSections'
 import ZoneSummary from './ZoneSummary'
 import '../WorkoutDetail.css'
 
-export default function WorkoutDetail({ workout, onClose, canEdit, onDelete, onToggleComplete, onEdit, onSaveComment, onReplace }) {
+export default function WorkoutDetail({ workout, onClose, canEdit, onDelete, onToggleComplete, onEdit, onSaveComment, onReplace, onDuplicate }) {
   const [editing, setEditing] = useState(false)
   const [form, setForm] = useState(workout ? { ...workout } : {})
   const [showScale, setShowScale] = useState(false)
@@ -156,6 +156,9 @@ export default function WorkoutDetail({ workout, onClose, canEdit, onDelete, onT
           </button>
           {onReplace && canEdit && (
             <button className="btn-edit" onClick={() => onReplace(workout)}><SystemIcon name="replace" className="button-icon" />Bytt</button>
+          )}
+          {onDuplicate && canEdit && (
+            <button className="btn-edit" onClick={() => onDuplicate(workout)}><SystemIcon name="duplicate" className="button-icon" />Dupliser</button>
           )}
           {canEdit && onEdit && (
             <button className="btn-edit" onClick={() => setEditing(true)}><SystemIcon name="edit" className="button-icon" />Rediger</button>

@@ -14,6 +14,7 @@ export default function WorkoutDetailModal({
   setSelectedWorkout,
   canManageWorkouts,
   handleStartReplaceWorkout,
+  handleDuplicateWorkout,
   handleToggleComplete,
   handleSaveComment,
 }) {
@@ -23,6 +24,7 @@ export default function WorkoutDetailModal({
       onClose={() => setSelectedWorkout(null)}
       canEdit={canManageWorkouts}
       onReplace={canManageWorkouts ? handleStartReplaceWorkout : undefined}
+      onDuplicate={canManageWorkouts ? handleDuplicateWorkout : undefined}
       onDelete={canManageWorkouts ? async (w) => {
         await deleteDoc(doc(db, 'workouts', w.id))
         setSelectedWorkout(null)

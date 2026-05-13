@@ -252,6 +252,7 @@ export default function App() {
         handleToggleComplete: handlers.handleToggleComplete,
         handleSaveComment: handlers.handleSaveComment,
         handleStartReplaceWorkout: handlers.handleStartReplaceWorkout,
+        handleDuplicateWorkout: handlers.handleDuplicateWorkout,
         replacementTarget, templates, loadingTemplates,
         closeTemplatePicker: handlers.closeTemplatePicker,
         handleReplaceWithTemplate: handlers.handleReplaceWithTemplate,

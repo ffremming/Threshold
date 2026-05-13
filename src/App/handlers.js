@@ -1,13 +1,16 @@
 import { signOut } from 'firebase/auth'
 import {
-  updateDoc, doc, serverTimestamp, deleteField,
+  addDoc, collection, updateDoc, doc, serverTimestamp, deleteField,
 } from 'firebase/firestore'
 import { db, auth } from '../firebase'
 import {
+  getAdjacentWeek,
+  getDateStringForWeekday,
   getDefaultCooldown,
   getDefaultWarmup,
   normalizeLoadTag,
   normalizeIntensityZones,
+  normalizeWeekday,
 } from '../utils'
 import { updateUserProfile } from '../userService'
 
@@ -98,6 +101,41 @@ export function createHandlers({
     setReplacementTarget(null)
   }
 
+  async function handleDuplicateWorkout(workout) {
+    if (!workout) return
+    const currentWeekday = normalizeWeekday(workout.weekday)
+    let targetWeekday = currentWeekday + 1
+    let targetWeek = workout.week
+    let targetYear = workout.year
+    if (currentWeekday === 7) {
+      const next = getAdjacentWeek(workout.week, workout.year, 1)
+      targetWeek = next.week
+      targetYear = next.year
+      targetWeekday = 1
+    }
+
+    const {
+      id, createdAt, updatedAt, completed, completedAt,
+      userComment, userCommentUpdatedAt, formScore, surplusScore,
+      ...fields
+    } = workout
+
+    await addDoc(collection(db, 'workouts'), {
+      ...fields,
+      week: targetWeek,
+      year: targetYear,
+      weekday: targetWeekday,
+      date: getDateStringForWeekday(targetWeek, targetYear, targetWeekday),
+      completed: false,
+      completedAt: null,
+      userComment: '',
+      userCommentUpdatedAt: null,
+      createdAt: serverTimestamp(),
+    })
+
+    setSelectedWorkout(null)
+  }
+
   function closeTemplatePicker() {
     setReplacementTarget(null)
   }
@@ -114,6 +152,7 @@ export function createHandlers({
     handleSaveComment,
     handleStartReplaceWorkout,
     handleReplaceWithTemplate,
+    handleDuplicateWorkout,
     closeTemplatePicker,
     handleWorkoutLayoutChange,
   }

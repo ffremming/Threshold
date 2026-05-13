@@ -9,6 +9,7 @@ import {
 } from '../utils'
 import { hasRole } from '../roles'
 import Login from '../components/Login'
+import ShortcutsHelp from '../components/ShortcutsHelp'
 import '../components/AthleteHome.css'
 import { useAuth } from './hooks/useAuth'
 import { useAthletes } from './hooks/useAthletes'
@@ -36,6 +37,7 @@ export default function App() {
   const [showOverview, setShowOverview] = useState(false)
   const [selectedWorkout, setSelectedWorkout] = useState(null)
   const [replacementTarget, setReplacementTarget] = useState(null)
+  const [showShortcutsHelp, setShowShortcutsHelp] = useState(false)
 
   const { user, userProfile, profileLoading, profileError } = useAuth()
 
@@ -109,6 +111,57 @@ export default function App() {
     setCurrentYear(year)
   }
 
+  useEffect(() => {
+    function handleKeyDown(event) {
+      const target = event.target
+      if (target) {
+        const tag = target.tagName
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || target.isContentEditable) {
+          return
+        }
+      }
+      if (event.metaKey || event.ctrlKey || event.altKey) return
+
+      const modalOpen =
+        selectedWorkout ||
+        replacementTarget ||
+        showLogin ||
+        showAdmin ||
+        showUserManagement ||
+        showAthleteOverview
+
+      if (event.key === 'Escape' && showShortcutsHelp) {
+        event.preventDefault()
+        setShowShortcutsHelp(false)
+        return
+      }
+
+      if (modalOpen) return
+
+      if (event.key === 'ArrowLeft') {
+        event.preventDefault()
+        prevWeek()
+      } else if (event.key === 'ArrowRight') {
+        event.preventDefault()
+        nextWeek()
+      } else if (event.key === 't' || event.key === 'T') {
+        event.preventDefault()
+        goToToday()
+      } else if (event.key === '?') {
+        event.preventDefault()
+        setShowShortcutsHelp(prev => !prev)
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [
+    currentWeek, currentYear,
+    selectedWorkout, replacementTarget,
+    showLogin, showAdmin, showUserManagement, showAthleteOverview,
+    showShortcutsHelp,
+  ])
+
   const handlers = createHandlers({
     selectedWorkout, setSelectedWorkout,
     replacementTarget, setReplacementTarget,
@@ -168,6 +221,7 @@ export default function App() {
   }
 
   return (
+    <>
     <MainShell
       {...{
         isSuperadmin, canManageWorkouts, activeHomeAthlete,
@@ -190,5 +244,7 @@ export default function App() {
         handleLogout: handlers.handleLogout,
       }}
     />
+    {showShortcutsHelp && <ShortcutsHelp onClose={() => setShowShortcutsHelp(false)} />}
+    </>
   )
 }

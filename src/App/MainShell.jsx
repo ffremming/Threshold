@@ -14,6 +14,7 @@ import ShellActions from './ShellActions'
 import WorkoutList from './WorkoutList'
 import WorkoutDetailModal from './WorkoutDetailModal'
 import TemplatePickerModal from './TemplatePickerModal'
+import WeekNote from '../components/WeekNote'
 
 export default function MainShell(props) {
   const {
@@ -29,6 +30,7 @@ export default function MainShell(props) {
     replacementTarget, templates, loadingTemplates, closeTemplatePicker, handleReplaceWithTemplate,
     showLogin, setShowLogin,
     setShowUserManagement, setShowAthleteOverview, setShowAdmin, handleLogout,
+    viewedAthleteId, weekNote,
   } = props
 
   return (
@@ -70,6 +72,15 @@ export default function MainShell(props) {
             </IconButton>
           }
         />
+
+        {viewedAthleteId && (
+          <WeekNote
+            athleteId={viewedAthleteId}
+            week={currentWeek}
+            year={currentYear}
+            note={weekNote}
+          />
+        )}
 
         {canManageWorkouts && athletes.length > 0 && (
           <div className="ah-controls">

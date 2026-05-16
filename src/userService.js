@@ -76,6 +76,8 @@ export async function updateAthleteZones(uid, { thresholdHr, vo2maxHr, easyTempo
 }
 
 export async function addAthleteResult(uid, { date, distance, time, note }) {
+  // Note: createdAt is an ISO string (not serverTimestamp) because Firestore
+  // does not allow sentinel values inside arrayUnion payloads.
   const entry = {
     date: date || new Date().toISOString().slice(0, 10),
     distance: typeof distance === 'string' ? distance.trim() : String(distance ?? ''),
@@ -137,44 +139,68 @@ export async function getCoachAthletes(coachId) {
   const relSnap = await getDocs(
     query(collection(db, 'relationships'), where('coachId', '==', coachId))
   )
-  const athleteIds = new Set(relSnap.docs.map(d => d.data().athleteId))
-  if (athleteIds.size === 0) return []
+  const athleteIds = Array.from(new Set(relSnap.docs.map(d => d.data().athleteId)))
+  if (athleteIds.length === 0) return []
 
-  const userSnap = await getDocs(collection(db, 'users'))
-  return userSnap.docs
-    .map(normalizeUserDoc)
-    .filter(user => athleteIds.has(user.uid))
+  const snaps = await Promise.all(
+    athleteIds.map(uid => getDoc(doc(db, 'users', uid)))
+  )
+  return snaps.filter(snap => snap.exists()).map(normalizeUserDoc)
 }
 
 export function onCoachAthletesSnapshot(coachId, callback) {
-  let athleteIds = new Set()
-  let allUsers = []
-  let hasRelationshipsSnapshot = false
-  let hasUsersSnapshot = false
+  // Subscribe to each athlete individually so Firestore rules can enforce
+  // that the coach may only read users they actually coach. Previously this
+  // listened to the whole `users` collection, which required overly broad
+  // read rules.
+  const athleteSubs = new Map()
+  const athleteData = new Map()
+  let hasRelationships = false
 
   const publish = () => {
-    if (!hasRelationshipsSnapshot || !hasUsersSnapshot) return
-    callback(allUsers.filter(user => athleteIds.has(user.uid)))
+    if (!hasRelationships) return
+    const list = Array.from(athleteData.values()).filter(Boolean)
+    callback(list)
   }
 
   const unsubRelationships = onSnapshot(
     query(collection(db, 'relationships'), where('coachId', '==', coachId)),
     snap => {
-      athleteIds = new Set(snap.docs.map(d => d.data().athleteId))
-      hasRelationshipsSnapshot = true
+      const nextIds = new Set(snap.docs.map(d => d.data().athleteId))
+
+      // Tear down listeners for athletes that are no longer linked.
+      for (const [uid, unsub] of athleteSubs.entries()) {
+        if (!nextIds.has(uid)) {
+          unsub()
+          athleteSubs.delete(uid)
+          athleteData.delete(uid)
+        }
+      }
+
+      // Start a listener per newly linked athlete.
+      for (const uid of nextIds) {
+        if (athleteSubs.has(uid)) continue
+        const unsub = onSnapshot(doc(db, 'users', uid), userSnap => {
+          if (userSnap.exists()) {
+            athleteData.set(uid, normalizeUserDoc(userSnap))
+          } else {
+            athleteData.delete(uid)
+          }
+          publish()
+        })
+        athleteSubs.set(uid, unsub)
+      }
+
+      hasRelationships = true
       publish()
     }
   )
 
-  const unsubUsers = onSnapshot(collection(db, 'users'), snap => {
-    allUsers = snap.docs.map(normalizeUserDoc)
-    hasUsersSnapshot = true
-    publish()
-  })
-
   return () => {
     unsubRelationships()
-    unsubUsers()
+    for (const unsub of athleteSubs.values()) unsub()
+    athleteSubs.clear()
+    athleteData.clear()
   }
 }
 
@@ -182,13 +208,13 @@ export async function getAthleteCoaches(athleteId) {
   const relSnap = await getDocs(
     query(collection(db, 'relationships'), where('athleteId', '==', athleteId))
   )
-  const coachIds = new Set(relSnap.docs.map(d => d.data().coachId))
-  if (coachIds.size === 0) return []
+  const coachIds = Array.from(new Set(relSnap.docs.map(d => d.data().coachId)))
+  if (coachIds.length === 0) return []
 
-  const userSnap = await getDocs(collection(db, 'users'))
-  return userSnap.docs
-    .map(normalizeUserDoc)
-    .filter(user => coachIds.has(user.uid))
+  const snaps = await Promise.all(
+    coachIds.map(uid => getDoc(doc(db, 'users', uid)))
+  )
+  return snaps.filter(snap => snap.exists()).map(normalizeUserDoc)
 }
 
 export function onRelationshipsSnapshot(callback) {

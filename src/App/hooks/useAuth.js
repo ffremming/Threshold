@@ -29,6 +29,7 @@ export function useAuth() {
     setProfileLoading(true)
     setProfileError('')
     let cancelled = false
+    let unsubProfile = null
 
     async function initProfile() {
       try {
@@ -37,17 +38,16 @@ export function useAuth() {
 
         if (!existing) {
           const fallbackName = user.email?.split('@')[0] || 'bruker'
-          await createUserProfile(user.uid, user.email || '', fallbackName, 'superadmin')
+          await createUserProfile(user.uid, user.email || '', fallbackName, 'athlete')
         }
+        if (cancelled) return
 
-        const unsub = onUserProfileSnapshot(user.uid, profile => {
+        unsubProfile = onUserProfileSnapshot(user.uid, profile => {
           if (!cancelled) {
             setUserProfile(profile)
             setProfileLoading(false)
           }
         })
-
-        return unsub
       } catch (error) {
         console.error('Failed to initialize user profile', error)
         if (!cancelled) {
@@ -55,12 +55,10 @@ export function useAuth() {
           setProfileError('Kunne ikke laste brukerprofilen. Prøv å laste siden på nytt.')
           setProfileLoading(false)
         }
-        return null
       }
     }
 
-    let unsubProfile = null
-    initProfile().then(unsub => { unsubProfile = unsub })
+    initProfile()
 
     return () => {
       cancelled = true

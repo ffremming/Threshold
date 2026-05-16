@@ -872,7 +872,7 @@
 .pb-trash {
   position: fixed;
   left: 50%;
-  bottom: 18px;
+  bottom: max(18px, env(safe-area-inset-bottom));
   transform: translateX(-50%);
   background: var(--tp-danger);
   color: var(--tp-on-accent);

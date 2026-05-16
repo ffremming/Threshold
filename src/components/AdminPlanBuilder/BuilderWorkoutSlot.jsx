@@ -39,8 +39,8 @@ export default function BuilderWorkoutSlot({
         <span className="pb-card-icon"><ActivityIcon name={icon} className="tag-icon-svg" /></span>
         <div className="pb-slot-actions">
           <span className="pb-card-grip" title="Dra for å flytte" aria-hidden="true">⋮⋮</span>
-          <button className="pb-slot-reorder" onClick={onMoveUp} disabled={index === 0} title="Flytt opp"><SystemIcon name="up" className="system-icon" /></button>
-          <button className="pb-slot-reorder" onClick={onMoveDown} disabled={index === total - 1} title="Flytt ned"><SystemIcon name="down" className="system-icon" /></button>
+          <button type="button" className="pb-slot-reorder" onClick={onMoveUp} disabled={index === 0} title="Flytt opp" aria-label="Flytt opp"><SystemIcon name="up" className="system-icon" /></button>
+          <button type="button" className="pb-slot-reorder" onClick={onMoveDown} disabled={index === total - 1} title="Flytt ned" aria-label="Flytt ned"><SystemIcon name="down" className="system-icon" /></button>
         </div>
       </div>
 

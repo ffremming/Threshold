@@ -35,12 +35,26 @@ service cloud.firestore {
       allow read: if request.auth != null && (
         request.auth.uid == userId ||
         isSuperadmin() ||
-        hasRole('coach')
+        (hasRole('coach') && isCoachOf(userId))
       );
-      allow create: if request.auth != null && request.auth.uid == userId;
+      // New users may only self-create as athlete. Role/roles fields must be
+      // exactly the default — elevated roles are granted by a superadmin via
+      // updateUserRole, never set by the user themselves.
+      allow create: if request.auth != null
+        && request.auth.uid == userId
+        && request.resource.data.uid == userId
+        && request.resource.data.role == 'athlete'
+        && request.resource.data.roles is list
+        && request.resource.data.roles.size() == 1
+        && request.resource.data.roles[0] == 'athlete';
+      // Self-updates may NOT change role/roles. Only superadmin can promote.
       allow update: if request.auth != null && (
         isSuperadmin() ||
-        request.auth.uid == userId
+        (
+          request.auth.uid == userId &&
+          (!('role' in request.resource.data) || request.resource.data.role == resource.data.role) &&
+          (!('roles' in request.resource.data) || request.resource.data.roles == resource.data.roles)
+        )
       );
     }
 
@@ -57,11 +71,13 @@ service cloud.firestore {
         isSuperadmin() ||
         isCoachOf(resource.data.athleteId)
       );
-      allow create: if request.auth != null && (
-        request.resource.data.athleteId == request.auth.uid ||
-        isSuperadmin() ||
-        isCoachOf(request.resource.data.athleteId)
-      );
+      allow create: if request.auth != null
+        && request.resource.data.athleteId is string
+        && (
+          request.resource.data.athleteId == request.auth.uid ||
+          isSuperadmin() ||
+          isCoachOf(request.resource.data.athleteId)
+        );
       allow update: if request.auth != null && (
         resource.data.athleteId == request.auth.uid ||
         isSuperadmin() ||
@@ -136,11 +152,13 @@ service cloud.firestore {
         isSuperadmin() ||
         isCoachOf(resource.data.athleteId)
       );
-      allow create: if request.auth != null && (
-        request.resource.data.athleteId == request.auth.uid ||
-        isSuperadmin() ||
-        isCoachOf(request.resource.data.athleteId)
-      );
+      allow create: if request.auth != null
+        && request.resource.data.athleteId is string
+        && (
+          request.resource.data.athleteId == request.auth.uid ||
+          isSuperadmin() ||
+          isCoachOf(request.resource.data.athleteId)
+        );
       allow update, delete: if request.auth != null && (
         resource.data.athleteId == request.auth.uid ||
         isSuperadmin() ||

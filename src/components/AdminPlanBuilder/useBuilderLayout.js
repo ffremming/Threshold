@@ -1,22 +1,27 @@
 import { useEffect, useState } from 'react'
+import { auth } from '../../firebase'
 import {
-  BUILDER_LAYOUT_STORAGE_KEY,
   DEFAULT_PANEL_ORDER,
   DEFAULT_PANEL_SIZES,
   PINNED_ACTIVITY_TAGS,
-  VISIBLE_ACTIVITIES_STORAGE_KEY,
+  getBuilderLayoutStorageKey,
+  getVisibleActivitiesStorageKey,
   readVisibleActivities,
 } from './constants'
 import { clamp } from './mathUtils'
 
 export function useBuilderLayout() {
+  const userId = auth.currentUser?.uid || null
+  const layoutKey = getBuilderLayoutStorageKey(userId)
+  const visibleKey = getVisibleActivitiesStorageKey(userId)
+
   const [viewportWidth, setViewportWidth] = useState(() => (
     typeof window !== 'undefined' ? window.innerWidth : 1440
   ))
   const [panelOrder, setPanelOrder] = useState(() => {
     if (typeof window === 'undefined') return DEFAULT_PANEL_ORDER
     try {
-      const saved = JSON.parse(window.localStorage.getItem(BUILDER_LAYOUT_STORAGE_KEY) || '{}')
+      const saved = JSON.parse(window.localStorage.getItem(layoutKey) || '{}')
       return Array.isArray(saved.panelOrder) ? saved.panelOrder : DEFAULT_PANEL_ORDER
     } catch {
       return DEFAULT_PANEL_ORDER
@@ -25,7 +30,7 @@ export function useBuilderLayout() {
   const [panelSizes, setPanelSizes] = useState(() => {
     if (typeof window === 'undefined') return DEFAULT_PANEL_SIZES
     try {
-      const saved = JSON.parse(window.localStorage.getItem(BUILDER_LAYOUT_STORAGE_KEY) || '{}')
+      const saved = JSON.parse(window.localStorage.getItem(layoutKey) || '{}')
       return {
         ...DEFAULT_PANEL_SIZES,
         ...(saved.panelSizes || {}),
@@ -35,12 +40,12 @@ export function useBuilderLayout() {
     }
   })
   const [activeResizer, setActiveResizer] = useState(null)
-  const [visibleActivities, setVisibleActivities] = useState(readVisibleActivities)
+  const [visibleActivities, setVisibleActivities] = useState(() => readVisibleActivities(userId))
 
   useEffect(() => {
     if (typeof window === 'undefined') return
-    window.localStorage.setItem(VISIBLE_ACTIVITIES_STORAGE_KEY, JSON.stringify(visibleActivities))
-  }, [visibleActivities])
+    window.localStorage.setItem(visibleKey, JSON.stringify(visibleActivities))
+  }, [visibleActivities, visibleKey])
 
   useEffect(() => {
     function handleResize() {
@@ -80,11 +85,11 @@ export function useBuilderLayout() {
 
   useEffect(() => {
     if (typeof window === 'undefined') return
-    window.localStorage.setItem(BUILDER_LAYOUT_STORAGE_KEY, JSON.stringify({
+    window.localStorage.setItem(layoutKey, JSON.stringify({
       panelOrder,
       panelSizes,
     }))
-  }, [panelOrder, panelSizes])
+  }, [panelOrder, panelSizes, layoutKey])
 
   function addVisibleActivity(value) {
     setVisibleActivities(prev => (prev.includes(value) ? prev : [...prev, value]))

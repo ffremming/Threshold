@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import {
   getAdjacentWeek,
   getWeekKey,
@@ -111,6 +111,22 @@ export default function App() {
     setCurrentYear(year)
   }
 
+  // Keep latest state in a ref so the keyboard listener can read it without
+  // re-binding on every state change.
+  const shortcutStateRef = useRef({})
+  shortcutStateRef.current = {
+    selectedWorkout,
+    replacementTarget,
+    showLogin,
+    showAdmin,
+    showUserManagement,
+    showAthleteOverview,
+    showShortcutsHelp,
+    prevWeek,
+    nextWeek,
+    goToToday,
+  }
+
   useEffect(() => {
     function handleKeyDown(event) {
       const target = event.target
@@ -122,15 +138,16 @@ export default function App() {
       }
       if (event.metaKey || event.ctrlKey || event.altKey) return
 
+      const s = shortcutStateRef.current
       const modalOpen =
-        selectedWorkout ||
-        replacementTarget ||
-        showLogin ||
-        showAdmin ||
-        showUserManagement ||
-        showAthleteOverview
+        s.selectedWorkout ||
+        s.replacementTarget ||
+        s.showLogin ||
+        s.showAdmin ||
+        s.showUserManagement ||
+        s.showAthleteOverview
 
-      if (event.key === 'Escape' && showShortcutsHelp) {
+      if (event.key === 'Escape' && s.showShortcutsHelp) {
         event.preventDefault()
         setShowShortcutsHelp(false)
         return
@@ -140,13 +157,13 @@ export default function App() {
 
       if (event.key === 'ArrowLeft') {
         event.preventDefault()
-        prevWeek()
+        s.prevWeek()
       } else if (event.key === 'ArrowRight') {
         event.preventDefault()
-        nextWeek()
+        s.nextWeek()
       } else if (event.key === 't' || event.key === 'T') {
         event.preventDefault()
-        goToToday()
+        s.goToToday()
       } else if (event.key === '?') {
         event.preventDefault()
         setShowShortcutsHelp(prev => !prev)
@@ -155,12 +172,7 @@ export default function App() {
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [
-    currentWeek, currentYear,
-    selectedWorkout, replacementTarget,
-    showLogin, showAdmin, showUserManagement, showAthleteOverview,
-    showShortcutsHelp,
-  ])
+  }, [])
 
   const handlers = createHandlers({
     selectedWorkout, setSelectedWorkout,

@@ -36,6 +36,18 @@ export function formatPauseLabel(seconds) {
   return `${seconds}s pause`
 }
 
+export function formatLoad(loadKg) {
+  if (!Number.isFinite(loadKg) || loadKg <= 0) return 'kroppsvekt'
+  const rounded = Number.isInteger(loadKg) ? loadKg : Number(loadKg.toFixed(1))
+  return `${rounded} kg`
+}
+
+export function formatSetsReps(sets, reps) {
+  const s = Math.max(1, Math.round(Number(sets) || 1))
+  const r = Math.max(0, Math.round(Number(reps) || 0))
+  return r > 0 ? `${s} × ${r}` : `${s} sett`
+}
+
 export function formatSeconds(totalSec) {
   const sec = Math.max(0, Math.round(Number(totalSec) || 0))
   if (sec >= 60) {

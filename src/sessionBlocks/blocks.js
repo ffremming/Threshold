@@ -1,8 +1,16 @@
 import { getSpeedUnitForActivity, paceToSpeed } from './units'
-import { formatPaceLabel, formatSpeedLabel, formatDistance, formatPauseLabel, formatSeconds } from './format'
+import {
+  formatPaceLabel,
+  formatSpeedLabel,
+  formatDistance,
+  formatDuration,
+  formatPauseLabel,
+  formatSeconds,
+  formatLoad,
+  formatSetsReps,
+} from './format'
 import {
   SECTION_LABELS,
-  createSection,
   normalizeSection,
   computeSectionDuration,
   computeSectionDistance,
@@ -93,6 +101,16 @@ export function blocksToSummary(blocks, activityTag) {
     : (paceSec) => formatSpeedLabel(paceToSpeed(paceSec))
   return sections.map(s => {
     const label = SECTION_LABELS[s.kind] || 'Del'
+    if (s.kind === 'exercise') {
+      const name = s.exerciseName?.trim() || 'Øvelse'
+      const parts = [formatSetsReps(s.sets, s.reps)]
+      if (s.loadKg > 0) parts.push(formatLoad(s.loadKg))
+      if (s.restSec > 0) parts.push(formatPauseLabel(s.restSec))
+      return `${name}: ${parts.join(', ')}`
+    }
+    if (s.kind === 'effort' || (s.distanceKm === 0 && s.durationMin != null && s.paceSecPerKm == null)) {
+      return `${label}: ${formatDuration(s.durationMin)}`
+    }
     if (s.kind === 'interval') {
       const tail = []
       const mode = s.paceMode || 'pace'
@@ -108,13 +126,4 @@ export function blocksToSummary(blocks, activityTag) {
     }
     return `${label}: ${formatDistance(s.distanceKm)} @ ${fmtSpeed(s.paceSecPerKm)}`
   }).join('\n')
-}
-
-export function createBlock(kind, activityTag) {
-  const sectionKind = kind === 'main' ? 'steady' : kind
-  return createSection(sectionKind, activityTag)
-}
-
-export function computeDuration(blockOrSection, activityTag) {
-  return computeSectionDuration(blockOrSection, activityTag)
 }

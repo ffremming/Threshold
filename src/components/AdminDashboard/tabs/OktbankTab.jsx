@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { Plus } from 'lucide-react'
 import {
   ACTIVITY_TAG_MAP,
   TEMPLATE_CATEGORIES,
@@ -76,7 +77,12 @@ export default function OktbankTab({
               : 'Trykk på en økt for å legge den til i planen')
             : `${templates.length} ${templates.length === 1 ? 'mal' : 'maler'} · trykk for å redigere`
         }
-        actions={!pickingFromBank ? <Button onClick={startNewTemplate}>+ Ny mal</Button> : null}
+        actions={!pickingFromBank ? (
+          <Button onClick={startNewTemplate}>
+            <Plus size={16} strokeWidth={2} aria-hidden="true" />
+            Ny mal
+          </Button>
+        ) : null}
       />
 
       <Toolbar>
@@ -114,7 +120,12 @@ export default function OktbankTab({
           }
           action={
             templates.length === 0
-              ? <Button onClick={startNewTemplate}>+ Ny mal</Button>
+              ? (
+                <Button onClick={startNewTemplate}>
+                  <Plus size={16} strokeWidth={2} aria-hidden="true" />
+                  Ny mal
+                </Button>
+              )
               : (filtersActive ? <Button variant="secondary" onClick={clearAll}>Tøm filter</Button> : null)
           }
         />
@@ -128,7 +139,7 @@ export default function OktbankTab({
                 <UITemplateCard
                   key={template.id}
                   template={template}
-                  primaryLabel={pickingFromBank ? (replacementTarget ? 'Bytt ut økt' : '+ Legg til i plan') : (canEdit ? 'Rediger' : null)}
+                  primaryLabel={pickingFromBank ? (replacementTarget ? 'Bytt ut økt' : 'Legg til i plan') : (canEdit ? 'Rediger' : null)}
                   onPrimary={pickingFromBank ? () => handleAddFromTemplate(template) : (canEdit ? () => startEditTemplate(template) : null)}
                   primaryVariant={pickingFromBank ? 'primary' : 'secondary'}
                   onDelete={!pickingFromBank && canEdit ? () => handleDeleteTemplate(template) : null}

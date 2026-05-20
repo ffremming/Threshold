@@ -1,3 +1,4 @@
+import { CalendarX } from 'lucide-react'
 import { Section, EmptyState, WorkoutCard } from '../components/ui'
 
 const TYPE_LABELS = {
@@ -5,6 +6,7 @@ const TYPE_LABELS = {
   molle: 'mølle',
   terskel: 'terskel',
   interval: 'intervall',
+  continuous: 'kontinuerlig',
   styrke: 'styrke',
   annet: 'annet',
 }
@@ -30,6 +32,52 @@ function buildTypeBreakdown(workouts) {
     .join(', ')
 }
 
+function WeekSummary({ workouts, doneCount }) {
+  const totalMinutes = workouts.reduce((sum, w) => sum + (Number(w.duration) || 0), 0)
+  const typeBreakdown = buildTypeBreakdown(workouts)
+  const progressPct = workouts.length > 0
+    ? Math.round((doneCount / workouts.length) * 100)
+    : 0
+
+  return (
+    <Section padded>
+      <div className="ah-week-strip">
+        <div className="ah-week-stat">
+          <span className="ah-week-stat-value">{formatDuration(totalMinutes)}</span>
+          <span className="ah-week-stat-label">planlagt</span>
+        </div>
+        <div className="ah-week-stat">
+          <span className="ah-week-stat-value">{workouts.length}</span>
+          <span className="ah-week-stat-label">økter</span>
+        </div>
+        <div className="ah-week-stat">
+          <span className="ah-week-stat-value">{doneCount}</span>
+          <span className="ah-week-stat-label">fullført</span>
+        </div>
+        {typeBreakdown && (
+          <div className="ah-week-breakdown" title="Fordeling per type">{typeBreakdown}</div>
+        )}
+      </div>
+
+      <div className="ah-summary">
+        <div className="ah-summary-text">
+          <span className="tp-num">{doneCount}/{workouts.length}</span> fullført
+        </div>
+        <div
+          className="ah-progress"
+          role="progressbar"
+          aria-valuenow={progressPct}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-label={`${doneCount} av ${workouts.length} økter fullført`}
+        >
+          <div className="ah-progress-fill" style={{ width: `${progressPct}%` }} />
+        </div>
+      </div>
+    </Section>
+  )
+}
+
 export default function WorkoutList({
   loading,
   workouts,
@@ -42,49 +90,24 @@ export default function WorkoutList({
   handleToggleComplete,
 }) {
   if (loading) return <EmptyState title="Laster økter…" />
+
   if (workouts.length === 0) {
     return (
       <EmptyState
-        icon="•"
+        icon={<CalendarX size={28} aria-hidden="true" />}
         title="Ingen økter denne uken"
-        description={canManageWorkouts && activeHomeAthlete?.displayName ? `Ingen økter for ${activeHomeAthlete.displayName}.` : 'Sjekk en annen uke eller spør treneren din.'}
+        description={
+          canManageWorkouts && activeHomeAthlete?.displayName
+            ? `Ingen økter for ${activeHomeAthlete.displayName}.`
+            : 'Sjekk en annen uke eller spør treneren din.'
+        }
       />
     )
   }
 
-  const totalMinutes = workouts.reduce((sum, w) => sum + (Number(w.duration) || 0), 0)
-  const typeBreakdown = buildTypeBreakdown(workouts)
-
   return (
     <>
-      <Section padded>
-        <div className="ah-week-strip">
-          <div className="ah-week-stat">
-            <span className="ah-week-stat-value">{formatDuration(totalMinutes)}</span>
-            <span className="ah-week-stat-label">planlagt</span>
-          </div>
-          <div className="ah-week-stat">
-            <span className="ah-week-stat-value">{workouts.length}</span>
-            <span className="ah-week-stat-label">økter</span>
-          </div>
-          <div className="ah-week-stat">
-            <span className="ah-week-stat-value">{doneCount}</span>
-            <span className="ah-week-stat-label">fullført</span>
-          </div>
-          {typeBreakdown && (
-            <div className="ah-week-breakdown" title="Fordeling per type">{typeBreakdown}</div>
-          )}
-        </div>
-
-        <div className="ah-summary">
-          <div className="ah-summary-text">
-            <span className="tp-num">{doneCount}/{workouts.length}</span> fullført
-          </div>
-          <div className="ah-progress" aria-hidden="true">
-            <div className="ah-progress-fill" style={{ width: `${(doneCount / workouts.length) * 100}%` }} />
-          </div>
-        </div>
-      </Section>
+      <WeekSummary workouts={workouts} doneCount={doneCount} />
 
       {homeWorkoutLayout === 'calendar' ? (
         <div className="ah-day-list">
@@ -92,7 +115,11 @@ export default function WorkoutList({
             <Section
               key={day.value}
               title={day.label}
-              subtitle={day.workouts.length > 0 ? `${day.workouts.length} økt${day.workouts.length > 1 ? 'er' : ''}` : 'Hvile / ingen økter'}
+              subtitle={
+                day.workouts.length > 0
+                  ? `${day.workouts.length} økt${day.workouts.length > 1 ? 'er' : ''}`
+                  : 'Hvile / ingen økter'
+              }
             >
               {day.workouts.length === 0 ? (
                 <div className="ah-empty-slot">Ledig slot</div>

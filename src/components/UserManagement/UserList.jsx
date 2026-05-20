@@ -1,53 +1,82 @@
-import { compareUsersByRole, getUserRoles, ROLE_LABELS } from '../../roles'
-import { Page, PageHeader, PageShell, ShellBrand } from '../ui'
+import { useMemo, useState } from 'react'
+import { ChevronRight, Users } from 'lucide-react'
+import { compareUsersByRole, getUserRoles } from '../../roles'
+import { Card, EmptyState, List, Page, PageHeader, PageShell, SearchBox, ShellBrand } from '../ui'
+import RoleChip from './RoleChip'
+import './UserManagement.css'
+
+function initialOf(user) {
+  return (user.displayName || user.email || '?').trim()[0].toUpperCase()
+}
 
 export default function UserList({ users, loading, onClose, onSelectUser }) {
+  const [search, setSearch] = useState('')
+
+  const sorted = useMemo(() => {
+    const term = search.trim().toLowerCase()
+    return [...users]
+      .filter(u => {
+        if (!term) return true
+        return (u.displayName || '').toLowerCase().includes(term)
+          || (u.email || '').toLowerCase().includes(term)
+      })
+      .sort((a, b) => {
+        const byRole = compareUsersByRole(a, b)
+        return byRole !== 0 ? byRole : (a.displayName || '').localeCompare(b.displayName || '')
+      })
+  }, [users, search])
+
   return (
     <PageShell brand={<ShellBrand onBack={onClose} eyebrow="Training Planner" title="Brukere" />}>
       <Page>
         <PageHeader
-          eyebrow="User management"
+          eyebrow="Brukeradministrasjon"
           title="Alle brukere"
-          subtitle="Nye brukere registrerer seg selv og får rollen «Utøver». Kombiner roller og tildel trenere her."
+          subtitle="Nye brukere får rollen «Utøver». Velg en bruker for å endre roller og koble trenere og utøvere."
         />
 
+        {!loading && users.length > 0 && (
+          <SearchBox
+            value={search}
+            onChange={setSearch}
+            placeholder="Søk på navn eller e-post…"
+          />
+        )}
+
         {loading ? (
-          <div className="empty-state">Laster brukere...</div>
+          <Card aria-busy="true" style={{ padding: 'var(--tp-space-5)', textAlign: 'center', color: 'var(--tp-ink-muted)' }}>
+            Laster brukere…
+          </Card>
         ) : users.length === 0 ? (
-          <div className="empty-state">Ingen brukere funnet</div>
+          <EmptyState
+            icon={<Users size={28} aria-hidden="true" />}
+            title="Ingen brukere ennå"
+            description="Brukere dukker opp her så snart de registrerer seg."
+          />
+        ) : sorted.length === 0 ? (
+          <EmptyState
+            icon={<Users size={28} aria-hidden="true" />}
+            title="Ingen treff"
+            description={`Fant ingen brukere som matcher «${search}».`}
+          />
         ) : (
-          <div className="user-list">
-            {users
-              .sort((a, b) => {
-                const ro = compareUsersByRole(a, b)
-                return ro !== 0 ? ro : (a.displayName || '').localeCompare(b.displayName || '')
-              })
-              .map(u => (
-                <div
-                  key={u.uid}
-                  className="user-card"
-                  onClick={() => onSelectUser(u)}
-                >
-                  <div className="user-card-left">
-                    <div className="user-avatar">
-                      {(u.displayName || u.email || '?')[0].toUpperCase()}
-                    </div>
-                    <div className="user-card-info">
-                      <span className="user-card-name">{u.displayName || 'Uten navn'}</span>
-                      <span className="user-card-email">{u.email}</span>
-                    </div>
-                  </div>
-                  <div className="role-badge-list">
-                    {getUserRoles(u).map(role => (
-                      <span key={role} className={`role-badge role-${role}`}>
-                        {ROLE_LABELS[role] || role}
-                      </span>
-                    ))}
-                  </div>
+          <List className="tp-um-list">
+            {sorted.map(u => (
+              <List.Row key={u.uid} onClick={() => onSelectUser(u)} columns="1fr auto auto">
+                <div className="tp-um-user">
+                  <span className="tp-um-avatar" aria-hidden="true">{initialOf(u)}</span>
+                  <span className="tp-um-user-meta">
+                    <span className="tp-um-name">{u.displayName || 'Uten navn'}</span>
+                    <span className="tp-um-email">{u.email}</span>
+                  </span>
                 </div>
-              ))
-            }
-          </div>
+                <span className="tp-um-roles">
+                  {getUserRoles(u).map(role => <RoleChip key={role} role={role} />)}
+                </span>
+                <ChevronRight size={16} aria-hidden="true" style={{ color: 'var(--tp-ink-muted)' }} />
+              </List.Row>
+            ))}
+          </List>
         )}
       </Page>
     </PageShell>

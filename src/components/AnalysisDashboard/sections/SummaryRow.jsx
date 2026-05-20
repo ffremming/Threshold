@@ -1,5 +1,6 @@
 import { SummaryCell } from './primitives'
 import { formatDelta, formatMetricValue, getMetricTooltip } from '../utils'
+import './summary.css'
 
 export default function SummaryRow({
   selectedMetricMeta, primaryMetric, totals, trendDelta, focusWeek,

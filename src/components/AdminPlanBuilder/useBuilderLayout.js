@@ -100,15 +100,29 @@ export function useBuilderLayout() {
     setVisibleActivities(prev => prev.filter(item => item !== value))
   }
 
+  function getResizeBounds(panelId) {
+    return { minWidth: panelId === 'calendar' ? 780 : 280, maxWidth: 1600 }
+  }
+
   function startResize(panelId, event) {
     event.preventDefault()
+    const { minWidth, maxWidth } = getResizeBounds(panelId)
     setActiveResizer({
       panelId,
       startX: event.clientX,
       startWidth: panelSizes[panelId] || DEFAULT_PANEL_SIZES[panelId],
-      minWidth: panelId === 'calendar' ? 780 : 280,
-      maxWidth: 1600,
+      minWidth,
+      maxWidth,
     })
+  }
+
+  // Keyboard fallback so panel widths can be adjusted without a pointer.
+  function nudgeResize(panelId, deltaX) {
+    const { minWidth, maxWidth } = getResizeBounds(panelId)
+    setPanelSizes(prev => ({
+      ...prev,
+      [panelId]: clamp((prev[panelId] || DEFAULT_PANEL_SIZES[panelId]) + deltaX, minWidth, maxWidth),
+    }))
   }
 
   return {
@@ -120,5 +134,6 @@ export function useBuilderLayout() {
     addVisibleActivity,
     removeVisibleActivity,
     startResize,
+    nudgeResize,
   }
 }

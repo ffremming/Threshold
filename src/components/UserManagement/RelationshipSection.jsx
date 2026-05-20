@@ -1,68 +1,81 @@
-import SystemIcon from '../SystemIcon'
+import { useState } from 'react'
+import { Plus, UserMinus, X } from 'lucide-react'
+import { Button, IconButton, Section } from '../ui'
 
 export default function RelationshipSection({
   title,
+  subtitle,
   emptyLabel,
   members,
   unassigned,
-  assigningCoach,
-  setAssigningCoach,
-  onRemove,
-  onAdd,
-  assignTitle,
   addLabel,
+  assignTitle,
+  noneLeftLabel,
+  onAdd,
+  onRemove,
 }) {
-  return (
-    <div className="relationship-section">
-      <h3 className="relationship-title">{title} ({members.length})</h3>
-      {members.length === 0 ? (
-        <div className="empty-state-small">{emptyLabel}</div>
-      ) : (
-        <div className="relationship-list">
-          {members.map(member => (
-            <div key={member.uid} className="relationship-item">
-              <div className="relationship-info">
-                <span className="relationship-name">{member.displayName}</span>
-                <span className="relationship-email">{member.email}</span>
-              </div>
-              <button
-                className="btn-remove-rel"
-                onClick={() => onRemove(member)}
-                title="Fjern kobling"
-              >
-                <SystemIcon name="unassign" className="button-icon" />
-                Fjern
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
+  const [assigning, setAssigning] = useState(false)
 
-      {unassigned.length > 0 && (
-        assigningCoach ? (
-          <div className="assign-section">
-            <h4 className="assign-title">{assignTitle}</h4>
-            <div className="assign-list">
-              {unassigned.map(person => (
+  const action = unassigned.length > 0 && !assigning
+    ? (
+      <Button variant="ghost" size="sm" onClick={() => setAssigning(true)}>
+        <Plus size={15} aria-hidden="true" /> {addLabel}
+      </Button>
+    )
+    : null
+
+  return (
+    <Section title={`${title} (${members.length})`} subtitle={subtitle} action={action}>
+      <div className="tp-um-section-body">
+        {members.length === 0 ? (
+          <p className="tp-um-email" style={{ margin: 0 }}>{emptyLabel}</p>
+        ) : (
+          members.map(member => (
+            <div key={member.uid} className="tp-rel-row">
+              <span className="tp-rel-meta">
+                <span className="tp-rel-name">{member.displayName || 'Uten navn'}</span>
+                <span className="tp-rel-email">{member.email}</span>
+              </span>
+              <IconButton
+                ariaLabel={`Fjern kobling til ${member.displayName || member.email}`}
+                onClick={() => onRemove(member)}
+              >
+                <UserMinus size={16} aria-hidden="true" />
+              </IconButton>
+            </div>
+          ))
+        )}
+
+        {assigning && (
+          <div className="tp-um-section-body" style={{ marginTop: 'var(--tp-space-2)' }}>
+            <div className="tp-rel-meta" style={{ justifyContent: 'space-between' }}>
+              <span className="tp-rel-name">{assignTitle}</span>
+              <IconButton ariaLabel="Avbryt" onClick={() => setAssigning(false)}>
+                <X size={16} aria-hidden="true" />
+              </IconButton>
+            </div>
+            {unassigned.length === 0 ? (
+              <p className="tp-rel-email" style={{ margin: 0 }}>{noneLeftLabel}</p>
+            ) : (
+              unassigned.map(person => (
                 <button
                   key={person.uid}
-                  className="btn-assign"
-                  onClick={() => onAdd(person)}
+                  type="button"
+                  className="tp-rel-row"
+                  style={{ cursor: 'pointer', textAlign: 'left' }}
+                  onClick={() => { onAdd(person); setAssigning(false) }}
                 >
-                  + {person.displayName}
+                  <span className="tp-rel-meta">
+                    <span className="tp-rel-name">{person.displayName || 'Uten navn'}</span>
+                    <span className="tp-rel-email">{person.email}</span>
+                  </span>
+                  <Plus size={16} aria-hidden="true" style={{ color: 'var(--tp-accent)' }} />
                 </button>
-              ))}
-            </div>
-            <button className="btn-cancel-small" onClick={() => setAssigningCoach(false)}>
-              Avbryt
-            </button>
+              ))
+            )}
           </div>
-        ) : (
-          <button className="btn-add-rel" onClick={() => setAssigningCoach(true)}>
-            {addLabel}
-          </button>
-        )
-      )}
-    </div>
+        )}
+      </div>
+    </Section>
   )
 }

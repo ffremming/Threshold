@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   updateUserRole,
   addRelationship,
@@ -14,8 +14,8 @@ export default function UserManagement({ currentUser, onClose }) {
   const [users, setUsers] = useState([])
   const [relationships, setRelationships] = useState([])
   const [loading, setLoading] = useState(true)
-  const [selectedUser, setSelectedUser] = useState(null)
-  const [assigningCoach, setAssigningCoach] = useState(false)
+  const [selectedUid, setSelectedUid] = useState(null)
+  const [busyRole, setBusyRole] = useState(null)
 
   useEffect(() => {
     const unsubUsers = onAllUsersSnapshot(allUsers => {
@@ -26,16 +26,19 @@ export default function UserManagement({ currentUser, onClose }) {
     return () => { unsubUsers(); unsubRels() }
   }, [])
 
-  useEffect(() => {
-    if (!selectedUser) return
-    const fresh = users.find(u => u.uid === selectedUser.uid)
-    if (fresh) setSelectedUser(fresh)
-  }, [users])
+  // Derive the selected user from live data so it always stays fresh.
+  const selectedUser = useMemo(
+    () => users.find(u => u.uid === selectedUid) || null,
+    [users, selectedUid],
+  )
+
+  const coaches = useMemo(() => users.filter(u => hasRole(u, 'coach')), [users])
+  const athletes = useMemo(() => users.filter(u => hasRole(u, 'athlete')), [users])
 
   async function handleRoleToggle(user, role) {
     const currentRoles = getUserRoles(user)
     const nextRoles = currentRoles.includes(role)
-      ? currentRoles.filter(currentRole => currentRole !== role)
+      ? currentRoles.filter(r => r !== role)
       : [...currentRoles, role]
 
     if (nextRoles.length === 0) {
@@ -44,26 +47,38 @@ export default function UserManagement({ currentUser, onClose }) {
     }
 
     if (user.uid === currentUser.uid && !nextRoles.includes('superadmin')) {
-      if (!window.confirm('Er du sikker på at du vil endre din egen rolle? Du kan miste admin-tilgang.')) {
-        return
-      }
+      const ok = window.confirm(
+        'Er du sikker på at du vil endre din egen rolle? Du kan miste admin-tilgang.',
+      )
+      if (!ok) return
     }
 
-    await updateUserRole(user.uid, nextRoles)
+    setBusyRole(role)
+    try {
+      await updateUserRole(user.uid, nextRoles)
+    } catch (err) {
+      window.alert(`Kunne ikke oppdatere rollen: ${err.message}`)
+    } finally {
+      setBusyRole(null)
+    }
   }
 
   async function handleAddRelationship(coachId, athleteId) {
-    await addRelationship(coachId, athleteId)
-    setAssigningCoach(false)
+    try {
+      await addRelationship(coachId, athleteId)
+    } catch (err) {
+      window.alert(`Kunne ikke opprette koblingen: ${err.message}`)
+    }
   }
 
   async function handleRemoveRelationship(coachId, athleteId) {
     if (!window.confirm('Fjerne denne trener-utøver-koblingen?')) return
-    await removeRelationship(coachId, athleteId)
+    try {
+      await removeRelationship(coachId, athleteId)
+    } catch (err) {
+      window.alert(`Kunne ikke fjerne koblingen: ${err.message}`)
+    }
   }
-
-  const coaches = users.filter(u => hasRole(u, 'coach'))
-  const athletes = users.filter(u => hasRole(u, 'athlete'))
 
   if (selectedUser) {
     return (
@@ -72,10 +87,8 @@ export default function UserManagement({ currentUser, onClose }) {
         coaches={coaches}
         athletes={athletes}
         relationships={relationships}
-        users={users}
-        assigningCoach={assigningCoach}
-        setAssigningCoach={setAssigningCoach}
-        setSelectedUser={setSelectedUser}
+        busyRole={busyRole}
+        onBack={() => setSelectedUid(null)}
         onRoleToggle={handleRoleToggle}
         onAddRelationship={handleAddRelationship}
         onRemoveRelationship={handleRemoveRelationship}
@@ -88,7 +101,7 @@ export default function UserManagement({ currentUser, onClose }) {
       users={users}
       loading={loading}
       onClose={onClose}
-      onSelectUser={setSelectedUser}
+      onSelectUser={u => setSelectedUid(u.uid)}
     />
   )
 }

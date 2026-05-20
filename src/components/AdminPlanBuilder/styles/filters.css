@@ -1,0 +1,162 @@
+/* ────────────────────────────────────────────────────────────────────
+ * AdminPlanBuilder — activity + intensity filter chips
+ * ──────────────────────────────────────────────────────────────────── */
+
+.pb-filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--tp-space-1);
+  padding: var(--tp-space-1) var(--tp-space-2);
+  background: var(--tp-hover);
+  border-radius: var(--tp-radius-md);
+}
+
+.pb-filter-chip-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+}
+
+.pb-filter-chip {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--tp-space-1);
+  height: 1.5rem;
+  padding: 0 var(--tp-space-2);
+  border-radius: var(--tp-radius-pill);
+  border: 1px solid var(--tp-line-strong);
+  background: var(--tp-surface);
+  color: var(--tp-ink-muted);
+  font-family: var(--tp-font-sans);
+  font-size: var(--tp-text-2xs);
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+  cursor: pointer;
+  transition: background-color var(--tp-dur-fast) var(--tp-ease),
+              border-color var(--tp-dur-fast) var(--tp-ease),
+              color var(--tp-dur-fast) var(--tp-ease);
+}
+
+.pb-filter-chip-wrap .pb-filter-chip {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  border-right: none;
+}
+
+.pb-filter-chip-remove {
+  appearance: none;
+  height: 1.5rem;
+  width: 1.2rem;
+  padding: 0;
+  border-radius: 0 var(--tp-radius-pill) var(--tp-radius-pill) 0;
+  border: 1px solid var(--tp-line-strong);
+  border-left: none;
+  background: var(--tp-surface);
+  color: var(--tp-ink-muted);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pb-filter-chip-remove .pb-btn-icon { width: 0.7rem; height: 0.7rem; }
+
+.pb-filter-chip-remove:hover {
+  color: var(--tp-danger);
+  background: color-mix(in srgb, var(--tp-danger) 10%, var(--tp-surface));
+}
+
+.pb-filter-chip--add {
+  border-style: dashed;
+  color: var(--tp-ink);
+}
+
+.pb-filter-chip--add .pb-btn-icon { width: 0.7rem; height: 0.7rem; }
+
+.pb-activity-picker {
+  position: relative;
+  display: inline-flex;
+}
+
+.pb-activity-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  min-width: 12rem;
+  max-height: 16rem;
+  overflow-y: auto;
+  background: var(--tp-surface);
+  border: 1px solid var(--tp-line-strong);
+  border-radius: var(--tp-radius-md);
+  box-shadow: var(--tp-shadow-md);
+  padding: var(--tp-space-1);
+}
+
+.pb-activity-menu-item {
+  appearance: none;
+  display: flex;
+  align-items: center;
+  gap: var(--tp-space-2);
+  padding: var(--tp-space-1) var(--tp-space-2);
+  border: none;
+  background: transparent;
+  color: var(--tp-ink);
+  font-family: var(--tp-font-sans);
+  font-size: var(--tp-text-xs);
+  text-align: left;
+  border-radius: var(--tp-radius-sm);
+  cursor: pointer;
+}
+
+.pb-activity-menu-item:hover { background: var(--tp-hover); }
+
+.pb-filter-chip:hover { color: var(--tp-ink); border-color: var(--tp-ink); }
+
+.pb-filter-chip.is-active {
+  background: var(--tp-accent-soft);
+  color: var(--tp-accent);
+  border-color: color-mix(in srgb, var(--tp-accent) 35%, transparent);
+}
+
+.pb-filter-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 0.95rem;
+  height: 0.95rem;
+}
+
+.pb-filter-icon .tag-icon-svg { width: 0.85rem; height: 0.85rem; }
+
+.pb-zone-chip {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 1.5rem;
+  min-width: 2rem;
+  padding: 0 var(--tp-space-1);
+  border-radius: var(--tp-radius-pill);
+  border: 1px solid var(--tp-line-strong);
+  background: var(--tp-surface);
+  color: var(--tp-ink-muted);
+  font-family: var(--tp-font-sans);
+  font-size: var(--tp-text-2xs);
+  font-weight: 700;
+  letter-spacing: var(--tp-tracking-wide);
+  cursor: pointer;
+}
+
+.pb-zone-chip:hover { color: var(--tp-ink); border-color: var(--tp-ink); }
+
+.pb-zone-chip.pb-zone-1.is-active { background: var(--tp-zone-1); color: var(--tp-on-accent); border-color: var(--tp-zone-1); }
+.pb-zone-chip.pb-zone-2.is-active { background: var(--tp-zone-2); color: var(--tp-on-accent); border-color: var(--tp-zone-2); }
+.pb-zone-chip.pb-zone-3.is-active { background: var(--tp-zone-3); color: var(--tp-ink); border-color: var(--tp-zone-3); }
+.pb-zone-chip.pb-zone-4.is-active { background: var(--tp-zone-4); color: var(--tp-on-accent); border-color: var(--tp-zone-4); }
+.pb-zone-chip.pb-zone-5.is-active { background: var(--tp-danger); color: var(--tp-on-accent); border-color: var(--tp-danger); }

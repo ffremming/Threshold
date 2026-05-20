@@ -1,0 +1,136 @@
+/* ────────────────────────────────────────────────────────────────────
+ * AdminPlanBuilder — template drag card (bank drag source)
+ * ──────────────────────────────────────────────────────────────────── */
+
+.pb-card {
+  background: var(--tp-surface);
+  border: 1px solid var(--tp-line);
+  border-radius: var(--tp-radius-sm);
+  padding: var(--tp-space-2);
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--tp-space-2);
+  cursor: grab;
+  transition: border-color var(--tp-dur-fast) var(--tp-ease),
+              box-shadow var(--tp-dur-fast) var(--tp-ease);
+}
+
+.pb-card .pb-card-top { display: contents; }
+
+.pb-card .pb-card-meta {
+  order: 2;
+  flex-direction: row;
+  align-items: baseline;
+  gap: var(--tp-space-2);
+  flex-wrap: wrap;
+}
+
+.pb-card .pb-card-icon { order: 1; }
+.pb-card .pb-card-actions { order: 3; }
+
+.pb-card:hover { border-color: var(--tp-line-strong); box-shadow: var(--tp-shadow-xs); }
+.pb-card:active { cursor: grabbing; }
+
+.pb-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--tp-space-2);
+}
+
+.pb-card-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: var(--tp-radius-sm);
+  background: var(--tp-hover);
+  color: var(--tp-ink-muted);
+  flex-shrink: 0;
+}
+
+.pb-card-icon .tag-icon-svg { width: 0.85rem; height: 0.85rem; }
+
+.pb-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.pb-card-action {
+  appearance: none;
+  width: 1.35rem;
+  height: 1.35rem;
+  border-radius: var(--tp-radius-sm);
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--tp-ink-muted);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.pb-card-action:hover {
+  background: var(--tp-hover);
+  color: var(--tp-ink);
+  border-color: var(--tp-line);
+}
+
+.pb-card-action--add {
+  background: var(--tp-accent);
+  color: var(--tp-on-accent);
+  border-color: var(--tp-accent);
+}
+
+.pb-card-action--add:hover {
+  background: var(--tp-accent-hover);
+  color: var(--tp-on-accent);
+  border-color: var(--tp-accent-hover);
+}
+
+.pb-card-action--danger:hover {
+  background: color-mix(in srgb, var(--tp-danger) 12%, transparent);
+  color: var(--tp-danger);
+  border-color: color-mix(in srgb, var(--tp-danger) 35%, transparent);
+}
+
+.pb-card-action .system-icon,
+.pb-card-action .pb-btn-icon { width: 0.85rem; height: 0.85rem; }
+
+.pb-card-grip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--tp-ink-muted);
+  cursor: grab;
+}
+
+.pb-card-grip .pb-btn-icon { width: 0.85rem; height: 0.85rem; }
+
+.pb-card-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.pb-card-title {
+  font-size: var(--tp-text-sm);
+  font-weight: 700;
+  letter-spacing: var(--tp-tracking-snug);
+  color: var(--tp-ink);
+  word-break: break-word;
+  line-height: 1.25;
+}
+
+.pb-card-zone {
+  font-size: var(--tp-text-2xs);
+  font-weight: 700;
+  letter-spacing: var(--tp-tracking-wide);
+  text-transform: uppercase;
+  color: var(--tp-ink-muted);
+}

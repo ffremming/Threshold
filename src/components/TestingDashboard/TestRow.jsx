@@ -1,4 +1,5 @@
 import { Button, IconButton, Pill } from '../ui'
+import SystemIcon from '../SystemIcon'
 
 export default function TestRow({ test, groupLabel, onEdit, onDelete }) {
   return (
@@ -10,7 +11,9 @@ export default function TestRow({ test, groupLabel, onEdit, onDelete }) {
         </div>
         <div className="td-test-actions">
           <Button size="sm" variant="secondary" onClick={onEdit}>Rediger</Button>
-          <IconButton size="sm" variant="danger" ariaLabel="Slett" onClick={onDelete}>×</IconButton>
+          <IconButton size="sm" variant="danger" ariaLabel="Slett test" onClick={onDelete}>
+            <SystemIcon name="delete" className="system-icon" />
+          </IconButton>
         </div>
       </header>
 

@@ -7,12 +7,19 @@ import {
   migrateWorkoutType,
   normalizeIntensityZones,
 } from '../../utils'
+import { getSessionDomain } from '../../sessionBlocks'
 import SessionEditor from '../SessionEditor'
 import ActivityPicker from './ActivityPicker'
 
 export default function WorkoutForm({ value, onChange, showScheduleFields = false }) {
   const type = migrateWorkoutType(value.type)
   const allowedZones = getAllowedIntensityZones(type)
+  const domain = getSessionDomain(value.activityTag)
+  const descriptionPlaceholder = domain === 'strength'
+    ? 'F.eks. Knebøy 3 x 8, markløft 3 x 5, 90 sek pause'
+    : domain === 'duration'
+      ? 'F.eks. 45 min flyt, fokus på pust og mobilitet'
+      : 'F.eks. 4 x 1km @ 11.5 km/t, 5:15 pace, 2 min pause'
 
   function set(key, val) {
     onChange({ ...value, [key]: val })
@@ -20,7 +27,15 @@ export default function WorkoutForm({ value, onChange, showScheduleFields = fals
 
   function setActivityTag(activityTag) {
     const nextActivityTag = value.activityTag === activityTag ? '' : activityTag
-    onChange({ ...value, activityTag: nextActivityTag })
+    const next = { ...value, activityTag: nextActivityTag }
+    // When the activity's measurement domain changes (e.g. running ->
+    // strength), the existing distance/pace-based blocks become
+    // nonsensical. Reset them so the SessionEditor re-derives sport-
+    // appropriate defaults for the new domain.
+    if (getSessionDomain(value.activityTag) !== getSessionDomain(nextActivityTag)) {
+      next.blocks = null
+    }
+    onChange(next)
   }
 
   function setType(nextType) {
@@ -122,7 +137,7 @@ export default function WorkoutForm({ value, onChange, showScheduleFields = fals
       <label>
         Beskrivelse
         <textarea
-          placeholder="F.eks. 4 x 1km @ 11.5 km/t, 5:15 pace, 2 min pause"
+          placeholder={descriptionPlaceholder}
           value={value.description || ''}
           onChange={e => set('description', e.target.value)}
           rows={3}

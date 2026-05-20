@@ -1,0 +1,196 @@
+/* ── User management ─────────────────────────────────────────────── */
+.tp-um-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tp-space-2);
+}
+
+.tp-um-user {
+  display: flex;
+  align-items: center;
+  gap: var(--tp-space-3);
+}
+
+.tp-um-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  background: var(--tp-accent-soft);
+  color: var(--tp-accent);
+  font-weight: 600;
+  font-size: var(--tp-text-sm);
+  flex-shrink: 0;
+}
+
+.tp-um-user-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.tp-um-name {
+  font-size: var(--tp-text-sm);
+  font-weight: 700;
+  color: var(--tp-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tp-um-email {
+  font-size: var(--tp-text-xs);
+  color: var(--tp-ink-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tp-um-roles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--tp-space-1);
+  justify-content: flex-end;
+}
+
+/* ── Role chip (display) ─────────────────────────────────────────── */
+.tp-role-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 1.4rem;
+  padding: 0 var(--tp-space-2);
+  border-radius: var(--tp-radius-xs);
+  font-size: var(--tp-text-2xs);
+  font-weight: 600;
+  background: var(--tp-surface-2);
+  border: 1px solid var(--tp-line);
+  color: var(--tp-ink-muted);
+}
+
+.tp-role-chip--superadmin {
+  background: var(--tp-accent-soft);
+  border-color: color-mix(in srgb, var(--tp-accent) 30%, transparent);
+  color: var(--tp-accent);
+}
+
+.tp-role-chip--coach {
+  background: var(--tp-success-bg);
+  border-color: color-mix(in srgb, var(--tp-success) 25%, transparent);
+  color: var(--tp-success);
+}
+
+.tp-role-chip--athlete {
+  background: var(--tp-warning-bg);
+  border-color: color-mix(in srgb, var(--tp-warning) 25%, transparent);
+  color: var(--tp-warning);
+}
+
+/* ── Role editor (toggle) ────────────────────────────────────────── */
+.tp-role-editor {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tp-space-2);
+}
+
+.tp-role-toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--tp-space-3);
+  padding: var(--tp-space-3);
+  background: var(--tp-bg);
+  border: 1px solid var(--tp-line);
+  border-radius: var(--tp-radius-md);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color var(--tp-dur-base) var(--tp-ease),
+    background var(--tp-dur-base) var(--tp-ease);
+}
+
+.tp-role-toggle:hover { border-color: var(--tp-ink); }
+
+.tp-role-toggle:focus-visible {
+  outline: none;
+  border-color: var(--tp-ink);
+  box-shadow: 0 0 0 3px var(--tp-focus);
+}
+
+.tp-role-toggle.is-on {
+  background: var(--tp-surface);
+  border-color: color-mix(in srgb, var(--tp-accent) 45%, transparent);
+}
+
+.tp-role-toggle-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: var(--tp-radius-xs);
+  border: 1.5px solid var(--tp-line);
+  background: var(--tp-surface);
+  color: var(--tp-bg);
+  flex-shrink: 0;
+}
+
+.tp-role-toggle.is-on .tp-role-toggle-check {
+  background: var(--tp-accent);
+  border-color: var(--tp-accent);
+}
+
+.tp-role-toggle-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.tp-role-toggle-name {
+  font-size: var(--tp-text-sm);
+  font-weight: 700;
+  color: var(--tp-ink);
+}
+
+.tp-role-toggle-desc {
+  font-size: var(--tp-text-xs);
+  color: var(--tp-ink-muted);
+}
+
+/* ── Relationship rows ───────────────────────────────────────────── */
+.tp-rel-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--tp-space-3);
+  padding: var(--tp-space-2) var(--tp-space-3);
+  background: var(--tp-bg);
+  border: 1px solid var(--tp-line);
+  border-radius: var(--tp-radius-md);
+}
+
+.tp-rel-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--tp-space-2);
+  min-width: 0;
+}
+
+.tp-rel-name {
+  font-size: var(--tp-text-sm);
+  font-weight: 700;
+  color: var(--tp-ink);
+}
+
+.tp-rel-email {
+  font-size: var(--tp-text-xs);
+  color: var(--tp-ink-muted);
+}
+
+.tp-um-section-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tp-space-2);
+}

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Plus } from 'lucide-react'
 import { collection, onSnapshot, query, where } from 'firebase/firestore'
 import { db } from '../../firebase'
 import { mergeTemplates } from '../../templateLibrary'
@@ -19,10 +20,19 @@ export default function AthleteSessionPool({ coachId, athleteId }) {
   const [bankTemplates, setBankTemplates] = useState([])
   const [pickerOpen, setPickerOpen] = useState(false)
   const [editing, setEditing] = useState(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (!coachId || !athleteId) return
-    return subscribeAthleteSessions(coachId, athleteId, setSessions)
+    if (!coachId || !athleteId) {
+      setSessions([])
+      setLoading(false)
+      return
+    }
+    setLoading(true)
+    return subscribeAthleteSessions(coachId, athleteId, next => {
+      setSessions(next)
+      setLoading(false)
+    })
   }, [coachId, athleteId])
 
   useEffect(() => {
@@ -62,11 +72,14 @@ export default function AthleteSessionPool({ coachId, athleteId }) {
           {sessions.length} økt{sessions.length === 1 ? '' : 'er'} i banken
         </span>
         <Button size="sm" onClick={() => setPickerOpen(true)}>
-          + Legg til fra bank
+          <Plus size={15} aria-hidden="true" />
+          Legg til fra bank
         </Button>
       </div>
 
-      {sessions.length === 0 ? (
+      {loading ? (
+        <EmptyState title="Laster økter…" description="Henter utøverens personlige bibliotek." />
+      ) : sessions.length === 0 ? (
         <EmptyState
           title="Ingen økter ennå"
           description="Hent inn økter fra trenerens øktbank for å bygge utøverens personlige bibliotek."

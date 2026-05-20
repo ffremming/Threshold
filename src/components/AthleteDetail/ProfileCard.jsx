@@ -30,6 +30,8 @@ export default function ProfileCard({ profile }) {
         updateAthleteZones(profile.uid, { thresholdHr, vo2maxHr, easyTempo, longTempo }),
       ])
       setDirty(false)
+    } catch (err) {
+      window.alert(`Kunne ikke lagre profilen: ${err.message}`)
     } finally {
       setSaving(false)
     }

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { Plus, X } from 'lucide-react'
 import { ACTIVITY_TAGS, ACTIVITY_TAG_MAP } from '../../utils'
 import ActivityIcon from '../ActivityIcon'
 import { PINNED_ACTIVITY_TAGS } from './constants'
@@ -59,7 +60,9 @@ export default function BankActivityFilter({
                 onClick={() => onRemoveActivity(tag.value)}
                 aria-label={`Skjul ${tag.label}`}
                 title={`Skjul ${tag.label}`}
-              >×</button>
+              >
+                <X className="pb-btn-icon" aria-hidden="true" strokeWidth={2.2} />
+              </button>
             ) : null}
           </span>
         )
@@ -71,7 +74,10 @@ export default function BankActivityFilter({
             className="pb-filter-chip pb-filter-chip--add"
             onClick={() => setShowActivityPicker(value => !value)}
             aria-expanded={showActivityPicker}
-          >+ Aktivitet</button>
+          >
+            <Plus className="pb-btn-icon" aria-hidden="true" strokeWidth={2.2} />
+            <span>Aktivitet</span>
+          </button>
           {showActivityPicker ? (
             <div className="pb-activity-menu" role="menu">
               {hiddenTags.map(tag => (

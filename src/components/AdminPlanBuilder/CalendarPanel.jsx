@@ -1,6 +1,11 @@
 import BuilderPanelHeader from './BuilderPanelHeader'
 import BuilderWorkoutSlot from './BuilderWorkoutSlot'
 import CalendarDay from './CalendarDay'
+import { makeDropZoneProps } from './dragProps'
+
+// List view places everything against weekday 1 since order is purely
+// schedule-driven; beforeWorkoutId still controls insertion position.
+const LIST_WEEKDAY = 1
 
 export default function CalendarPanel({
   workoutLayout,
@@ -18,13 +23,15 @@ export default function CalendarPanel({
   handleWorkoutDragStart,
   handleDragEnd,
 }) {
+  const isCalendar = workoutLayout === 'calendar'
+
   return (
     <main className="pb-panel pb-panel--calendar">
       <BuilderPanelHeader
-        title={workoutLayout === 'calendar' ? 'Kalender' : 'Liste'}
-        copy={workoutLayout === 'calendar'
+        title={isCalendar ? 'Kalender' : 'Liste'}
+        copy={isCalendar
           ? 'Slipp økter på ønsket dag. Eksisterende økter kan også dras mellom dager.'
-          : 'Sortert etter dag og tidspunkt. Dra økter for å flytte eller slipp foran en økt for å plassere den i listen.'}
+          : 'Sortert etter dag og tidspunkt. Dra økter for å flytte, eller slipp foran en økt for å plassere den i listen.'}
         panelId="calendar"
         visiblePanelIds={visiblePanelIds}
         onMove={movePanel}
@@ -32,7 +39,7 @@ export default function CalendarPanel({
 
       {loadingWorkouts ? (
         <div className="pb-empty-state">Laster uke…</div>
-      ) : workoutLayout === 'calendar' ? (
+      ) : isCalendar ? (
         <div className="pb-calendar-days">
           {groupedWorkouts.map(day => (
             <CalendarDay
@@ -51,21 +58,8 @@ export default function CalendarPanel({
         </div>
       ) : sortedWorkouts.length === 0 ? (
         <div
-          className={`pb-empty-state pb-empty-slot${dropTarget && !dropTarget?.beforeWorkoutId ? ' is-target' : ''}`}
-          onDragOver={event => {
-            if (!dragState) return
-            event.preventDefault()
-            event.stopPropagation()
-            if (event.dataTransfer) {
-              event.dataTransfer.dropEffect = dragState.kind === 'template' ? 'copy' : 'move'
-            }
-            handleDropTargetChange(1)
-          }}
-          onDrop={async event => {
-            event.preventDefault()
-            event.stopPropagation()
-            await handleDrop(1)
-          }}
+          className={`pb-empty-state pb-empty-slot${dragState && !dropTarget?.beforeWorkoutId ? ' is-target' : ''}`}
+          {...makeDropZoneProps({ dragState, handleDropTargetChange, handleDrop, weekday: LIST_WEEKDAY, stopPropagation: true })}
         >
           {dragState ? 'Slipp økt her' : 'Ingen økter denne uken'}
         </div>
@@ -84,20 +78,14 @@ export default function CalendarPanel({
               onMoveDown={() => onMoveWorkout(workout, 1)}
               onDragStart={event => handleWorkoutDragStart(workout, event)}
               onDragEnd={handleDragEnd}
-              onDragOver={event => {
-                if (!dragState) return
-                event.preventDefault()
-                event.stopPropagation()
-                if (event.dataTransfer) {
-                  event.dataTransfer.dropEffect = dragState.kind === 'template' ? 'copy' : 'move'
-                }
-                handleDropTargetChange(workout.weekday, workout.id)
-              }}
-              onDrop={async event => {
-                event.preventDefault()
-                event.stopPropagation()
-                await handleDrop(workout.weekday, workout.id)
-              }}
+              {...makeDropZoneProps({
+                dragState,
+                handleDropTargetChange,
+                handleDrop,
+                weekday: workout.weekday,
+                beforeWorkoutId: workout.id,
+                stopPropagation: true,
+              })}
             />
           ))}
         </div>

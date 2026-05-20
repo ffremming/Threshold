@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import '../AdminPlanBuilder.css'
+import './styles/index.css'
 import { getWeekKey } from '../../utils'
 import './chartOptions'
 import { DEFAULT_PANEL_SIZES } from './constants'
@@ -144,8 +144,17 @@ export default function AdminPlanBuilder({
               <button
                 type="button"
                 className="pb-resize-handle"
-                aria-label={`Juster bredde for ${panelId}`}
+                aria-label={`Juster bredde for panel: ${panelId}. Bruk piltastene venstre og høyre.`}
                 onPointerDown={event => layout.startResize(panelId, event)}
+                onKeyDown={event => {
+                  if (event.key === 'ArrowLeft') {
+                    event.preventDefault()
+                    layout.nudgeResize(panelId, -32)
+                  } else if (event.key === 'ArrowRight') {
+                    event.preventDefault()
+                    layout.nudgeResize(panelId, 32)
+                  }
+                }}
               />
             )}
           </section>

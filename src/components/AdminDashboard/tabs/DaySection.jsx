@@ -1,3 +1,4 @@
+import { CalendarPlus, Plus } from 'lucide-react'
 import AdminWorkoutSlot from '../AdminWorkoutSlot'
 import { EMPTY_TEMPLATE } from '../constants'
 
@@ -21,6 +22,7 @@ export default function DaySection({
           <button
             type="button"
             className="pb-mini-btn"
+            aria-label={`Legg til økt fra øktbank på ${day.label}`}
             onClick={() => {
               setReplacementTarget(null)
               setCustomForm(prev => ({ ...prev, weekday: day.value }))
@@ -28,16 +30,19 @@ export default function DaySection({
               setTab('oktbank')
             }}
           >
+            <CalendarPlus size={14} strokeWidth={2} aria-hidden="true" />
             Fra øktbank
           </button>
           <button
             type="button"
             className="pb-mini-btn pb-mini-btn--solid"
+            aria-label={`Ny økt på ${day.label}`}
             onClick={() => {
               setCustomForm({ ...EMPTY_TEMPLATE, weekday: day.value })
               setShowCustomForm(true)
             }}
           >
+            <Plus size={14} strokeWidth={2} aria-hidden="true" />
             Ny økt
           </button>
         </div>

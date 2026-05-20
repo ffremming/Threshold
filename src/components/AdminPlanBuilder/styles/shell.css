@@ -1,0 +1,86 @@
+/* ────────────────────────────────────────────────────────────────────
+ * Planverktøy (AdminPlanBuilder) — shell + layout
+ * Class prefix .pb-  •  Built only from design tokens.
+ * ──────────────────────────────────────────────────────────────────── */
+
+.pb-shell {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tp-space-3);
+  padding: var(--tp-space-4);
+  width: 100%;
+  max-width: 100%;
+}
+
+@media (max-width: 640px) {
+  .pb-shell { padding: var(--tp-space-3); gap: var(--tp-space-2); }
+}
+
+.pb-athlete-banner {
+  font-size: var(--tp-text-sm);
+  color: var(--tp-ink-muted);
+  background: var(--tp-surface);
+  border: 1px solid var(--tp-line);
+  border-radius: var(--tp-radius-md);
+  padding: var(--tp-space-3) var(--tp-space-4);
+}
+
+.pb-athlete-banner strong {
+  color: var(--tp-ink);
+  font-weight: 700;
+  letter-spacing: var(--tp-tracking-snug);
+}
+
+.pb-overview-loading {
+  padding: var(--tp-space-5);
+  text-align: center;
+  color: var(--tp-ink-muted);
+  background: var(--tp-surface);
+  border: 1px solid var(--tp-line);
+  border-radius: var(--tp-radius-lg);
+  font-size: var(--tp-text-sm);
+}
+
+.pb-overview-wrap { width: 100%; }
+
+/* ── Layout ───────────────────────────────────────────────────── */
+.pb-layout {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tp-space-4);
+  width: 100%;
+}
+
+.pb-layout.is-desktop {
+  flex-direction: row;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.pb-panel-shell {
+  flex: 1 1 320px;
+  min-width: 0;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.pb-resize-handle {
+  display: none;
+  position: absolute;
+  top: 0;
+  right: -8px;
+  bottom: 0;
+  width: 16px;
+  cursor: col-resize;
+  background: transparent;
+  border: none;
+}
+
+.pb-resize-handle:focus-visible {
+  outline: none;
+  background: var(--tp-focus);
+  border-radius: var(--tp-radius-sm);
+}
+
+.pb-layout.is-desktop .pb-resize-handle { display: block; }

@@ -10,6 +10,11 @@
 
 /* Zone summary card inside the detail modal — uses dynamic --zone-color */
 .zone-summary {
+  display: block;
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  color: inherit;
   background: color-mix(in srgb, var(--zone-color, var(--tp-ink)) 10%, var(--tp-surface));
   border: 1px solid color-mix(in srgb, var(--zone-color, var(--tp-ink)) 28%, transparent);
   border-radius: var(--tp-radius-md);

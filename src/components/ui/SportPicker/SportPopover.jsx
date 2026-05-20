@@ -1,3 +1,4 @@
+import { Check } from 'lucide-react'
 import ActivityIcon from '../../ActivityIcon'
 
 export default function SportPopover({
@@ -57,7 +58,7 @@ export default function SportPopover({
                         <span className="tp-sport-item-count">{count}</span>
                       )}
                       <span className="tp-sport-item-check" aria-hidden="true">
-                        {isSelected ? '✓' : ''}
+                        {isSelected && <Check size={16} />}
                       </span>
                     </button>
                   )

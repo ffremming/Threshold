@@ -3,6 +3,7 @@ import { WEEKDAY_LABELS } from '../constants'
 import { getWeekLabel } from '../utils'
 import HeatCell from './HeatCell'
 import TopWorkoutRow from './TopWorkoutRow'
+import './bottom.css'
 
 export default function BottomGrid({ weeklyStats, topWorkouts }) {
   return (

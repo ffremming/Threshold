@@ -1,0 +1,117 @@
+/* ────────────────────────────────────────────────────────────────────
+ * AdminPlanBuilder — insights panel (metrics, distance, charts)
+ * ──────────────────────────────────────────────────────────────────── */
+
+.pb-metric-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: var(--tp-space-2);
+}
+
+.pb-metric {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--tp-space-3);
+  background: var(--tp-bg);
+  border: 1px solid var(--tp-line);
+  border-radius: var(--tp-radius-md);
+}
+
+.pb-metric-label {
+  font-size: var(--tp-text-2xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tp-tracking-wide);
+  font-weight: 700;
+  color: var(--tp-ink-muted);
+}
+
+.pb-metric-value {
+  font-size: var(--tp-text-xl);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--tp-ink);
+  line-height: var(--tp-leading-tight);
+}
+
+.pb-metric-helper {
+  font-size: var(--tp-text-2xs);
+  color: var(--tp-ink-muted);
+}
+
+.pb-distance,
+.pb-chart,
+.pb-generator {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tp-space-2);
+  padding: var(--tp-space-3);
+  background: var(--tp-bg);
+  border: 1px solid var(--tp-line);
+  border-radius: var(--tp-radius-md);
+}
+
+.pb-distance-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--tp-space-1);
+}
+
+.pb-distance-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--tp-space-2);
+  padding: var(--tp-space-2);
+  background: var(--tp-surface);
+  border-radius: var(--tp-radius-sm);
+}
+
+.pb-distance-label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--tp-space-2);
+  font-size: var(--tp-text-sm);
+  color: var(--tp-ink);
+  font-weight: 600;
+}
+
+.pb-distance-row strong {
+  font-size: var(--tp-text-sm);
+  color: var(--tp-ink);
+  font-weight: 700;
+}
+
+.pb-chart-shell {
+  position: relative;
+  height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pb-chart-shell--tall { height: 260px; }
+
+.pb-chart-copy {
+  margin: 0;
+  font-size: var(--tp-text-xs);
+  color: var(--tp-ink-muted);
+  line-height: var(--tp-leading-snug);
+}
+
+.pb-trend-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--tp-space-3);
+  font-size: var(--tp-text-xs);
+  color: var(--tp-ink-muted);
+}
+
+.pb-trend-summary strong {
+  color: var(--tp-ink);
+  font-weight: 700;
+  margin-left: var(--tp-space-1);
+}

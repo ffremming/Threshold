@@ -1,3 +1,4 @@
+import { Plus } from 'lucide-react'
 import BuilderPanelHeader from './BuilderPanelHeader'
 import BankPickerWindow from './BankPickerWindow'
 
@@ -27,11 +28,13 @@ export default function BankPanel({
       >
         {onCreateTemplate && (
           <button type="button" className="pb-mini-btn" onClick={onCreateTemplate}>
-            + Ny mal
+            <Plus className="pb-btn-icon" aria-hidden="true" strokeWidth={2} />
+            Ny mal
           </button>
         )}
         <button type="button" className="pb-mini-btn" onClick={handleAddBankWindow}>
-          + Vindu
+          <Plus className="pb-btn-icon" aria-hidden="true" strokeWidth={2} />
+          Vindu
         </button>
       </BuilderPanelHeader>
 

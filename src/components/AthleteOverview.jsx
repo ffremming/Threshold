@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
+import { ChevronRight } from 'lucide-react'
 import { collection, onSnapshot, query, where } from 'firebase/firestore'
 import { db } from '../firebase'
 import { getAdjacentWeek, getWeekNumber, chunkArray } from '../utils'
 import {
   Button,
-  IconButton,
   PageShell,
   ShellBrand,
   Page,
@@ -148,9 +148,7 @@ export default function AthleteOverview({
                   </div>
                   <div className="tp-athlete-row-side">
                     {hasAlert && <Badge className="tp-athlete-alert-badge">Mangler plan</Badge>}
-                    <IconButton ariaLabel="Åpne utøver">
-                      <span aria-hidden="true">›</span>
-                    </IconButton>
+                    <ChevronRight className="tp-athlete-row-chevron" aria-hidden="true" size={18} />
                   </div>
                 </button>
               )

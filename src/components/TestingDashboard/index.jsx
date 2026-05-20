@@ -11,7 +11,7 @@ import {
   where,
 } from 'firebase/firestore'
 import { db } from '../../firebase'
-import { Page, PageHeader } from '../ui'
+import { EmptyState, Page, PageHeader } from '../ui'
 import TestLibrary from './TestLibrary'
 import TestEditor from './TestEditor'
 import { TEST_CATEGORIES, EMPTY_FORM, sortTests } from './constants'
@@ -30,6 +30,11 @@ export default function TestingDashboard({ selectedAthleteId, athleteName, userP
       query(collection(db, 'tests'), where('athleteId', '==', selectedAthleteId)),
       snap => {
         setTests(snap.docs.map(d => ({ id: d.id, ...d.data() })).sort(sortTests))
+        setLoading(false)
+      },
+      err => {
+        console.error('Kunne ikke hente tester', err)
+        setTests([])
         setLoading(false)
       }
     )
@@ -81,10 +86,10 @@ export default function TestingDashboard({ selectedAthleteId, athleteName, userP
       updatedBy: userProfile?.uid || null,
     }
 
-    if (editingTest === 'new') {
-      await addDoc(collection(db, 'tests'), { ...payload, createdAt: serverTimestamp(), createdBy: userProfile?.uid || null })
-    } else {
+    if (editingTest && editingTest !== 'new') {
       await updateDoc(doc(db, 'tests', editingTest), payload)
+    } else {
+      await addDoc(collection(db, 'tests'), { ...payload, createdAt: serverTimestamp(), createdBy: userProfile?.uid || null })
     }
     resetForm()
   }
@@ -93,6 +98,22 @@ export default function TestingDashboard({ selectedAthleteId, athleteName, userP
     if (!window.confirm(`Slett testen "${test.title}"?`)) return
     await deleteDoc(doc(db, 'tests', test.id))
     if (editingTest === test.id) resetForm()
+  }
+
+  if (!selectedAthleteId) {
+    return (
+      <Page>
+        <PageHeader
+          eyebrow="Testing"
+          title="Tester"
+          subtitle="Opprett og vedlikehold testprotokoller for styrke og utholdenhet."
+        />
+        <EmptyState
+          title="Ingen utøver valgt"
+          description="Velg en utøver for å se og redigere testprotokoller."
+        />
+      </Page>
+    )
   }
 
   return (

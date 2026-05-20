@@ -7,20 +7,32 @@ import {
 } from '../../sessionBlocks'
 import SliderRow, { PaceOrSpeedSlider } from './SliderRow'
 import IntervalSliders from './IntervalSliders'
+import { StrengthSliders, DurationSliders } from './StrengthSliders'
 import { DISTANCE_MAX, DISTANCE_MIN, DISTANCE_STEP } from './constants'
 
-export default function BlockSliders({ block, onChange, activityTag, mode = 'steady' }) {
+export default function BlockSliders({ block, onChange, activityTag }) {
   const unit = getSpeedUnitForActivity(activityTag)
 
   function patch(next) {
     onChange(normalizeSection({ ...block, ...next }, activityTag))
   }
 
-  if (mode === 'interval') {
-    return <IntervalSliders block={block} unit={unit} activityTag={activityTag} onPatch={patch} />
+  // Dispatch on the section kind itself — this keeps each session domain
+  // (distance / strength / duration) showing only sport-appropriate fields.
+  switch (block.kind) {
+    case 'interval':
+      return <IntervalSliders block={block} unit={unit} activityTag={activityTag} onPatch={patch} />
+    case 'exercise':
+      return <StrengthSliders block={block} onPatch={patch} />
+    case 'effort':
+      return <DurationSliders block={block} onPatch={patch} />
+    default:
+      // warmup / steady / cooldown — time-based variant has no distanceKm.
+      if ((block.kind === 'warmup' || block.kind === 'cooldown') && block.distanceKm == null) {
+        return <DurationSliders block={block} onPatch={patch} />
+      }
+      return <SteadySliders block={block} unit={unit} onPatch={patch} />
   }
-
-  return <SteadySliders block={block} unit={unit} onPatch={patch} />
 }
 
 function SteadySliders({ block, unit, onPatch }) {

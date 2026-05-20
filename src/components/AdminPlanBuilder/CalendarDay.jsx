@@ -1,4 +1,5 @@
 import BuilderWorkoutSlot from './BuilderWorkoutSlot'
+import { makeDropZoneProps } from './dragProps'
 
 export default function CalendarDay({
   day,
@@ -11,51 +12,30 @@ export default function CalendarDay({
   handleWorkoutDragStart,
   handleDragEnd,
 }) {
+  const isDayTarget = dropTarget?.weekday === day.value
+  const workoutCount = day.workouts.length
+
   return (
     <section
-      className={`pb-day${dropTarget?.weekday === day.value ? ' is-target' : ''}`}
-      onDragOver={event => {
-        if (!dragState) return
-        event.preventDefault()
-        if (event.dataTransfer) {
-          event.dataTransfer.dropEffect = dragState.kind === 'template' ? 'copy' : 'move'
-        }
-        handleDropTargetChange(day.value)
-      }}
-      onDrop={async event => {
-        event.preventDefault()
-        await handleDrop(day.value)
-      }}
+      className={`pb-day${isDayTarget ? ' is-target' : ''}`}
+      {...makeDropZoneProps({ dragState, handleDropTargetChange, handleDrop, weekday: day.value })}
     >
       <header className="pb-day-head">
         <div className="pb-day-titles">
           <h3 className="pb-day-title">{day.label}</h3>
           <div className="pb-day-meta">
-            {day.workouts.length > 0 ? `${day.workouts.length} økt${day.workouts.length > 1 ? 'er' : ''}` : 'Ingen økter'}
+            {workoutCount > 0 ? `${workoutCount} økt${workoutCount > 1 ? 'er' : ''}` : 'Ingen økter'}
           </div>
         </div>
       </header>
 
       <div className="pb-day-slots">
-        {day.workouts.length === 0 ? (
+        {workoutCount === 0 ? (
           <div
-            className={`pb-empty-slot${dropTarget?.weekday === day.value && !dropTarget?.beforeWorkoutId ? ' is-target' : ''}`}
-            onDragOver={event => {
-              if (!dragState) return
-              event.preventDefault()
-              event.stopPropagation()
-              if (event.dataTransfer) {
-                event.dataTransfer.dropEffect = dragState.kind === 'template' ? 'copy' : 'move'
-              }
-              handleDropTargetChange(day.value)
-            }}
-            onDrop={async event => {
-              event.preventDefault()
-              event.stopPropagation()
-              await handleDrop(day.value)
-            }}
+            className={`pb-empty-slot${isDayTarget && !dropTarget?.beforeWorkoutId ? ' is-target' : ''}`}
+            {...makeDropZoneProps({ dragState, handleDropTargetChange, handleDrop, weekday: day.value, stopPropagation: true })}
           >
-            Slipp økt her
+            {dragState ? 'Slipp økt her' : 'Ingen økter'}
           </div>
         ) : (
           day.workouts.map((workout, index) => (
@@ -63,7 +43,7 @@ export default function CalendarDay({
               key={workout.id}
               workout={workout}
               index={index}
-              total={day.workouts.length}
+              total={workoutCount}
               isDragging={dragState?.kind === 'workout' && dragState.workoutId === workout.id}
               isDropTarget={dropTarget?.weekday === day.value && dropTarget?.beforeWorkoutId === workout.id}
               onClick={() => onSelectWorkout(workout)}
@@ -71,20 +51,14 @@ export default function CalendarDay({
               onMoveDown={() => onMoveWorkout(workout, 1)}
               onDragStart={event => handleWorkoutDragStart(workout, event)}
               onDragEnd={handleDragEnd}
-              onDragOver={event => {
-                if (!dragState) return
-                event.preventDefault()
-                event.stopPropagation()
-                if (event.dataTransfer) {
-                  event.dataTransfer.dropEffect = dragState.kind === 'template' ? 'copy' : 'move'
-                }
-                handleDropTargetChange(day.value, workout.id)
-              }}
-              onDrop={async event => {
-                event.preventDefault()
-                event.stopPropagation()
-                await handleDrop(day.value, workout.id)
-              }}
+              {...makeDropZoneProps({
+                dragState,
+                handleDropTargetChange,
+                handleDrop,
+                weekday: day.value,
+                beforeWorkoutId: workout.id,
+                stopPropagation: true,
+              })}
             />
           ))
         )}

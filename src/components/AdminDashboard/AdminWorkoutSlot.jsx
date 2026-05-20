@@ -1,3 +1,4 @@
+import { GripVertical } from 'lucide-react'
 import {
   ACTIVITY_TAG_MAP,
   TYPE_ICONS,
@@ -40,11 +41,27 @@ export default function AdminWorkoutSlot({
       <div className="pb-slot-top">
         <span className="pb-card-icon"><ActivityIcon name={icon} className="tag-icon-svg" /></span>
         <div className="pb-slot-actions">
-          <span className="pb-card-grip" title="Dra for å flytte" aria-hidden="true">⋮⋮</span>
-          <button className="pb-slot-reorder" onClick={onMoveUp} disabled={index === 0} title="Flytt opp">
+          <span className="pb-card-grip" title="Dra for å flytte" aria-hidden="true">
+            <GripVertical size={16} strokeWidth={1.9} />
+          </span>
+          <button
+            type="button"
+            className="pb-slot-reorder"
+            onClick={onMoveUp}
+            disabled={index === 0}
+            title="Flytt opp"
+            aria-label="Flytt økt opp"
+          >
             <SystemIcon name="up" className="system-icon" />
           </button>
-          <button className="pb-slot-reorder" onClick={onMoveDown} disabled={index === total - 1} title="Flytt ned">
+          <button
+            type="button"
+            className="pb-slot-reorder"
+            onClick={onMoveDown}
+            disabled={index === total - 1}
+            title="Flytt ned"
+            aria-label="Flytt økt ned"
+          >
             <SystemIcon name="down" className="system-icon" />
           </button>
         </div>
@@ -60,17 +77,31 @@ export default function AdminWorkoutSlot({
       </button>
 
       <div className="pb-slot-footer">
-        <button className="pb-slot-reorder" onClick={() => onReplace(workout)} title="Bytt ut fra øktbank">
+        <button
+          type="button"
+          className="pb-slot-reorder"
+          onClick={() => onReplace(workout)}
+          title="Bytt ut fra øktbank"
+          aria-label="Bytt ut økt fra øktbank"
+        >
           <SystemIcon name="replace" className="system-icon" />
         </button>
         <button
+          type="button"
           className={`pb-slot-check${workout.completed ? ' is-checked' : ''}`}
           onClick={() => onToggleComplete(workout)}
+          aria-pressed={workout.completed}
           aria-label={workout.completed ? 'Marker ikke fullført' : 'Marker fullført'}
         >
           {workout.completed ? <SystemIcon name="check" className="system-icon" /> : null}
         </button>
-        <button className="pb-slot-reorder pb-slot-reorder--danger" onClick={() => onDelete(workout)} title="Slett">
+        <button
+          type="button"
+          className="pb-slot-reorder pb-slot-reorder--danger"
+          onClick={() => onDelete(workout)}
+          title="Slett"
+          aria-label="Slett økt"
+        >
           <SystemIcon name="delete" className="system-icon" />
         </button>
       </div>

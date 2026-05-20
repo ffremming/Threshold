@@ -24,7 +24,6 @@ import TabContent from './TabContent'
 import { TemplateEditorModal, GlobalTemplateEditorModal } from './TemplateModals'
 
 export default function AdminDashboard({
-  user,
   userProfile,
   onClose,
   currentWeek,
@@ -68,11 +67,11 @@ export default function AdminDashboard({
   const { templates, loading: loadingTemplates } = useCoachTemplates(userProfile?.uid)
   const { templates: globalTemplates, loading: loadingGlobalTemplates } = useGlobalTemplates(userProfile?.uid)
 
+  const selectedWorkoutId = selectedWorkout?.id
   useEffect(() => {
-    if (!selectedWorkout) return
-    const fresh = workouts.find(w => w.id === selectedWorkout.id)
-    setSelectedWorkout(fresh || null)
-  }, [workouts, selectedWorkout])
+    if (!selectedWorkoutId) return
+    setSelectedWorkout(workouts.find(w => w.id === selectedWorkoutId) || null)
+  }, [workouts, selectedWorkoutId])
 
   function prevWeek() {
     const p = getAdjacentWeek(currentWeek, currentYear, -1)
@@ -96,10 +95,10 @@ export default function AdminDashboard({
   })
 
   const selectedWeekKey = getWeekKey(currentWeek, currentYear)
-  const derived = deriveAdminState({
+  const derived = useMemo(() => deriveAdminState({
     workouts, overviewWorkouts, analysisWorkouts,
     activeTagFilter, athletes, selectedAthleteId, userProfile,
-  })
+  }), [workouts, overviewWorkouts, analysisWorkouts, activeTagFilter, athletes, selectedAthleteId, userProfile])
 
   if (showCustomForm) {
     return (

@@ -3,6 +3,7 @@ import ActivityIcon from '../../ActivityIcon'
 import { Card, Pill } from '../../ui'
 import { Stat } from './primitives'
 import { formatMetricValue, getWeekLabel, getWeekMetricValue } from '../utils'
+import './insight.css'
 
 export default function InsightGrid({
   focusWeek, peakWeek, topActivityEntries, totals, primaryMetric, strain,

@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { EmptyState, Page, PageHeader } from '../ui'
 import './charts/registry'
-import '../AnalysisDashboard.css'
+import './analysis.css'
 import { METRIC_OPTIONS } from './constants'
 import { computeAnalysis } from './aggregations'
 import { useAnalysisWindow, usePersistedFilters } from './hooks'

@@ -1,5 +1,7 @@
 export {
   getSpeedUnitForActivity,
+  getSessionDomain,
+  STRENGTH_ACTIVITIES,
   paceToSpeed,
   speedToPace,
 } from './units'
@@ -10,12 +12,16 @@ export {
   formatDuration,
   formatDistance,
   formatPauseLabel,
+  formatSeconds,
+  formatLoad,
+  formatSetsReps,
 } from './format'
 
 export {
   SECTION_KINDS,
   SECTION_LABELS,
   INTERVAL_PACE_MODES,
+  getAddableKinds,
   createSection,
   normalizeSection,
 } from './sections'
@@ -26,6 +32,4 @@ export {
   getSections,
   computeSessionTotals,
   blocksToSummary,
-  createBlock,
-  computeDuration,
 } from './blocks'

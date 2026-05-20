@@ -1,50 +1,47 @@
 import WorkoutForm from '../WorkoutForm'
-import SystemIcon from '../SystemIcon'
+import { Button, Modal } from '../ui'
+
+function TemplateFormModal({ open, onClose, eyebrow, title, value, onChange, onSave, saveLabel }) {
+  if (!open) return null
+  return (
+    <Modal open onClose={onClose} eyebrow={eyebrow} title={title} size="lg">
+      <form onSubmit={onSave}>
+        <WorkoutForm value={value} onChange={onChange} />
+        <div className="form-actions form-actions--spaced">
+          <Button variant="secondary" type="button" onClick={onClose}>Avbryt</Button>
+          <Button type="submit">{saveLabel}</Button>
+        </div>
+      </form>
+    </Modal>
+  )
+}
 
 export function TemplateEditorModal({ editingTemplate, templateForm, setTemplateForm, onSave, onClose }) {
-  if (editingTemplate === null) return null
   return (
-    <div className="modal-backdrop" onClick={event => {
-      if (event.target === event.currentTarget) onClose()
-    }}>
-      <div className="modal add-modal">
-        <button className="modal-close" onClick={onClose}>
-          <SystemIcon name="close" className="system-icon" />
-        </button>
-        <h2 className="modal-title-h2">{editingTemplate === 'new' ? 'Ny mal' : 'Rediger mal'}</h2>
-        <form onSubmit={onSave}>
-          <WorkoutForm value={templateForm} onChange={setTemplateForm} />
-          <div className="form-actions form-actions--spaced">
-            <button type="button" className="btn-cancel" onClick={onClose}>Avbryt</button>
-            <button type="submit" className="btn-save">Lagre mal</button>
-          </div>
-        </form>
-      </div>
-    </div>
+    <TemplateFormModal
+      open={editingTemplate !== null}
+      onClose={onClose}
+      eyebrow="Øktbank"
+      title={editingTemplate === 'new' ? 'Ny mal' : 'Rediger mal'}
+      value={templateForm}
+      onChange={setTemplateForm}
+      onSave={onSave}
+      saveLabel="Lagre mal"
+    />
   )
 }
 
 export function GlobalTemplateEditorModal({ editingGlobalTemplate, globalTemplateForm, setGlobalTemplateForm, onSave, onClose }) {
-  if (editingGlobalTemplate === null) return null
   return (
-    <div className="modal-backdrop" onClick={event => {
-      if (event.target === event.currentTarget) onClose()
-    }}>
-      <div className="modal add-modal">
-        <button className="modal-close" onClick={onClose}>
-          <SystemIcon name="close" className="system-icon" />
-        </button>
-        <h2 className="modal-title-h2">
-          {editingGlobalTemplate === 'new' ? 'Ny økt i bibliotek' : 'Rediger bibliotekøkt'}
-        </h2>
-        <form onSubmit={onSave}>
-          <WorkoutForm value={globalTemplateForm} onChange={setGlobalTemplateForm} />
-          <div className="form-actions form-actions--spaced">
-            <button type="button" className="btn-cancel" onClick={onClose}>Avbryt</button>
-            <button type="submit" className="btn-save">Lagre i bibliotek</button>
-          </div>
-        </form>
-      </div>
-    </div>
+    <TemplateFormModal
+      open={editingGlobalTemplate !== null}
+      onClose={onClose}
+      eyebrow="Bibliotek"
+      title={editingGlobalTemplate === 'new' ? 'Ny økt i bibliotek' : 'Rediger bibliotekøkt'}
+      value={globalTemplateForm}
+      onChange={setGlobalTemplateForm}
+      onSave={onSave}
+      saveLabel="Lagre i bibliotek"
+    />
   )
 }

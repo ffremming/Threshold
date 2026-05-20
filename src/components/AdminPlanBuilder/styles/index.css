@@ -1,0 +1,13 @@
+/* ────────────────────────────────────────────────────────────────────
+ * AdminPlanBuilder — stylesheet entry point.
+ * Each module is co-located with its component group; this file just
+ * aggregates them so a single import wires up the whole builder.
+ * ──────────────────────────────────────────────────────────────────── */
+@import './shell.css';
+@import './panel.css';
+@import './bank.css';
+@import './filters.css';
+@import './card.css';
+@import './calendar.css';
+@import './trash.css';
+@import './insights.css';

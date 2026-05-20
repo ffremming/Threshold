@@ -1,59 +1,39 @@
 import { hasStructuredBlocks } from '../../sessionBlocks'
 import SessionBlocksView from './SessionBlocksView'
 
+function Section({ label, children, preLine, className }) {
+  return (
+    <div className="modal-section">
+      <div className="section-label">{label}</div>
+      <div
+        className={`section-content${className ? ` ${className}` : ''}`}
+        {...(preLine ? { 'data-pre-line': true } : {})}
+      >
+        {children}
+      </div>
+    </div>
+  )
+}
+
 export default function WorkoutDetailSections({
   workout,
-  isRunningWorkout,
+  isDistanceWorkout,
   isStrengthWorkout,
-  runningDetails,
+  sessionInstructions,
   exerciseLines,
 }) {
   const showBlocks = hasStructuredBlocks(workout)
+
   return (
     <>
       {showBlocks && <SessionBlocksView workout={workout} />}
 
-      {isRunningWorkout && (
-        <>
-          {!showBlocks && workout.distance && (
-            <div className="modal-section">
-              <div className="section-label">Antall km</div>
-              <div className="section-content">{workout.distance}</div>
-            </div>
-          )}
-
-          {runningDetails && (
-            <div className="modal-section">
-              <div className="section-label">Hva skal gjøres</div>
-              <div className="section-content workout-desc" data-pre-line>
-                {runningDetails}
-              </div>
-            </div>
-          )}
-        </>
+      {/* Distance is only meaningful for distance-based sports (run/swim/bike/row). */}
+      {isDistanceWorkout && !showBlocks && workout.distance && (
+        <Section label="Antall km">{workout.distance}</Section>
       )}
 
-      {!isRunningWorkout && workout.description && (!isStrengthWorkout || workout.exercises) && (
-        <div className="modal-section">
-          <div className="section-label">Treningsøkt</div>
-          <div className="section-content workout-desc" data-pre-line>{workout.description}</div>
-        </div>
-      )}
-
-      {workout.warmup && (
-        <div className="modal-section">
-          <div className="section-label">Oppvarming</div>
-          <div className="section-content">{workout.warmup}</div>
-        </div>
-      )}
-
-      {workout.cooldown && (
-        <div className="modal-section">
-          <div className="section-label">Nedkjøling</div>
-          <div className="section-content">{workout.cooldown}</div>
-        </div>
-      )}
-
+      {/* Strength sessions list exercises (sets/reps/load live in each line). */}
       {isStrengthWorkout && exerciseLines.length > 0 && (
         <div className="modal-section">
           <div className="section-label">Øvelser</div>
@@ -66,17 +46,26 @@ export default function WorkoutDetailSections({
       )}
 
       {isStrengthWorkout && workout.rest && (
-        <div className="modal-section">
-          <div className="section-label">Pause</div>
-          <div className="section-content">{workout.rest}</div>
-        </div>
+        <Section label="Pause">{workout.rest}</Section>
       )}
 
+      {/* Free-text instructions: shown for non-strength sessions, or for
+          strength sessions only when there is no structured exercise list. */}
+      {sessionInstructions && (!isStrengthWorkout || exerciseLines.length === 0) && (
+        <Section
+          label={isStrengthWorkout ? 'Treningsøkt' : 'Hva skal gjøres'}
+          preLine
+          className="workout-desc"
+        >
+          {sessionInstructions}
+        </Section>
+      )}
+
+      {workout.warmup && <Section label="Oppvarming">{workout.warmup}</Section>}
+      {workout.cooldown && <Section label="Nedkjøling">{workout.cooldown}</Section>}
+
       {workout.notes && (
-        <div className="modal-section">
-          <div className="section-label">Notater</div>
-          <div className="section-content" data-pre-line>{workout.notes}</div>
-        </div>
+        <Section label="Notater" preLine>{workout.notes}</Section>
       )}
     </>
   )

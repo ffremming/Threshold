@@ -1,0 +1,16 @@
+/* AnalysisDashboard — shared primitives */
+
+.an-eyebrow {
+  font-size: var(--tp-text-2xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tp-tracking-wide);
+  font-weight: 700;
+  color: var(--tp-ink-muted);
+}
+
+.an-empty-mini {
+  font-size: var(--tp-text-sm);
+  color: var(--tp-ink-muted);
+  text-align: center;
+  padding: var(--tp-space-5);
+}

@@ -1,12 +1,29 @@
-import { SPEED_ACTIVITIES, speedToPace, estimatedSpeedKmh } from './units'
+import { SPEED_ACTIVITIES, speedToPace, estimatedSpeedKmh, getSessionDomain } from './units'
 
-export const SECTION_KINDS = ['warmup', 'steady', 'interval', 'cooldown']
+// Distance-based section kinds (run/bike/swim/…): use distance + pace.
+export const DISTANCE_SECTION_KINDS = ['warmup', 'steady', 'interval', 'cooldown']
+// Strength section kinds: use sets/reps/load + duration.
+export const STRENGTH_SECTION_KINDS = ['warmup', 'exercise', 'cooldown']
+// Duration-only section kinds (yoga, ball sports, …).
+export const DURATION_SECTION_KINDS = ['warmup', 'effort', 'cooldown']
+
+export const SECTION_KINDS = ['warmup', 'steady', 'interval', 'cooldown', 'exercise', 'effort']
+
+// Which section kinds the user may add, per measurement domain.
+export function getAddableKinds(activityTag) {
+  const domain = getSessionDomain(activityTag)
+  if (domain === 'strength') return ['warmup', 'exercise', 'cooldown']
+  if (domain === 'duration') return ['warmup', 'effort', 'cooldown']
+  return ['warmup', 'steady', 'interval', 'cooldown']
+}
 
 export const SECTION_LABELS = {
   warmup: 'Oppvarming',
   steady: 'Rolig økt',
   interval: 'Intervaller',
   cooldown: 'Nedjogg',
+  exercise: 'Øvelse',
+  effort: 'Hoveddel',
 }
 
 export const INTERVAL_PACE_MODES = ['pace', 'length', 'time']
@@ -22,9 +39,29 @@ const KIND_DEFAULTS = {
   steady:   { distanceKm: 6, paceSecPerKm: 330 },
   interval: { reps: 5, dragKm: 1, dragSec: 240, paceSecPerKm: 240, pauseSec: 120, paceMode: 'pace' },
   cooldown: { distanceKm: 1, paceSecPerKm: 360 },
+  exercise: { exerciseName: '', sets: 3, reps: 8, loadKg: 0, restSec: 90 },
+  effort:   { durationMin: 30 },
 }
 
+// Default warmup/cooldown for strength/duration sessions are time-based,
+// not distance-based.
+const TIME_WARMUP_DEFAULTS = { durationMin: 10 }
+const TIME_COOLDOWN_DEFAULTS = { durationMin: 5 }
+
 export function createSection(kind, activityTag) {
+  const domain = getSessionDomain(activityTag)
+
+  if (domain === 'strength' || domain === 'duration') {
+    let base = KIND_DEFAULTS[kind]
+    if (kind === 'warmup') base = TIME_WARMUP_DEFAULTS
+    else if (kind === 'cooldown') base = TIME_COOLDOWN_DEFAULTS
+    else if (!base) base = domain === 'strength' ? KIND_DEFAULTS.exercise : KIND_DEFAULTS.effort
+    const resolvedKind = (kind === 'warmup' || kind === 'cooldown')
+      ? kind
+      : (domain === 'strength' ? 'exercise' : 'effort')
+    return normalizeSection({ id: makeSectionId(), kind: resolvedKind, ...base }, activityTag)
+  }
+
   const base = KIND_DEFAULTS[kind] || KIND_DEFAULTS.steady
   const section = { id: makeSectionId(), kind, ...base }
   if (SPEED_ACTIVITIES.has(activityTag)) {
@@ -41,6 +78,23 @@ export function createSection(kind, activityTag) {
 }
 
 export function computeSectionDuration(section, activityTag) {
+  if (section.kind === 'effort') {
+    return Math.max(0, Math.round((Number(section.durationMin) || 0) * 10) / 10)
+  }
+  if (section.kind === 'exercise') {
+    const sets = Math.max(1, Number(section.sets) || 1)
+    const reps = Math.max(0, Number(section.reps) || 0)
+    const restSec = Math.max(0, Number(section.restSec) || 0)
+    // Estimate ~4s per rep of work + rest between sets.
+    const workSec = sets * reps * 4
+    const restTotalSec = Math.max(0, sets - 1) * restSec
+    return Math.round(((workSec + restTotalSec) / 60) * 10) / 10
+  }
+  // warmup/cooldown on a strength/duration session are time-based.
+  if ((section.kind === 'warmup' || section.kind === 'cooldown') &&
+      section.distanceKm == null && section.durationMin != null) {
+    return Math.max(0, Math.round((Number(section.durationMin) || 0) * 10) / 10)
+  }
   const pace = Number(section.paceSecPerKm) || 0
   if (section.kind === 'interval') {
     const reps = Math.max(1, Number(section.reps) || 1)
@@ -66,6 +120,8 @@ export function computeSectionDuration(section, activityTag) {
 }
 
 export function computeSectionDistance(section, activityTag) {
+  // Strength/duration sections have no distance.
+  if (section.kind === 'exercise' || section.kind === 'effort') return 0
   if (section.kind === 'interval') {
     const reps = Math.max(1, Number(section.reps) || 1)
     const mode = section.paceMode || 'pace'
@@ -88,6 +144,45 @@ export function normalizeSection(section, activityTag) {
   const kind = SECTION_KINDS.includes(section.kind) ? section.kind : 'steady'
   const id = section.id || makeSectionId()
   const paceSecPerKm = Number(section.paceSecPerKm) || 0
+
+  if (kind === 'exercise') {
+    const normalized = {
+      id,
+      kind,
+      exerciseName: typeof section.exerciseName === 'string' ? section.exerciseName : '',
+      sets: Math.max(1, Math.round(Number(section.sets) || 1)),
+      reps: Math.max(0, Math.round(Number(section.reps) || 0)),
+      loadKg: Math.max(0, Number(section.loadKg) || 0),
+      restSec: Math.max(0, Math.round(Number(section.restSec) || 0)),
+    }
+    normalized.distanceKm = 0
+    normalized.durationMin = computeSectionDuration(normalized, activityTag)
+    return normalized
+  }
+
+  if (kind === 'effort') {
+    const normalized = {
+      id,
+      kind,
+      durationMin: Math.max(0, Math.round((Number(section.durationMin) || 0) * 10) / 10),
+    }
+    normalized.distanceKm = 0
+    return normalized
+  }
+
+  // Time-based warmup/cooldown (strength/duration sessions): no distance field,
+  // explicit durationMin instead.
+  if ((kind === 'warmup' || kind === 'cooldown') &&
+      section.distanceKm == null && section.durationMin != null) {
+    const normalized = {
+      id,
+      kind,
+      durationMin: Math.max(0, Math.round((Number(section.durationMin) || 0) * 10) / 10),
+    }
+    normalized.distanceKm = 0
+    return normalized
+  }
+
   if (kind === 'interval') {
     const reps = Math.max(1, Math.round(Number(section.reps) || 1))
     const dragKm = Math.max(0, Number(section.dragKm) || 0)

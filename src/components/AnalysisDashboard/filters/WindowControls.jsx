@@ -1,5 +1,7 @@
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button, Card, IconButton } from '../../ui'
 import { clampWindowStart, getWeekLabel } from '../utils'
+import './window.css'
 
 export default function WindowControls({
   weeks, range, windowStart, setWindowStart, maxWindowStart,
@@ -13,7 +15,7 @@ export default function WindowControls({
           variant="ghost"
           disabled={windowStart <= 0}
           onClick={() => setWindowStart(prev => clampWindowStart(prev - Math.max(1, Math.floor(range / 2)), weeks.length, range))}
-        >‹</IconButton>
+        ><ChevronLeft size={18} aria-hidden="true" /></IconButton>
         <div className="an-window-meta">
           <span className="an-eyebrow">Tidsvindu</span>
           <strong className="an-window-label">
@@ -29,7 +31,7 @@ export default function WindowControls({
           variant="ghost"
           disabled={windowStart >= maxWindowStart}
           onClick={() => setWindowStart(prev => clampWindowStart(prev + Math.max(1, Math.floor(range / 2)), weeks.length, range))}
-        >›</IconButton>
+        ><ChevronRight size={18} aria-hidden="true" /></IconButton>
       </div>
 
       <div className="an-window-slider">

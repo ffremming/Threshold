@@ -13,6 +13,7 @@ import {
   performanceOptions,
   stackedOptions,
 } from '../charts/options'
+import './charts.css'
 
 export default function ChartGrid({
   labels, weeklyStats, primaryMetric, selectedMetricMeta,

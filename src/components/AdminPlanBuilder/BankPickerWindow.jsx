@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { X } from 'lucide-react'
 import { isHardWorkout, normalizeIntensityZones } from '../../utils'
 import { DEFAULT_VISIBLE_ACTIVITIES } from './constants'
 import BankActivityFilter from './BankActivityFilter'
@@ -65,7 +66,9 @@ export default function BankPickerWindow({
             <span className="pb-column-count">{filteredTemplates.length} økter</span>
           </div>
           {canRemove ? (
-            <button type="button" className="pb-mini-btn pb-mini-btn--icon" onClick={onRemove} aria-label="Lukk vindu">×</button>
+            <button type="button" className="pb-mini-btn pb-mini-btn--icon" onClick={onRemove} aria-label="Lukk vindu">
+              <X className="pb-btn-icon" aria-hidden="true" strokeWidth={2} />
+            </button>
           ) : null}
         </header>
       )}

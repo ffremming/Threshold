@@ -1,3 +1,4 @@
+import { Plus } from 'lucide-react'
 import { Button, EmptyState, Section } from '../ui'
 import TestRow from './TestRow'
 
@@ -10,7 +11,12 @@ export default function TestLibrary({ loading, groupedTests, startCreate, startE
       key={group.value}
       title={group.label}
       subtitle={group.description}
-      action={<Button size="sm" onClick={() => startCreate(group.value)}>+ Ny test</Button>}
+      action={
+        <Button size="sm" onClick={() => startCreate(group.value)}>
+          <Plus size={15} aria-hidden="true" />
+          Ny test
+        </Button>
+      }
     >
       {group.tests.length === 0 ? (
         <div className="td-group-empty">Ingen {group.label.toLowerCase()}-tester registrert ennå.</div>

@@ -1,3 +1,4 @@
+import { GripVertical } from 'lucide-react'
 import {
   TYPE_ICONS,
   formatIntensityZoneLabel,
@@ -38,7 +39,9 @@ export default function BuilderWorkoutSlot({
       <div className="pb-slot-top">
         <span className="pb-card-icon"><ActivityIcon name={icon} className="tag-icon-svg" /></span>
         <div className="pb-slot-actions">
-          <span className="pb-card-grip" title="Dra for å flytte" aria-hidden="true">⋮⋮</span>
+          <span className="pb-slot-grip" title="Dra for å flytte" aria-hidden="true">
+            <GripVertical className="pb-btn-icon" strokeWidth={1.9} />
+          </span>
           <button type="button" className="pb-slot-reorder" onClick={onMoveUp} disabled={index === 0} title="Flytt opp" aria-label="Flytt opp"><SystemIcon name="up" className="system-icon" /></button>
           <button type="button" className="pb-slot-reorder" onClick={onMoveDown} disabled={index === total - 1} title="Flytt ned" aria-label="Flytt ned"><SystemIcon name="down" className="system-icon" /></button>
         </div>

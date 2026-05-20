@@ -1,0 +1,142 @@
+/* ────────────────────────────────────────────────────────────────────
+ * AdminPlanBuilder — panel chrome, headers, buttons, empty states
+ * ──────────────────────────────────────────────────────────────────── */
+
+.pb-empty-state {
+  background: var(--tp-surface);
+  border: 1px dashed var(--tp-line-strong);
+  border-radius: var(--tp-radius-lg);
+  padding: var(--tp-space-5);
+  color: var(--tp-ink-muted);
+  text-align: center;
+  font-size: var(--tp-text-sm);
+}
+
+.pb-empty-copy {
+  padding: var(--tp-space-3);
+  font-size: var(--tp-text-sm);
+  color: var(--tp-ink-muted);
+  text-align: center;
+}
+
+.pb-panel {
+  background: var(--tp-surface);
+  border: 1px solid var(--tp-line);
+  border-radius: var(--tp-radius-lg);
+  padding: var(--tp-space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--tp-space-2);
+  height: 100%;
+}
+
+.pb-panel--bank,
+.pb-panel--extra {
+  position: sticky;
+  top: var(--tp-space-2);
+  max-height: calc(100vh - var(--tp-space-4));
+  overflow-y: auto;
+}
+
+.pb-panel-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--tp-space-2);
+  padding-bottom: var(--tp-space-2);
+  border-bottom: 1px solid var(--tp-line);
+  position: sticky;
+  top: 0;
+  background: var(--tp-surface);
+  z-index: 2;
+}
+
+.pb-panel-titles { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+
+.pb-panel-title {
+  font-size: var(--tp-text-md);
+  font-weight: 700;
+  letter-spacing: var(--tp-tracking-tight);
+  color: var(--tp-ink);
+  margin: 0;
+  line-height: var(--tp-leading-tight);
+}
+
+.pb-panel-copy {
+  margin: 0;
+  font-size: var(--tp-text-xs);
+  color: var(--tp-ink-muted);
+  line-height: var(--tp-leading-snug);
+}
+
+.pb-panel-tools {
+  display: flex;
+  align-items: center;
+  gap: var(--tp-space-2);
+  flex-shrink: 0;
+}
+
+.pb-panel-move {
+  display: inline-flex;
+  border: 1px solid var(--tp-line);
+  border-radius: var(--tp-radius-md);
+  overflow: hidden;
+}
+
+.pb-panel-move-btn {
+  appearance: none;
+  border: none;
+  background: var(--tp-surface);
+  color: var(--tp-ink-muted);
+  width: 1.85rem;
+  height: 1.85rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pb-panel-move-btn .system-icon { width: 0.9rem; height: 0.9rem; }
+
+.pb-panel-move-btn + .pb-panel-move-btn { border-left: 1px solid var(--tp-line); }
+
+.pb-panel-move-btn:hover:not(:disabled) {
+  background: var(--tp-hover);
+  color: var(--tp-ink);
+}
+
+.pb-panel-move-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+.pb-mini-btn {
+  appearance: none;
+  height: 2rem;
+  padding: 0 var(--tp-space-3);
+  border-radius: var(--tp-radius-md);
+  border: 1px solid var(--tp-line-strong);
+  background: var(--tp-surface);
+  color: var(--tp-ink);
+  font-family: var(--tp-font-sans);
+  font-size: var(--tp-text-xs);
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--tp-space-1);
+}
+
+.pb-mini-btn:hover:not(:disabled) { background: var(--tp-hover); }
+.pb-mini-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.pb-mini-btn .system-icon,
+.pb-mini-btn .pb-btn-icon { width: 0.85rem; height: 0.85rem; }
+
+.pb-mini-btn--icon { width: 2rem; padding: 0; }
+
+.pb-section-title {
+  font-size: var(--tp-text-md);
+  font-weight: 700;
+  letter-spacing: var(--tp-tracking-snug);
+  color: var(--tp-ink);
+  margin-bottom: var(--tp-space-2);
+}

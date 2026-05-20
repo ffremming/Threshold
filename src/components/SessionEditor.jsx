@@ -1,21 +1,31 @@
 import { useMemo } from 'react'
-import BlockSliders from './BlockSliders'
+import { Plus } from 'lucide-react'
+import SectionCard from './SectionCard'
 import {
   SECTION_LABELS,
   computeSessionTotals,
   createSection,
   formatDistance,
   formatDuration,
+  getAddableKinds,
+  getSessionDomain,
   normalizeBlocks,
 } from '../sessionBlocks'
 import './SessionEditor.css'
 
-const ADDABLE_KINDS = ['warmup', 'steady', 'interval', 'cooldown']
-
 export default function SessionEditor({ value, onChange, activityTag, workoutType = 'continuous' }) {
+  const domain = getSessionDomain(activityTag)
+  const addableKinds = getAddableKinds(activityTag)
+
   const normalized = useMemo(() => {
     const result = normalizeBlocks(value, activityTag)
     if (result) return result
+    if (domain === 'strength') {
+      return { sections: [createSection('exercise', activityTag)] }
+    }
+    if (domain === 'duration') {
+      return { sections: [createSection('effort', activityTag)] }
+    }
     if (workoutType === 'interval') {
       return {
         sections: [
@@ -26,7 +36,7 @@ export default function SessionEditor({ value, onChange, activityTag, workoutTyp
       }
     }
     return { sections: [createSection('steady', activityTag)] }
-  }, [value, activityTag, workoutType])
+  }, [value, activityTag, workoutType, domain])
 
   const sections = normalized.sections
   const totals = computeSessionTotals(normalized, activityTag)
@@ -57,6 +67,9 @@ export default function SessionEditor({ value, onChange, activityTag, workoutTyp
     commit(next)
   }
 
+  // Strength sessions track no distance — only show total time.
+  const showDistanceTotal = domain === 'distance'
+
   return (
     <div className="tp-session-editor">
       {sections.length === 0 ? (
@@ -78,14 +91,17 @@ export default function SessionEditor({ value, onChange, activityTag, workoutTyp
       )}
 
       <div className="tp-session-add-row">
-        {ADDABLE_KINDS.map(kind => (
+        {addableKinds.map(kind => (
           <button
             key={kind}
             type="button"
             className={`tp-session-add-btn tp-session-add-btn--${kind}`}
             onClick={() => addSection(kind)}
           >
-            <span aria-hidden="true">+</span> {SECTION_LABELS[kind]}
+            <span className="tp-session-add-icon" aria-hidden="true">
+              <Plus size={14} strokeWidth={2.5} />
+            </span>
+            {SECTION_LABELS[kind]}
           </button>
         ))}
       </div>
@@ -95,53 +111,13 @@ export default function SessionEditor({ value, onChange, activityTag, workoutTyp
           <span className="tp-session-total-label">Total tid</span>
           <span className="tp-session-total-value">{formatDuration(totals.totalDuration)}</span>
         </div>
-        <div className="tp-session-total">
-          <span className="tp-session-total-label">Total distanse</span>
-          <span className="tp-session-total-value">{formatDistance(totals.totalDistance)}</span>
-        </div>
+        {showDistanceTotal && (
+          <div className="tp-session-total">
+            <span className="tp-session-total-label">Total distanse</span>
+            <span className="tp-session-total-value">{formatDistance(totals.totalDistance)}</span>
+          </div>
+        )}
       </div>
-    </div>
-  )
-}
-
-function SectionCard({ section, activityTag, canMoveUp, canMoveDown, onChange, onRemove, onMoveUp, onMoveDown }) {
-  const label = SECTION_LABELS[section.kind] || 'Del'
-  return (
-    <div className={`tp-block-card tp-block-card--${section.kind}`}>
-      <div className="tp-block-card-head">
-        <span className="tp-block-card-title">{label}</span>
-        <div className="tp-block-card-actions">
-          <button
-            type="button"
-            className="tp-block-card-icon-btn"
-            onClick={onMoveUp}
-            disabled={!canMoveUp}
-            aria-label="Flytt opp"
-            title="Flytt opp"
-          >↑</button>
-          <button
-            type="button"
-            className="tp-block-card-icon-btn"
-            onClick={onMoveDown}
-            disabled={!canMoveDown}
-            aria-label="Flytt ned"
-            title="Flytt ned"
-          >↓</button>
-          <button
-            type="button"
-            className="tp-block-card-remove"
-            onClick={onRemove}
-            aria-label={`Fjern ${label.toLowerCase()}`}
-            title="Fjern del"
-          >×</button>
-        </div>
-      </div>
-      <BlockSliders
-        block={section}
-        activityTag={activityTag}
-        onChange={onChange}
-        mode={section.kind === 'interval' ? 'interval' : 'steady'}
-      />
     </div>
   )
 }

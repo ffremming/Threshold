@@ -2,7 +2,8 @@ import { ZONE_COLORS, ZONE_INFO } from '../../utils'
 
 export default function ZoneSummary({ zones, colors, zoneLabel, onClick }) {
   return (
-    <div
+    <button
+      type="button"
       className="modal-section zone-summary"
       style={{ '--zone-color': colors.border }}
       onClick={onClick}
@@ -30,6 +31,6 @@ export default function ZoneSummary({ zones, colors, zoneLabel, onClick }) {
       <div className="zone-summary-hint">
         Trykk for å se full intensitetsskala
       </div>
-    </div>
+    </button>
   )
 }

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import {
   getAdjacentWeek,
   getWeekKey,
@@ -8,27 +8,20 @@ import {
   groupWorkoutsByWeekday,
 } from '../utils'
 import { hasRole } from '../roles'
-import Login from '../components/Login'
 import ShortcutsHelp from '../components/ShortcutsHelp'
 import '../components/AthleteHome.css'
 import { useAuth } from './hooks/useAuth'
 import { useAthletes } from './hooks/useAthletes'
 import { useWorkouts } from './hooks/useWorkouts'
 import { useTemplates } from './hooks/useTemplates'
+import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts'
 import { createHandlers } from './handlers'
-import LoadingScreen from './LoadingScreen'
-import ProfileErrorScreen from './ProfileErrorScreen'
-import MainShell from './MainShell'
-import {
-  UserManagementScreen,
-  AthleteOverviewScreen,
-  AdminDashboardScreen,
-} from './AdminScreens'
+import AppRoutes from './AppRoutes'
 
 export default function App() {
-  const today = new Date()
-  const [currentWeek, setCurrentWeek] = useState(getWeekNumber(today))
-  const [currentYear, setCurrentYear] = useState(today.getFullYear())
+  const today = useMemo(() => new Date(), [])
+  const [currentWeek, setCurrentWeek] = useState(() => getWeekNumber(today))
+  const [currentYear, setCurrentYear] = useState(() => today.getFullYear())
 
   const [showLogin, setShowLogin] = useState(false)
   const [showAdmin, setShowAdmin] = useState(false)
@@ -77,14 +70,11 @@ export default function App() {
     canManageWorkouts, userProfile, user,
   })
 
+  // Keep the open workout detail modal in sync with live workout data.
   useEffect(() => {
     if (!selectedWorkout) return
     const freshWorkout = workouts.find(w => w.id === selectedWorkout.id)
-    if (freshWorkout) {
-      setSelectedWorkout(freshWorkout)
-      return
-    }
-    setSelectedWorkout(null)
+    setSelectedWorkout(freshWorkout || null)
   }, [workouts, selectedWorkout])
 
   const { templates, loadingTemplates } = useTemplates(userProfile)
@@ -111,68 +101,23 @@ export default function App() {
     setCurrentYear(year)
   }
 
-  // Keep latest state in a ref so the keyboard listener can read it without
-  // re-binding on every state change.
-  const shortcutStateRef = useRef({})
-  shortcutStateRef.current = {
-    selectedWorkout,
-    replacementTarget,
-    showLogin,
-    showAdmin,
-    showUserManagement,
-    showAthleteOverview,
+  const isModalOpen = Boolean(
+    selectedWorkout ||
+    replacementTarget ||
+    showLogin ||
+    showAdmin ||
+    showUserManagement ||
+    showAthleteOverview
+  )
+
+  useKeyboardShortcuts({
+    isModalOpen,
     showShortcutsHelp,
+    setShowShortcutsHelp,
     prevWeek,
     nextWeek,
     goToToday,
-  }
-
-  useEffect(() => {
-    function handleKeyDown(event) {
-      const target = event.target
-      if (target) {
-        const tag = target.tagName
-        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || target.isContentEditable) {
-          return
-        }
-      }
-      if (event.metaKey || event.ctrlKey || event.altKey) return
-
-      const s = shortcutStateRef.current
-      const modalOpen =
-        s.selectedWorkout ||
-        s.replacementTarget ||
-        s.showLogin ||
-        s.showAdmin ||
-        s.showUserManagement ||
-        s.showAthleteOverview
-
-      if (event.key === 'Escape' && s.showShortcutsHelp) {
-        event.preventDefault()
-        setShowShortcutsHelp(false)
-        return
-      }
-
-      if (modalOpen) return
-
-      if (event.key === 'ArrowLeft') {
-        event.preventDefault()
-        s.prevWeek()
-      } else if (event.key === 'ArrowRight') {
-        event.preventDefault()
-        s.nextWeek()
-      } else if (event.key === 't' || event.key === 'T') {
-        event.preventDefault()
-        s.goToToday()
-      } else if (event.key === '?') {
-        event.preventDefault()
-        setShowShortcutsHelp(prev => !prev)
-      }
-    }
-
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [])
+  })
 
   const handlers = createHandlers({
     selectedWorkout, setSelectedWorkout,
@@ -185,79 +130,64 @@ export default function App() {
   const doneCount = workouts.filter(w => w.completed).length
   const isThisWeek = currentWeek === getWeekNumber(today) && currentYear === today.getFullYear()
   const workoutDays = groupWorkoutsByWeekday(workouts)
-  const overviewByWeekKey = overviewWorkouts.reduce((acc, workout) => {
-    const key = getWeekKey(workout.week, workout.year)
-    if (!acc[key]) acc[key] = []
-    acc[key].push(workout)
-    return acc
-  }, {})
+  const overviewByWeekKey = useMemo(() => (
+    overviewWorkouts.reduce((acc, workout) => {
+      const key = getWeekKey(workout.week, workout.year)
+      if (!acc[key]) acc[key] = []
+      acc[key].push(workout)
+      return acc
+    }, {})
+  ), [overviewWorkouts])
 
-  if (user === undefined || (user && profileLoading)) return <LoadingScreen />
-  if (!user) return <Login fullScreen onClose={() => {}} />
-  if (profileError) return <ProfileErrorScreen message={profileError} onLogout={handlers.handleLogout} />
-
-  if (showUserManagement && isSuperadmin) {
-    return <UserManagementScreen userProfile={userProfile} setShowUserManagement={setShowUserManagement} />
+  const adminScreenProps = {
+    user, userProfile, athletes, setShowAdmin, setShowUserManagement,
+    currentWeek, currentYear, handleWeekChange, overviewWeeks,
+    selectedAthleteId, setSelectedAthleteId, adminWorkoutLayout, isSuperadmin,
+    handleWorkoutLayoutChange: handlers.handleWorkoutLayoutChange,
   }
 
-  if (showAthleteOverview && canManageWorkouts) {
-    return (
-      <AthleteOverviewScreen
-        user={user}
-        userProfile={userProfile}
-        athletes={athletes}
-        setShowAthleteOverview={setShowAthleteOverview}
-      />
-    )
-  }
-
-  if (showAdmin && canManageWorkouts) {
-    return (
-      <AdminDashboardScreen
-        user={user}
-        userProfile={userProfile}
-        setShowAdmin={setShowAdmin}
-        currentWeek={currentWeek}
-        currentYear={currentYear}
-        handleWeekChange={handleWeekChange}
-        overviewWeeks={overviewWeeks}
-        selectedAthleteId={selectedAthleteId}
-        athletes={athletes}
-        setSelectedAthleteId={setSelectedAthleteId}
-        adminWorkoutLayout={adminWorkoutLayout}
-        handleWorkoutLayoutChange={handlers.handleWorkoutLayoutChange}
-        isSuperadmin={isSuperadmin}
-        setShowUserManagement={setShowUserManagement}
-      />
-    )
+  const mainShellProps = {
+    isSuperadmin, canManageWorkouts, activeHomeAthlete,
+    currentWeek, currentYear, monday, sunday, isThisWeek,
+    prevWeek, nextWeek, goToToday, handleWeekChange,
+    showOverview, setShowOverview, overviewLoading, overviewWeeks, overviewByWeekKey, selectedWeekKey,
+    athletes, selectedAthleteId, setSelectedAthleteId, userProfile,
+    homeWorkoutLayout,
+    handleWorkoutLayoutChange: handlers.handleWorkoutLayoutChange,
+    loading, workouts, doneCount, workoutDays,
+    selectedWorkout, setSelectedWorkout,
+    handleToggleComplete: handlers.handleToggleComplete,
+    handleSaveComment: handlers.handleSaveComment,
+    handleStartReplaceWorkout: handlers.handleStartReplaceWorkout,
+    handleDuplicateWorkout: handlers.handleDuplicateWorkout,
+    replacementTarget, templates, loadingTemplates,
+    closeTemplatePicker: handlers.closeTemplatePicker,
+    handleReplaceWithTemplate: handlers.handleReplaceWithTemplate,
+    showLogin, setShowLogin,
+    setShowUserManagement, setShowAthleteOverview, setShowAdmin,
+    handleLogout: handlers.handleLogout,
   }
 
   return (
     <>
-    <MainShell
-      {...{
-        isSuperadmin, canManageWorkouts, activeHomeAthlete,
-        currentWeek, currentYear, monday, sunday, isThisWeek,
-        prevWeek, nextWeek, goToToday, handleWeekChange,
-        showOverview, setShowOverview, overviewLoading, overviewWeeks, overviewByWeekKey, selectedWeekKey,
-        athletes, selectedAthleteId, setSelectedAthleteId, userProfile,
-        homeWorkoutLayout,
-        handleWorkoutLayoutChange: handlers.handleWorkoutLayoutChange,
-        loading, workouts, doneCount, workoutDays,
-        selectedWorkout, setSelectedWorkout,
-        handleToggleComplete: handlers.handleToggleComplete,
-        handleSaveComment: handlers.handleSaveComment,
-        handleStartReplaceWorkout: handlers.handleStartReplaceWorkout,
-        handleDuplicateWorkout: handlers.handleDuplicateWorkout,
-        replacementTarget, templates, loadingTemplates,
-        closeTemplatePicker: handlers.closeTemplatePicker,
-        handleReplaceWithTemplate: handlers.handleReplaceWithTemplate,
-        showLogin, setShowLogin,
-        setShowUserManagement, setShowAthleteOverview, setShowAdmin,
-        handleLogout: handlers.handleLogout,
-      }}
-    />
-    {showShortcutsHelp && <ShortcutsHelp onClose={() => setShowShortcutsHelp(false)} />}
+      <AppRoutes
+        user={user}
+        userProfile={userProfile}
+        profileLoading={profileLoading}
+        profileError={profileError}
+        isSuperadmin={isSuperadmin}
+        canManageWorkouts={canManageWorkouts}
+        showUserManagement={showUserManagement}
+        showAthleteOverview={showAthleteOverview}
+        showAdmin={showAdmin}
+        setShowUserManagement={setShowUserManagement}
+        setShowAthleteOverview={setShowAthleteOverview}
+        setShowAdmin={setShowAdmin}
+        handlers={handlers}
+        adminScreenProps={adminScreenProps}
+        mainShellProps={mainShellProps}
+      />
+      {showShortcutsHelp && <ShortcutsHelp onClose={() => setShowShortcutsHelp(false)} />}
     </>
   )
 }

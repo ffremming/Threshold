@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { ArrowLeft } from 'lucide-react'
 import { onUserProfileSnapshot } from '../../userService'
 import { Button, PageShell, ShellBrand, Page, Section } from '../ui'
 import AthleteSessionPool from '../AthleteSessionPool'
@@ -24,7 +25,7 @@ export default function AthleteDetail({ athlete, coach, onBack }) {
       }
       actions={
         <Button variant="ghost" size="sm" onClick={onBack}>
-          <span aria-hidden="true">‹</span> Tilbake
+          <ArrowLeft size={15} aria-hidden="true" /> Tilbake
         </Button>
       }
     >

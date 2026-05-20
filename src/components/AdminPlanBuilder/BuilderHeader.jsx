@@ -1,3 +1,4 @@
+import { LayoutGrid } from 'lucide-react'
 import BirdsEyeOverview from '../BirdsEyeOverview'
 import { IconButton, WeekNav } from '../ui'
 import { getWeekNumber } from '../../utils'
@@ -31,11 +32,13 @@ export default function BuilderHeader({
         onToday={() => onWeekChange(getWeekNumber(new Date()), new Date().getFullYear())}
         rightSlot={
           <IconButton
-            ariaLabel="Vis ukeoversikt"
+            ariaLabel={showOverview ? 'Skjul ukeoversikt' : 'Vis ukeoversikt'}
+            aria-expanded={showOverview}
+            aria-controls="admin-builder-overview"
             variant={showOverview ? undefined : 'ghost'}
             onClick={() => setShowOverview(p => !p)}
           >
-            <span className="pb-overview-glyph" aria-hidden="true"><span /><span /><span /><span /></span>
+            <LayoutGrid size={16} aria-hidden="true" strokeWidth={1.9} />
           </IconButton>
         }
       />

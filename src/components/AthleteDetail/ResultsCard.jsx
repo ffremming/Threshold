@@ -1,7 +1,7 @@
 import { useState } from 'react'
+import { Trash2 } from 'lucide-react'
 import { addAthleteResult, removeAthleteResult } from '../../userService'
 import { Badge, Button, Card, Field, IconButton, Input } from '../ui'
-import SystemIcon from '../SystemIcon'
 
 export default function ResultsCard({ profile }) {
   const results = Array.isArray(profile?.results) ? profile.results : []
@@ -19,6 +19,8 @@ export default function ResultsCard({ profile }) {
       setDistance('')
       setTime('')
       setNote('')
+    } catch (err) {
+      window.alert(`Kunne ikke lagre resultatet: ${err.message}`)
     } finally {
       setAdding(false)
     }
@@ -27,7 +29,11 @@ export default function ResultsCard({ profile }) {
   async function handleRemove(entry) {
     if (!profile?.uid) return
     if (!window.confirm('Slette dette resultatet?')) return
-    await removeAthleteResult(profile.uid, entry)
+    try {
+      await removeAthleteResult(profile.uid, entry)
+    } catch (err) {
+      window.alert(`Kunne ikke slette resultatet: ${err.message}`)
+    }
   }
 
   const sorted = [...results].sort((a, b) => (b.date || '').localeCompare(a.date || ''))
@@ -67,7 +73,7 @@ export default function ResultsCard({ profile }) {
                 {entry.note && <span className="tp-athlete-result-note">{entry.note}</span>}
               </div>
               <IconButton ariaLabel="Slett resultat" onClick={() => handleRemove(entry)}>
-                <SystemIcon name="delete" className="system-icon" />
+                <Trash2 size={16} aria-hidden="true" />
               </IconButton>
             </li>
           ))}

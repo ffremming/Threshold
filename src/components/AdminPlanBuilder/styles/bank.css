@@ -1,0 +1,57 @@
+/* ────────────────────────────────────────────────────────────────────
+ * AdminPlanBuilder — bank panel, picker windows, session columns
+ * ──────────────────────────────────────────────────────────────────── */
+
+.pb-bank-grid { display: flex; flex-direction: column; gap: var(--tp-space-3); }
+
+.pb-extra-list { display: flex; flex-direction: column; gap: var(--tp-space-3); }
+
+.pb-picker {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tp-space-2);
+}
+
+.pb-picker-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--tp-space-3);
+}
+
+.pb-picker-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--tp-space-2);
+}
+
+@media (max-width: 720px) {
+  .pb-picker-grid { grid-template-columns: 1fr; }
+}
+
+.pb-column { display: flex; flex-direction: column; gap: var(--tp-space-2); min-width: 0; }
+
+.pb-column-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--tp-space-2);
+}
+
+.pb-column-title {
+  font-size: var(--tp-text-sm);
+  font-weight: 700;
+  letter-spacing: var(--tp-tracking-snug);
+  color: var(--tp-ink);
+  margin: 0;
+}
+
+.pb-column-count {
+  font-size: var(--tp-text-2xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tp-tracking-wide);
+  font-weight: 700;
+  color: var(--tp-ink-muted);
+}
+
+.pb-card-list { display: flex; flex-direction: column; gap: var(--tp-space-2); }

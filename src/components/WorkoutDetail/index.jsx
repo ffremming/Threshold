@@ -11,6 +11,8 @@ import {
   normalizeIntensityZone,
   normalizeIntensityZones,
 } from '../../utils'
+import { getSessionDomain } from '../../sessionBlocks'
+import { inferActivityTag } from '../../utils'
 import WorkoutForm from '../WorkoutForm'
 import IntensityScaleModal from '../IntensityScaleModal'
 import SystemIcon from '../SystemIcon'
@@ -32,6 +34,20 @@ export default function WorkoutDetail({ workout, onClose, canEdit, onDelete, onT
     setCommentDraft(workout.userComment || '')
   }, [workout])
 
+  // Close on Escape unless the user is editing or has a nested modal open.
+  useEffect(() => {
+    if (!workout || editing) return
+    function handleKeyDown(event) {
+      if (event.key === 'Escape') {
+        event.stopPropagation()
+        if (showScale) setShowScale(false)
+        else onClose()
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [workout, editing, showScale, onClose])
+
   if (!workout) return null
 
   const zones = normalizeIntensityZones(workout.type, workout.intensityZone)
@@ -44,13 +60,17 @@ export default function WorkoutDetail({ workout, onClose, canEdit, onDelete, onT
   const activityTag = workout.activityTag ? ACTIVITY_TAG_MAP[workout.activityTag] : null
   const loadTag = workout.loadTag ? LOAD_TAG_MAP[workout.loadTag] : null
   const scheduleLabel = formatWorkoutSchedule(workout)
-  const isStrengthWorkout = workout.type === 'styrke' || workout.type === 'molle'
-  const isRunningWorkout = ['interval', 'terskel', 'rolig', 'molle'].includes(workout.type)
+  // The measurement domain is driven by the activity (run/swim/strength/…),
+  // never the legacy intensity-type. Strength sessions must never show km/pace.
+  const resolvedActivityTag = workout.activityTag || inferActivityTag(workout)
+  const sessionDomain = getSessionDomain(resolvedActivityTag)
+  const isStrengthWorkout = sessionDomain === 'strength'
+  const isDistanceWorkout = sessionDomain === 'distance'
   const exerciseLines = (workout.exercises || workout.description || '')
     .split('\n')
     .map(line => line.trim())
     .filter(Boolean)
-  const runningDetails = workout.sessionDetails || workout.description
+  const sessionInstructions = workout.sessionDetails || workout.description
 
   function handleBackdrop(e) {
     if (e.target === e.currentTarget) onClose()
@@ -75,8 +95,8 @@ export default function WorkoutDetail({ workout, onClose, canEdit, onDelete, onT
   if (editing) {
     return (
       <div className="modal-backdrop" onClick={handleBackdrop}>
-        <div className="modal add-modal">
-          <button className="modal-close" onClick={() => setEditing(false)}><SystemIcon name="close" className="system-icon" /></button>
+        <div className="modal add-modal" role="dialog" aria-modal="true" aria-label="Rediger økt">
+          <button className="modal-close" onClick={() => setEditing(false)} aria-label="Lukk"><SystemIcon name="close" className="system-icon" /></button>
           <h2 className="modal-title-h2">Rediger økt</h2>
           <form onSubmit={handleSave}>
             <WorkoutForm value={form} onChange={setForm} showScheduleFields />
@@ -94,7 +114,13 @@ export default function WorkoutDetail({ workout, onClose, canEdit, onDelete, onT
 
   return (
     <div className="modal-backdrop" onClick={handleBackdrop}>
-      <div className="modal workout-detail-modal" style={{ '--zone-color': zoneColorVar }}>
+      <div
+        className="modal workout-detail-modal"
+        style={{ '--zone-color': zoneColorVar }}
+        role="dialog"
+        aria-modal="true"
+        aria-label={workout.title || 'Øktdetaljer'}
+      >
         <WorkoutDetailHeader
           onClose={onClose}
           icon={icon}
@@ -107,9 +133,9 @@ export default function WorkoutDetail({ workout, onClose, canEdit, onDelete, onT
 
         <WorkoutDetailSections
           workout={workout}
-          isRunningWorkout={isRunningWorkout}
+          isDistanceWorkout={isDistanceWorkout}
           isStrengthWorkout={isStrengthWorkout}
-          runningDetails={runningDetails}
+          sessionInstructions={sessionInstructions}
           exerciseLines={exerciseLines}
         />
 

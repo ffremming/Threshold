@@ -3,8 +3,10 @@ import {
   computeSessionTotals,
   formatDistance,
   formatDuration,
+  formatLoad,
   formatPaceLabel,
   formatPauseLabel,
+  formatSetsReps,
   formatSpeedLabel,
   getSections,
   getSpeedUnitForActivity,
@@ -32,6 +34,54 @@ function describeSpeed(paceSecPerKm, activityTag) {
 function SectionRow({ section, activityTag }) {
   const label = SECTION_LABELS[section.kind] || 'Del'
   const speedLabel = describeSpeed(section.paceSecPerKm, activityTag)
+
+  if (section.kind === 'exercise') {
+    return (
+      <li className="session-block-row">
+        <div className="session-block-row-head">
+          <span className="session-block-row-label">{label}</span>
+          <span className="session-block-row-main">
+            {section.exerciseName?.trim() || 'Øvelse'}
+          </span>
+        </div>
+        <div className="session-block-row-meta">
+          <span>{formatSetsReps(section.sets, section.reps)}</span>
+          <span>{formatLoad(section.loadKg)}</span>
+          {section.restSec > 0 && <span>{formatSeconds(section.restSec)} pause</span>}
+        </div>
+      </li>
+    )
+  }
+
+  if (section.kind === 'effort') {
+    return (
+      <li className="session-block-row">
+        <div className="session-block-row-head">
+          <span className="session-block-row-label">{label}</span>
+          <span className="session-block-row-main">
+            {formatDuration(section.durationMin)}
+          </span>
+        </div>
+      </li>
+    )
+  }
+
+  // Time-based warmup/cooldown (strength/duration sessions): duration, no distance.
+  if ((section.kind === 'warmup' || section.kind === 'cooldown') &&
+      section.durationMin != null &&
+      !(Number(section.distanceKm) > 0) &&
+      section.paceSecPerKm == null) {
+    return (
+      <li className="session-block-row">
+        <div className="session-block-row-head">
+          <span className="session-block-row-label">{label}</span>
+          <span className="session-block-row-main">
+            {formatDuration(section.durationMin)}
+          </span>
+        </div>
+      </li>
+    )
+  }
 
   if (section.kind === 'interval') {
     const mode = section.paceMode || 'pace'

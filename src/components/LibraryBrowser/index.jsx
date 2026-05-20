@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { Plus } from 'lucide-react'
 import {
   ACTIVITY_TAG_MAP,
   normalizeIntensityZones,
@@ -110,7 +111,10 @@ export default function LibraryBrowser({
         title="Globalt øktbibliotek"
         subtitle={`${globalTemplates.length} økter · søk og filtrer · legg til i din øktbank`}
         actions={isSuperadmin && onCreateGlobal ? (
-          <Button onClick={onCreateGlobal}>+ Ny i bibliotek</Button>
+          <Button onClick={onCreateGlobal}>
+            <Plus size={16} aria-hidden="true" />
+            Ny i bibliotek
+          </Button>
         ) : null}
       />
 

@@ -1,3 +1,4 @@
+import { Check } from 'lucide-react'
 import { cx } from './index'
 import { ZoneDot, ZoneBadge } from './Zone'
 import { ActivityPill } from './ActivityPill'
@@ -79,7 +80,7 @@ export function WorkoutCard({
               onClick={e => { e.stopPropagation(); onToggleComplete() }}
               aria-label={workout.completed ? 'Marker som ikke fullført' : 'Marker som fullført'}
             >
-              {workout.completed ? '✓' : ''}
+              {workout.completed && <Check size={16} aria-hidden="true" />}
             </button>
           )}
         </div>

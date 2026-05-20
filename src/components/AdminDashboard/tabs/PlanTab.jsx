@@ -1,6 +1,8 @@
+import { CalendarPlus, Plus } from 'lucide-react'
 import { getWeekNumber } from '../../../utils'
 import BirdsEyeOverview from '../../BirdsEyeOverview'
 import {
+  Button,
   EmptyState,
   IconButton,
   LayoutToggle,
@@ -10,6 +12,7 @@ import {
   ToolbarGroup,
   WeekNav,
 } from '../../ui'
+import { EMPTY_TEMPLATE } from '../constants'
 import AdminWorkoutSlot from '../AdminWorkoutSlot'
 import DaySection from './DaySection'
 
@@ -27,7 +30,20 @@ export default function PlanTab(props) {
     moveWorkout,
     draggedWorkoutId, dropTarget,
     handleDragStart, handleDragEnd, handleDropTargetChange, handleDropWorkout,
+    setReplacementTarget, setCustomForm, setShowCustomForm, setPickingFromBank, setTab,
   } = props
+
+  function startNewWorkout() {
+    setCustomForm({ ...EMPTY_TEMPLATE })
+    setShowCustomForm(true)
+  }
+
+  function startPickFromBank() {
+    setReplacementTarget(null)
+    setCustomForm(prev => ({ ...prev, weekday: '' }))
+    setPickingFromBank(true)
+    setTab('oktbank')
+  }
 
   return (
     <Page>
@@ -76,6 +92,16 @@ export default function PlanTab(props) {
       )}
 
       <Toolbar>
+        <ToolbarGroup label="Legg til">
+          <Button variant="secondary" size="sm" onClick={startPickFromBank}>
+            <CalendarPlus size={16} strokeWidth={2} aria-hidden="true" />
+            Fra øktbank
+          </Button>
+          <Button size="sm" onClick={startNewWorkout}>
+            <Plus size={16} strokeWidth={2} aria-hidden="true" />
+            Ny økt
+          </Button>
+        </ToolbarGroup>
         <ToolbarGroup label="Visning">
           <LayoutToggle value={workoutLayout} onChange={onWorkoutLayoutChange} />
         </ToolbarGroup>
@@ -95,6 +121,14 @@ export default function PlanTab(props) {
           <EmptyState
             title={activeTagFilter ? 'Ingen økter matcher valgt aktivitet' : 'Ingen økter denne uken'}
             description={activeTagFilter ? 'Prøv å fjerne aktivitetsfilteret.' : 'Legg til en økt fra øktbanken eller opprett en ny.'}
+            action={activeTagFilter ? (
+              <Button variant="secondary" onClick={() => setActiveTagFilter(null)}>Fjern filter</Button>
+            ) : (
+              <Button onClick={startNewWorkout}>
+                <Plus size={16} strokeWidth={2} aria-hidden="true" />
+                Ny økt
+              </Button>
+            )}
           />
         ) : workoutLayout === 'calendar' ? (
           groupedWorkouts.map(day => (

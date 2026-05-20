@@ -1,3 +1,4 @@
+import { Check, Plus } from 'lucide-react'
 import { Button, EmptyState, TemplateCard } from '../ui'
 
 export default function ResultsGrid({
@@ -39,14 +40,26 @@ export default function ResultsGrid({
       <div className="tp-card-grid">
         {filtered.map(template => {
           const inBank = isAlreadyInBank(template)
+          const pending = pendingAddIds.has(template.id)
           return (
             <TemplateCard
               key={template.id}
               template={template}
-              primaryLabel={inBank ? '✓ Lagt til (legg til igjen)' : '+ Legg til min øktbank'}
+              primaryLabel={
+                <>
+                  {inBank
+                    ? <Check size={16} aria-hidden="true" />
+                    : <Plus size={16} aria-hidden="true" />}
+                  {pending
+                    ? 'Legger til…'
+                    : inBank
+                      ? 'I øktbanken'
+                      : 'Legg til i øktbank'}
+                </>
+              }
               primaryActive={inBank}
               primaryVariant={inBank ? 'secondary' : 'primary'}
-              primaryDisabled={pendingAddIds.has(template.id)}
+              primaryDisabled={pending}
               onPrimary={() => onAdd(template)}
               onEdit={isSuperadmin && onEditGlobal ? () => onEditGlobal(template) : null}
               onDelete={isSuperadmin && onDeleteGlobal ? () => onDeleteGlobal(template) : null}

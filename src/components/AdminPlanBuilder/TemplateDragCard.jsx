@@ -1,3 +1,4 @@
+import { GripVertical, Plus } from 'lucide-react'
 import {
   TYPE_ICONS,
   formatIntensityZoneLabel,
@@ -29,7 +30,9 @@ export default function TemplateDragCard({ session, onDragStart, onDragEnd, onAd
               draggable={false}
               title="Legg til i plan"
               aria-label={`Legg ${session.title} til i plan`}
-            >+</button>
+            >
+              <Plus className="pb-btn-icon" aria-hidden="true" strokeWidth={2.2} />
+            </button>
           ) : null}
           {isCustomTemplate && onEdit ? (
             <button
@@ -55,7 +58,9 @@ export default function TemplateDragCard({ session, onDragStart, onDragEnd, onAd
               <SystemIcon name="delete" className="system-icon" />
             </button>
           ) : null}
-          <span className="pb-card-grip" title="Dra inn i kalender" aria-hidden="true">⋮⋮</span>
+          <span className="pb-card-grip" title="Dra inn i kalender" aria-hidden="true">
+            <GripVertical className="pb-btn-icon" strokeWidth={1.9} />
+          </span>
         </div>
       </div>
       <div className="pb-card-meta">

@@ -7,11 +7,8 @@ export default function TestEditor({ editingTest, form, update, resetForm, handl
       <header className="td-editor-head">
         <div>
           <span className="td-eyebrow">Test editor</span>
-          <h3 className="td-editor-title">{editingTest ? 'Rediger test' : 'Ny test'}</h3>
+          <h3 className="td-editor-title">{editingTest && editingTest !== 'new' ? 'Rediger test' : 'Ny test'}</h3>
         </div>
-        {editingTest && (
-          <Button size="sm" variant="ghost" onClick={resetForm}>Nullstill</Button>
-        )}
       </header>
 
       <form className="td-form" onSubmit={handleSubmit}>
@@ -72,8 +69,10 @@ export default function TestEditor({ editingTest, form, update, resetForm, handl
         </Field>
 
         <div className="td-form-actions">
-          <Button type="button" variant="secondary" onClick={resetForm}>Tøm</Button>
-          <Button type="submit">{editingTest === 'new' ? 'Opprett test' : 'Lagre'}</Button>
+          {editingTest && (
+            <Button type="button" variant="ghost" onClick={resetForm}>Avbryt</Button>
+          )}
+          <Button type="submit">{editingTest && editingTest !== 'new' ? 'Lagre endringer' : 'Opprett test'}</Button>
         </div>
       </form>
     </Card>

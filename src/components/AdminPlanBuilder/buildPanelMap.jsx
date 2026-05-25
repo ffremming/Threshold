@@ -37,7 +37,6 @@ export function buildPanelMap(props) {
     bank: (
       <BankPanel
         visiblePanelIds={visiblePanelIds}
-        movePanel={movePanel}
         onCreateTemplate={onCreateTemplate}
         handleAddBankWindow={handleAddBankWindow}
         loadingTemplates={loadingTemplates}
@@ -73,7 +72,6 @@ export function buildPanelMap(props) {
       <CalendarPanel
         workoutLayout={workoutLayout}
         visiblePanelIds={visiblePanelIds}
-        movePanel={movePanel}
         loadingWorkouts={loadingWorkouts}
         groupedWorkouts={groupedWorkouts}
         sortedWorkouts={sortedWorkouts}

@@ -101,7 +101,11 @@ export function useBuilderLayout() {
   }
 
   function getResizeBounds(panelId) {
-    return { minWidth: panelId === 'calendar' ? 780 : 280, maxWidth: 1600 }
+    // Bank/extra grow up to whatever leaves the calendar at least 480px wide,
+    // so the splitter never starves the calendar.
+    const calendarReserve = 480
+    const cap = Math.max(320, viewportWidth - calendarReserve - 64)
+    return { minWidth: 280, maxWidth: Math.min(1600, cap) }
   }
 
   function startResize(panelId, event) {

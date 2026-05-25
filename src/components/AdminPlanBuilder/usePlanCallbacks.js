@@ -12,10 +12,15 @@ export function usePlanCallbacks({
 }) {
   const [bankWindows, setBankWindows] = useState([])
 
+  // Bank (Øktvelger) and calendar are always adjacent. The optional extra
+  // panel sits on the outer side; panelOrder is only consulted to remember
+  // which side (left vs right of the bank+calendar pair) the user prefers.
   const visiblePanelIds = useMemo(() => {
-    const base = ['bank', 'calendar']
-    if (bankWindows.length > 0) base.splice(1, 0, 'extra')
-    return panelOrder.filter(panelId => base.includes(panelId))
+    if (bankWindows.length === 0) return ['bank', 'calendar']
+    const extraIdx = panelOrder.indexOf('extra')
+    const calIdx = panelOrder.indexOf('calendar')
+    const extraOnLeft = extraIdx >= 0 && calIdx >= 0 && extraIdx < calIdx
+    return extraOnLeft ? ['extra', 'bank', 'calendar'] : ['bank', 'calendar', 'extra']
   }, [bankWindows.length, panelOrder])
 
   function prevWeek() {
@@ -43,20 +48,18 @@ export function usePlanCallbacks({
     setBankWindows(prev => prev.filter(window => window.id !== windowId))
   }
 
+  // Only the extra panel can move: bank+calendar are a locked pair.
+  // Moving extra flips it between the left and right side of that pair.
   function movePanel(panelId, direction) {
+    if (panelId !== 'extra') return
     setPanelOrder(prev => {
-      const visibleOrder = prev.filter(id => visiblePanelIds.includes(id))
-      const currentIndex = visibleOrder.indexOf(panelId)
-      if (currentIndex < 0) return prev
-      const nextIndex = currentIndex + direction
-      if (nextIndex < 0 || nextIndex >= visibleOrder.length) return prev
-
-      const swapped = [...visibleOrder]
-      ;[swapped[currentIndex], swapped[nextIndex]] = [swapped[nextIndex], swapped[currentIndex]]
-
-      const swappedSet = new Set(swapped)
-      const remaining = prev.filter(id => !swappedSet.has(id))
-      return [...swapped, ...remaining]
+      const without = prev.filter(id => id !== 'extra')
+      const calIdx = without.indexOf('calendar')
+      const currentExtraIdx = prev.indexOf('extra')
+      const wasOnLeft = currentExtraIdx >= 0 && currentExtraIdx < calIdx
+      if (direction < 0 && !wasOnLeft) return ['extra', ...without]
+      if (direction > 0 && wasOnLeft) return [...without, 'extra']
+      return prev
     })
   }
 

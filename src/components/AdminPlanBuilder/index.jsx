@@ -61,8 +61,11 @@ export default function AdminPlanBuilder({
 
   function getPanelShellStyle(panelId) {
     if (!isDesktopBuilder) return undefined
+    // Calendar is the splitter target — it absorbs whatever space bank/extra
+    // leave behind. Bank and extra keep explicit pixel widths.
+    if (panelId === 'calendar') return { flex: '1 1 0', minWidth: '480px' }
     const width = layout.panelSizes[panelId] || DEFAULT_PANEL_SIZES[panelId]
-    return { flex: `0 0 ${width}px`, width: `${width}px` }
+    return { flex: `0 1 ${width}px`, width: `${width}px`, minWidth: '280px' }
   }
 
   const panelMap = buildPanelMap({
@@ -122,7 +125,7 @@ export default function AdminPlanBuilder({
             style={getPanelShellStyle(panelId)}
           >
             {panelMap[panelId]}
-            {isDesktopBuilder && (
+            {isDesktopBuilder && panelId !== 'calendar' && (
               <button
                 type="button"
                 className="pb-resize-handle"

@@ -25,6 +25,7 @@ export function PageShell({
   onNavChange,
   account,
   selectedAthlete,
+  collapsedNav,
   children,
   className,
 }) {
@@ -33,7 +34,12 @@ export function PageShell({
   const showHeader = brand || actions || tabs || banner
 
   return (
-    <div className={cx('tp-shell', hasNav && 'tp-shell--with-nav', className)}>
+    <div className={cx(
+      'tp-shell',
+      hasNav && 'tp-shell--with-nav',
+      hasNav && collapsedNav && 'tp-shell--nav-collapsed',
+      className,
+    )}>
       {hasNav && (
         <>
           <button

@@ -4,7 +4,6 @@ import BankPickerWindow from './BankPickerWindow'
 
 export default function BankPanel({
   visiblePanelIds,
-  movePanel,
   onCreateTemplate,
   handleAddBankWindow,
   loadingTemplates,
@@ -24,7 +23,6 @@ export default function BankPanel({
         title="Øktvelger"
         panelId="bank"
         visiblePanelIds={visiblePanelIds}
-        onMove={movePanel}
       >
         {onCreateTemplate && (
           <button type="button" className="pb-mini-btn" onClick={onCreateTemplate}>

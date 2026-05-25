@@ -12,26 +12,28 @@ export default function BuilderPanelHeader({ title, copy, panelId, visiblePanelI
         {copy ? <p className="pb-panel-copy">{copy}</p> : null}
       </div>
       <div className="pb-panel-tools">
-        <div className="pb-panel-move">
-          <button
-            type="button"
-            className="pb-panel-move-btn"
-            onClick={() => onMove(panelId, -1)}
-            disabled={!canMoveLeft}
-            aria-label={`Flytt ${title} til venstre`}
-          >
-            <ArrowLeft className="system-icon" aria-hidden="true" strokeWidth={1.9} />
-          </button>
-          <button
-            type="button"
-            className="pb-panel-move-btn"
-            onClick={() => onMove(panelId, 1)}
-            disabled={!canMoveRight}
-            aria-label={`Flytt ${title} til høyre`}
-          >
-            <ArrowRight className="system-icon" aria-hidden="true" strokeWidth={1.9} />
-          </button>
-        </div>
+        {onMove && (
+          <div className="pb-panel-move">
+            <button
+              type="button"
+              className="pb-panel-move-btn"
+              onClick={() => onMove(panelId, -1)}
+              disabled={!canMoveLeft}
+              aria-label={`Flytt ${title} til venstre`}
+            >
+              <ArrowLeft className="system-icon" aria-hidden="true" strokeWidth={1.9} />
+            </button>
+            <button
+              type="button"
+              className="pb-panel-move-btn"
+              onClick={() => onMove(panelId, 1)}
+              disabled={!canMoveRight}
+              aria-label={`Flytt ${title} til høyre`}
+            >
+              <ArrowRight className="system-icon" aria-hidden="true" strokeWidth={1.9} />
+            </button>
+          </div>
+        )}
         {children}
       </div>
     </div>

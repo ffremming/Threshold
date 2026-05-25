@@ -25,6 +25,10 @@
   .tp-shell--with-nav .tp-shell-body { margin-left: 0; }
 }
 
+/* Collapsed nav (e.g. inside Planverktøy): treat desktop like mobile —
+ * sidebar slides off-canvas behind a hamburger so the page takes full width. */
+.tp-shell--nav-collapsed .tp-shell-body { margin-left: 0; }
+
 /* ── Sidebar ──────────────────────────────────────────────────────── */
 .tp-shell-nav {
   position: fixed;
@@ -49,6 +53,14 @@
   }
   .tp-shell-nav.is-open { transform: translateX(0); }
 }
+
+.tp-shell--nav-collapsed .tp-shell-nav {
+  transform: translateX(-100%);
+  transition: transform var(--tp-dur-base) var(--tp-ease);
+  box-shadow: var(--tp-shadow-xl);
+}
+
+.tp-shell--nav-collapsed .tp-shell-nav.is-open { transform: translateX(0); }
 
 .tp-shell-nav-brand {
   display: inline-flex;
@@ -469,6 +481,8 @@
   .tp-shell-hamburger { display: inline-flex; }
 }
 
+.tp-shell--nav-collapsed .tp-shell-hamburger { display: inline-flex; }
+
 .tp-shell-nav-scrim {
   display: none;
   position: fixed;
@@ -484,6 +498,8 @@
 @media (max-width: 900px) {
   .tp-shell-nav-scrim { display: block; }
 }
+
+.tp-shell--nav-collapsed .tp-shell-nav-scrim { display: block; }
 
 @keyframes tp-fade-in {
   from { opacity: 0; }
@@ -528,6 +544,10 @@
     padding: var(--tp-space-4) var(--tp-space-5) 0;
     padding-left: calc(2.5rem + var(--tp-space-4) * 2);  /* room for hamburger */
   }
+}
+
+.tp-shell--nav-collapsed .tp-shell-pagehead {
+  padding-left: calc(2.5rem + var(--tp-space-4) * 2);
 }
 
 .tp-shell-back { margin-right: var(--tp-space-1); }
@@ -587,6 +607,10 @@
   .tp-shell-tabs {
     padding-left: calc(2.5rem + var(--tp-space-4) * 2);
   }
+}
+
+.tp-shell--nav-collapsed .tp-shell-tabs {
+  padding-left: calc(2.5rem + var(--tp-space-4) * 2);
 }
 
 .tp-shell-tabs::-webkit-scrollbar { display: none; }

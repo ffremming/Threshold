@@ -20,7 +20,6 @@ const LIST_WEEKDAY = 1
 export default function CalendarPanel({
   workoutLayout,
   visiblePanelIds,
-  movePanel,
   loadingWorkouts,
   groupedWorkouts,
   sortedWorkouts,
@@ -44,7 +43,6 @@ export default function CalendarPanel({
           : 'Sortert etter dag og tidspunkt. Dra økter for å flytte, eller slipp foran en økt for å plassere den i listen.'}
         panelId="calendar"
         visiblePanelIds={visiblePanelIds}
-        onMove={movePanel}
       />
 
       {loadingWorkouts ? (

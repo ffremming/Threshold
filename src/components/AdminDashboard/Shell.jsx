@@ -8,6 +8,7 @@ export default function Shell({ tab, onTabChange, children }) {
   return (
     <PageShell
       className={tab === 'builder' ? 'admin-dashboard-wide' : undefined}
+      collapsedNav={tab === 'builder'}
       tabs={TAB_ITEMS}
       tabValue={tab}
       onTabChange={onTabChange}

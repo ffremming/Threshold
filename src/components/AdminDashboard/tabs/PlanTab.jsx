@@ -14,6 +14,36 @@ import { EMPTY_TEMPLATE } from '../constants'
 import AdminWorkoutSlot from '../AdminWorkoutSlot'
 import WeekCalendarList from '../../AdminPlanBuilder/WeekCalendarList'
 
+function buildDayDropZone(weekday, draggedWorkoutId, handleDropTargetChange, handleDropWorkout) {
+  return {
+    onDragOver(e) {
+      if (!draggedWorkoutId) return
+      e.preventDefault()
+      handleDropTargetChange(weekday)
+    },
+    async onDrop(e) {
+      if (!draggedWorkoutId) return
+      e.preventDefault()
+      await handleDropWorkout(weekday)
+    },
+  }
+}
+
+function buildWorkoutDropZone(weekday, workoutId, handleDropTargetChange, handleDropWorkout) {
+  return {
+    onDragOver(e) {
+      e.preventDefault()
+      e.stopPropagation()
+      handleDropTargetChange(weekday, workoutId)
+    },
+    async onDrop(e) {
+      e.preventDefault()
+      e.stopPropagation()
+      await handleDropWorkout(weekday, workoutId)
+    },
+  }
+}
+
 export default function PlanTab(props) {
   const {
     currentWeek, currentYear, monday, sunday, isThisWeek,
@@ -97,47 +127,18 @@ export default function PlanTab(props) {
         ) : workoutLayout === 'calendar' ? (
           <WeekCalendarList
             days={groupedWorkouts}
-            isDayEndTarget={weekday => dropTarget?.weekday === weekday && !dropTarget?.beforeWorkoutId}
-            getDayDropZoneProps={weekday => ({
-              onDragOver(e) {
-                if (!draggedWorkoutId) return
-                e.preventDefault()
-                handleDropTargetChange(weekday)
-              },
-              async onDrop(e) {
-                if (!draggedWorkoutId) return
-                e.preventDefault()
-                await handleDropWorkout(weekday)
-              },
-            })}
-            renderWorkout={(workout, idx, total, weekday) => (
-              <AdminWorkoutSlot
-                key={workout.id}
-                workout={workout}
-                index={idx}
-                total={total}
-                onClick={setSelectedWorkout}
-                onDelete={handleDeleteWorkout}
-                onReplace={handleStartReplaceWorkout}
-                onToggleComplete={handleToggleComplete}
-                onMoveUp={() => moveWorkout(workout, -1)}
-                onMoveDown={() => moveWorkout(workout, 1)}
-                isDragging={draggedWorkoutId === workout.id}
-                isDropTarget={dropTarget?.weekday === weekday && dropTarget?.beforeWorkoutId === workout.id}
-                onDragStart={() => handleDragStart(workout)}
-                onDragEnd={handleDragEnd}
-                onDragOver={e => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  handleDropTargetChange(weekday, workout.id)
-                }}
-                onDrop={async e => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  await handleDropWorkout(weekday, workout.id)
-                }}
-              />
-            )}
+            isWorkoutDragging={w => draggedWorkoutId === w.id}
+            isWorkoutDropTarget={(w, day) => dropTarget?.weekday === day && dropTarget?.beforeWorkoutId === w.id}
+            isDayEndTarget={day => dropTarget?.weekday === day && !dropTarget?.beforeWorkoutId}
+            getDayDropZoneProps={day => buildDayDropZone(day, draggedWorkoutId, handleDropTargetChange, handleDropWorkout)}
+            getWorkoutDropZoneProps={(w, day) => buildWorkoutDropZone(day, w.id, handleDropTargetChange, handleDropWorkout)}
+            onSelectWorkout={setSelectedWorkout}
+            onMoveWorkout={moveWorkout}
+            onWorkoutDragStart={w => handleDragStart(w)}
+            onWorkoutDragEnd={handleDragEnd}
+            onReplaceWorkout={handleStartReplaceWorkout}
+            onToggleCompleteWorkout={handleToggleComplete}
+            onDeleteWorkout={handleDeleteWorkout}
           />
         ) : (
           <div className="pb-workout-list">

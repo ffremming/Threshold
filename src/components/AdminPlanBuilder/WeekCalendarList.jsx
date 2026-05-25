@@ -26,7 +26,7 @@ export default function WeekCalendarList({
         const dropProps = getDayDropZoneProps(day.value)
         const countLabel = day.workouts.length > 0
           ? `${day.workouts.length} økt${day.workouts.length > 1 ? 'er' : ''}`
-          : 'Ingen økter'
+          : ''
         return [
           <div key={`head-${day.value}`} className="pb-week-day-head" {...dropProps}>
             <span className="pb-week-day-label">{day.label}</span>

@@ -107,11 +107,11 @@ export default function WorkoutList({
               subtitle={
                 day.workouts.length > 0
                   ? `${day.workouts.length} økt${day.workouts.length > 1 ? 'er' : ''}`
-                  : 'Hvile / ingen økter'
+                  : 'Hvile'
               }
             >
               {day.workouts.length === 0 ? (
-                <div className="ah-empty-slot">Ledig slot</div>
+                <div></div>
               ) : (
                 <div className="ah-day-stack">
                   {day.workouts.map(workout => (

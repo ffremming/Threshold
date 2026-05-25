@@ -186,3 +186,8 @@ export { TemplateCard } from './TemplateCard'
 export { WorkoutCard } from './WorkoutCard'
 export { ZoneDot, ZoneBadge } from './Zone'
 export { ActivityPill } from './ActivityPill'
+
+/* Design system signature elements */
+export { cn } from './cn'
+export { GradientText, SectionLabel, InvertedSection } from './signature'
+export * as motion from './motion'

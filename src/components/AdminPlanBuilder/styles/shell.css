@@ -69,18 +69,38 @@
   display: none;
   position: absolute;
   top: 0;
-  right: -8px;
+  right: -10px;
   bottom: 0;
-  width: 16px;
+  width: 20px;
   cursor: col-resize;
   background: transparent;
   border: none;
+  padding: 0;
+  z-index: 3;
+}
+
+.pb-resize-handle::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2px;
+  border-radius: 999px;
+  background: var(--tp-line);
+  transition: background 120ms ease, width 120ms ease;
+}
+
+.pb-resize-handle:hover::before,
+.pb-resize-handle:focus-visible::before {
+  background: var(--tp-accent);
+  width: 4px;
 }
 
 .pb-resize-handle:focus-visible {
   outline: none;
-  background: var(--tp-focus);
-  border-radius: var(--tp-radius-sm);
 }
 
 .pb-layout.is-desktop .pb-resize-handle { display: block; }
+.pb-layout.is-desktop .pb-panel-shell:last-child .pb-resize-handle { display: none; }

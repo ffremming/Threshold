@@ -17,6 +17,7 @@ import { useTemplates } from './hooks/useTemplates'
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts'
 import { createHandlers } from './handlers'
 import AppRoutes from './AppRoutes'
+import { NavProvider } from './primaryNav'
 
 export default function App() {
   const today = useMemo(() => new Date(), [])
@@ -169,7 +170,18 @@ export default function App() {
   }
 
   return (
-    <>
+    <NavProvider
+      canManageWorkouts={canManageWorkouts}
+      isSuperadmin={isSuperadmin}
+      setShowAthleteOverview={setShowAthleteOverview}
+      setShowAdmin={setShowAdmin}
+      setShowUserManagement={setShowUserManagement}
+      handleLogout={handlers.handleLogout}
+      userProfile={userProfile}
+      athletes={athletes}
+      selectedAthleteId={selectedAthleteId}
+      setSelectedAthleteId={setSelectedAthleteId}
+    >
       <AppRoutes
         user={user}
         userProfile={userProfile}
@@ -188,6 +200,6 @@ export default function App() {
         mainShellProps={mainShellProps}
       />
       {showShortcutsHelp && <ShortcutsHelp onClose={() => setShowShortcutsHelp(false)} />}
-    </>
+    </NavProvider>
   )
 }

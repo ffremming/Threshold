@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { Mail } from 'lucide-react'
 import { getUserRoles, hasRole } from '../../roles'
 import { Card, Page, PageShell, Section, ShellBrand, Stat } from '../ui'
+import { useNav } from '../../App/primaryNav'
 import RelationshipSection from './RelationshipSection'
 import RoleEditor from './RoleEditor'
 
@@ -16,6 +17,7 @@ export default function UserDetail({
   onAddRelationship,
   onRemoveRelationship,
 }) {
+  const nav = useNav()
   const isCoach = hasRole(selectedUser, 'coach')
   const isAthlete = hasRole(selectedUser, 'athlete')
 
@@ -48,6 +50,11 @@ export default function UserDetail({
           title={selectedUser.displayName || selectedUser.email}
         />
       }
+      nav={nav?.items}
+      navActive="users"
+      onNavChange={nav?.onChange}
+      account={nav?.account}
+      selectedAthlete={nav?.selectedAthlete}
     >
       <Page>
         <Card style={{ padding: 'var(--tp-space-4)', display: 'flex', flexWrap: 'wrap', gap: 'var(--tp-space-4)' }}>

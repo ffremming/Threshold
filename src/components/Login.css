@@ -1,115 +1,242 @@
+/* ────────────────────────────────────────────────────────────────────
+ * Login — pilot surface for "Minimalist Modern" design system.
+ *
+ * Aesthetic:
+ *   • Calistoga headline with gradient last-word + gradient underline bar
+ *   • Asymmetric 1.15fr / 0.85fr layout (text dominates)
+ *   • Animated hero graphic: rotating ring, floating cards, dot grid
+ *   • Pulsing section label badge above headline
+ *   • Inverted footer with dot-pattern texture
+ *   • Ambient radial glows at corners for atmosphere
+ * ──────────────────────────────────────────────────────────────────── */
+
 .tp-login-shell {
   position: relative;
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
   background: var(--tp-bg);
+  overflow: hidden;
 }
 
+/* ── Ambient corner glows ────────────────────────────────────────── */
+.tp-login-glow {
+  position: absolute;
+  width: 32rem;
+  height: 32rem;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+  filter: blur(120px);
+  opacity: 0.55;
+}
+
+.tp-login-glow--tl {
+  top: -10rem;
+  left: -10rem;
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--tp-accent) 20%, transparent) 0%,
+    transparent 70%
+  );
+}
+
+.tp-login-glow--br {
+  bottom: 6rem;
+  right: -8rem;
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--tp-accent-secondary) 18%, transparent) 0%,
+    transparent 70%
+  );
+}
+
+/* ── Stage layout (asymmetric grid) ──────────────────────────────── */
 .tp-login-stage {
+  position: relative;
+  z-index: 1;
   flex: 1;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 26rem);
-  gap: var(--tp-space-12);
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: var(--tp-space-16);
   align-items: center;
   width: 100%;
-  max-width: 1100px;
+  max-width: 1180px;
   margin: 0 auto;
-  padding: var(--tp-space-12) var(--tp-space-6);
+  padding: var(--tp-space-16) var(--tp-space-6);
 }
 
-@media (max-width: 900px) {
+@media (max-width: 960px) {
   .tp-login-stage {
     grid-template-columns: 1fr;
-    gap: var(--tp-space-8);
-    padding: var(--tp-space-8) var(--tp-space-5);
+    gap: var(--tp-space-10);
+    padding: var(--tp-space-10) var(--tp-space-5);
   }
 }
 
-.tp-login-hero { display: flex; flex-direction: column; gap: var(--tp-space-5); }
+/* ── Hero (left column) ──────────────────────────────────────────── */
+.tp-login-hero {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tp-space-6);
+}
 
-.tp-login-brand { display: inline-flex; align-items: center; gap: var(--tp-space-3); }
+.tp-login-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--tp-space-3);
+  align-self: flex-start;
+}
 
 .tp-login-mark {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2.25rem;
-  height: 2.25rem;
-  border-radius: var(--tp-radius-sm);
-  background: var(--tp-accent);
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--tp-radius-md);
+  background: var(--tp-gradient);
   color: var(--tp-on-accent);
   font-family: var(--tp-font-mono);
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   letter-spacing: -0.04em;
+  box-shadow: var(--tp-shadow-accent);
+}
+
+.tp-login-mark--invert {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--tp-bg);
+  box-shadow: none;
+  border: 1px solid rgba(255, 255, 255, 0.18);
 }
 
 .tp-login-brand-text {
+  font-family: var(--tp-font-sans);
   font-size: var(--tp-text-md);
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: var(--tp-tracking-snug);
   color: var(--tp-ink);
 }
 
 .tp-login-headline {
-  font-family: var(--tp-font-sans);
-  font-size: clamp(2rem, 5vw, 3.2rem);
-  line-height: 1.05;
-  letter-spacing: -0.035em;
-  font-weight: 700;
+  position: relative;
+  font-family: var(--tp-font-display);
+  font-size: var(--tp-text-display);
+  line-height: var(--tp-leading-tight);
+  letter-spacing: var(--tp-tracking-tight);
+  font-weight: 400;
   color: var(--tp-ink);
   margin: 0;
+  display: inline-block;
+}
+
+/* The gradient underline bar beneath the gradient word (per design system) */
+.tp-login-headline-bar {
+  position: absolute;
+  left: 0;
+  right: 18%;
+  bottom: -0.35rem;
+  height: 0.85rem;
+  border-radius: 4px;
+  background: linear-gradient(
+    to right,
+    color-mix(in srgb, var(--tp-accent) 18%, transparent),
+    color-mix(in srgb, var(--tp-accent-secondary) 8%, transparent)
+  );
+  z-index: -1;
+  pointer-events: none;
+}
+
+@media (max-width: 720px) {
+  .tp-login-headline-bar { height: 0.6rem; right: 12%; }
 }
 
 .tp-login-tagline {
   font-size: var(--tp-text-lg);
   line-height: var(--tp-leading-body);
   color: var(--tp-ink-muted);
-  max-width: 32rem;
+  max-width: 34rem;
   margin: 0;
 }
 
+.tp-login-marks {
+  margin-top: var(--tp-space-4);
+  position: relative;
+  display: none;
+}
+
+@media (min-width: 960px) {
+  .tp-login-marks { display: block; }
+}
+
+/* ── Login card (right column) ───────────────────────────────────── */
 .tp-login-card {
+  position: relative;
   background: var(--tp-surface);
   border: 1px solid var(--tp-line);
-  border-radius: var(--tp-radius-xl);
+  border-radius: var(--tp-radius-2xl);
   padding: var(--tp-space-8);
-  box-shadow: var(--tp-shadow-md);
+  box-shadow: var(--tp-shadow-lg);
+}
+
+.tp-login-card::before {
+  /* subtle gradient halo behind the card */
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: var(--tp-radius-2xl);
+  padding: 1px;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--tp-accent) 25%, transparent),
+    transparent 50%
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  pointer-events: none;
 }
 
 .tp-login-card-head {
   display: flex;
   flex-direction: column;
-  gap: var(--tp-space-1);
+  gap: var(--tp-space-2);
   margin-bottom: var(--tp-space-6);
 }
 
 .tp-login-eyebrow {
+  font-family: var(--tp-font-mono);
   font-size: var(--tp-text-2xs);
   text-transform: uppercase;
-  letter-spacing: var(--tp-tracking-wide);
-  font-weight: 700;
-  color: var(--tp-ink-muted);
+  letter-spacing: var(--tp-tracking-label);
+  font-weight: 500;
+  color: var(--tp-accent);
 }
 
 .tp-login-card-title {
-  font-size: var(--tp-text-2xl);
-  font-weight: 700;
+  font-family: var(--tp-font-display);
+  font-size: var(--tp-text-3xl);
+  font-weight: 400;
   letter-spacing: var(--tp-tracking-tight);
   margin: 0;
   color: var(--tp-ink);
+  line-height: var(--tp-leading-snug);
 }
 
-.tp-login-form { display: flex; flex-direction: column; gap: var(--tp-space-4); }
+.tp-login-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tp-space-5);
+}
 
 .tp-login-error {
   font-size: var(--tp-text-sm);
   color: var(--tp-danger);
-  background: color-mix(in srgb, var(--tp-danger) 8%, transparent);
+  background: var(--tp-danger-bg);
   border: 1px solid color-mix(in srgb, var(--tp-danger) 22%, transparent);
   padding: var(--tp-space-3) var(--tp-space-4);
-  border-radius: var(--tp-radius-md);
+  border-radius: var(--tp-radius-lg);
 }
 
 .tp-login-toggle {
@@ -127,28 +254,188 @@
   border: none;
   background: none;
   color: var(--tp-accent);
-  font-weight: 500;
+  font-weight: 600;
   font-size: inherit;
   cursor: pointer;
   padding: var(--tp-space-1) var(--tp-space-2);
-  border-radius: var(--tp-radius-xs);
+  border-radius: var(--tp-radius-sm);
   text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--tp-accent) 35%, transparent);
   text-underline-offset: 3px;
+  transition: text-decoration-color var(--tp-dur-base) var(--tp-ease),
+              background-color var(--tp-dur-base) var(--tp-ease);
 }
 
-.tp-login-toggle-btn:hover { color: var(--tp-accent-hover); background: var(--tp-hover); }
+.tp-login-toggle-btn:hover {
+  color: var(--tp-accent-hover);
+  background: var(--tp-accent-soft);
+  text-decoration-color: var(--tp-accent);
+}
 
+.tp-login-toggle-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--tp-accent-ring);
+}
+
+/* ── Inverted footer ─────────────────────────────────────────────── */
 .tp-login-foot {
+  padding: var(--tp-space-6) 0;
+}
+
+.tp-login-foot-inner {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--tp-space-5) var(--tp-space-6);
-  font-size: var(--tp-text-xs);
-  color: var(--tp-ink-muted);
-  letter-spacing: var(--tp-tracking-wide);
-  text-transform: uppercase;
-  font-weight: 600;
-  max-width: 1100px;
+  gap: var(--tp-space-4);
+  max-width: 1180px;
   margin: 0 auto;
+  padding: 0 var(--tp-space-6);
+  font-size: var(--tp-text-xs);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.tp-login-foot-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--tp-space-3);
+  color: var(--tp-bg);
+  font-weight: 500;
+  letter-spacing: var(--tp-tracking-snug);
+}
+
+.tp-login-foot-version {
+  font-size: var(--tp-text-2xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tp-tracking-label);
+  color: rgba(255, 255, 255, 0.55);
+}
+
+/* ────────────────────────────────────────────────────────────────────
+ * Hero graphic — abstract generative composition
+ * ──────────────────────────────────────────────────────────────────── */
+.tp-hero-graphic {
+  position: relative;
   width: 100%;
+  height: 22rem;
+  margin-top: var(--tp-space-4);
+}
+
+/* Outer rotating dashed ring */
+.tp-hero-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20rem;
+  height: 20rem;
+  margin: -10rem 0 0 -10rem;
+  border-radius: 50%;
+  border: 1.5px dashed color-mix(in srgb, var(--tp-accent) 35%, transparent);
+}
+
+.tp-hero-ring--inner {
+  width: 14rem;
+  height: 14rem;
+  margin: -7rem 0 0 -7rem;
+  border-style: solid;
+  border-color: color-mix(in srgb, var(--tp-accent-secondary) 25%, transparent);
+}
+
+/* 3×3 dot grid behind the cards */
+.tp-hero-dots {
+  position: absolute;
+  top: 1.5rem;
+  left: 0.5rem;
+  display: grid;
+  grid-template-columns: repeat(3, 0.4rem);
+  grid-auto-rows: 0.4rem;
+  gap: 1.25rem;
+}
+
+.tp-hero-dots span {
+  display: block;
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--tp-ink) 18%, transparent);
+}
+
+/* Floating cards */
+.tp-hero-card {
+  position: absolute;
+  background: var(--tp-surface);
+  border: 1px solid var(--tp-line);
+  border-radius: var(--tp-radius-lg);
+  padding: var(--tp-space-3) var(--tp-space-4);
+  box-shadow: var(--tp-shadow-lg);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 9.5rem;
+}
+
+.tp-hero-card--a {
+  top: 2rem;
+  right: 2.5rem;
+}
+
+.tp-hero-card--b {
+  bottom: 1.5rem;
+  left: 3rem;
+}
+
+.tp-hero-card-eyebrow {
+  font-family: var(--tp-font-mono);
+  font-size: var(--tp-text-2xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tp-tracking-label);
+  color: var(--tp-ink-muted);
+}
+
+.tp-hero-card-num {
+  font-family: var(--tp-font-display);
+  font-size: var(--tp-text-2xl);
+  font-weight: 400;
+  color: var(--tp-ink);
+  letter-spacing: var(--tp-tracking-tight);
+  font-variant-numeric: tabular-nums;
+}
+
+.tp-hero-card-meta {
+  font-size: var(--tp-text-2xs);
+  color: var(--tp-accent);
+  font-weight: 500;
+}
+
+.tp-hero-card-bar {
+  display: block;
+  height: 0.35rem;
+  background: var(--tp-surface-2);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-top: 0.15rem;
+}
+
+.tp-hero-card-bar span {
+  display: block;
+  height: 100%;
+  background: var(--tp-gradient-h);
+  border-radius: 999px;
+}
+
+/* Corner accent block — solid accent square with shadow */
+.tp-hero-block {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 4rem;
+  height: 4rem;
+  background: var(--tp-gradient);
+  border-radius: var(--tp-radius-lg);
+  box-shadow: var(--tp-shadow-accent-lg);
+  transform: rotate(-12deg);
+}
+
+/* Hide ambient/decorative glows on small screens */
+@media (max-width: 720px) {
+  .tp-login-glow { display: none; }
 }

@@ -1,9 +1,12 @@
 import {
   ArrowDown,
   ArrowUp,
+  CalendarDays,
   Check,
   Copy,
+  LayoutDashboard,
   LogIn,
+  LogOut,
   Pencil,
   Repeat2,
   Settings2,
@@ -14,7 +17,10 @@ import {
 } from 'lucide-react'
 
 const ICONS = {
+  calendar: CalendarDays,
+  dashboard: LayoutDashboard,
   login: LogIn,
+  logout: LogOut,
   settings: Settings2,
   users: Users2,
   close: X,

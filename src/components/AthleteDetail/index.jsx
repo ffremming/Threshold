@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react'
-import { ArrowLeft } from 'lucide-react'
 import { onUserProfileSnapshot } from '../../userService'
-import { Button, PageShell, ShellBrand, Page, Section } from '../ui'
+import { PageShell, ShellBrand, Page, Section } from '../ui'
+import { useNav } from '../../App/primaryNav'
 import AthleteSessionPool from '../AthleteSessionPool'
 import ProfileCard from './ProfileCard'
 import ResultsCard from './ResultsCard'
 import '../AthleteDetail.css'
 
 export default function AthleteDetail({ athlete, coach, onBack }) {
+  const nav = useNav()
   const [profile, setProfile] = useState(athlete)
 
   useEffect(() => {
@@ -19,15 +20,16 @@ export default function AthleteDetail({ athlete, coach, onBack }) {
     <PageShell
       brand={
         <ShellBrand
+          onBack={onBack}
           eyebrow="Utøver"
           title={profile?.displayName || profile?.email || 'Utøver'}
         />
       }
-      actions={
-        <Button variant="ghost" size="sm" onClick={onBack}>
-          <ArrowLeft size={15} aria-hidden="true" /> Tilbake
-        </Button>
-      }
+      nav={nav?.items}
+      navActive="athletes"
+      onNavChange={nav?.onChange}
+      account={nav?.account}
+      selectedAthlete={nav?.selectedAthlete}
     >
       <Page>
         <Section

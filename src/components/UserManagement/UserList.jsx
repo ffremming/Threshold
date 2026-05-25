@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react'
 import { ChevronRight, Users } from 'lucide-react'
 import { compareUsersByRole, getUserRoles } from '../../roles'
-import { Card, EmptyState, List, Page, PageHeader, PageShell, SearchBox, ShellBrand } from '../ui'
+import { Card, EmptyState, List, Page, PageHeader, PageShell, SearchBox } from '../ui'
+import { useNav } from '../../App/primaryNav'
 import RoleChip from './RoleChip'
 import './UserManagement.css'
 
@@ -9,7 +10,8 @@ function initialOf(user) {
   return (user.displayName || user.email || '?').trim()[0].toUpperCase()
 }
 
-export default function UserList({ users, loading, onClose, onSelectUser }) {
+export default function UserList({ users, loading, onSelectUser }) {
+  const nav = useNav()
   const [search, setSearch] = useState('')
 
   const sorted = useMemo(() => {
@@ -27,7 +29,13 @@ export default function UserList({ users, loading, onClose, onSelectUser }) {
   }, [users, search])
 
   return (
-    <PageShell brand={<ShellBrand onBack={onClose} eyebrow="Training Planner" title="Brukere" />}>
+    <PageShell
+      nav={nav?.items}
+      navActive="users"
+      onNavChange={nav?.onChange}
+      account={nav?.account}
+      selectedAthlete={nav?.selectedAthlete}
+    >
       <Page>
         <PageHeader
           eyebrow="Brukeradministrasjon"

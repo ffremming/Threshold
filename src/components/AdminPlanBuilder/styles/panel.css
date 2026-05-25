@@ -54,12 +54,13 @@
 .pb-panel-titles { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 
 .pb-panel-title {
-  font-size: var(--tp-text-md);
-  font-weight: 700;
+  font-family: var(--tp-font-display);
+  font-size: var(--tp-text-lg);
+  font-weight: 400;
   letter-spacing: var(--tp-tracking-tight);
   color: var(--tp-ink);
   margin: 0;
-  line-height: var(--tp-leading-tight);
+  line-height: var(--tp-leading-snug);
 }
 
 .pb-panel-copy {
@@ -134,9 +135,10 @@
 .pb-mini-btn--icon { width: 2rem; padding: 0; }
 
 .pb-section-title {
+  font-family: var(--tp-font-display);
   font-size: var(--tp-text-md);
-  font-weight: 700;
-  letter-spacing: var(--tp-tracking-snug);
+  font-weight: 400;
+  letter-spacing: var(--tp-tracking-tight);
   color: var(--tp-ink);
   margin-bottom: var(--tp-space-2);
 }

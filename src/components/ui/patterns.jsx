@@ -1,16 +1,103 @@
+import { useState } from 'react'
 import { cx, IconButton } from './index'
 import { Tabs } from './Tabs'
 import './patterns.css'
 
-/* ── PageShell: sticky brand + tab nav + body ───────────────────── */
-export function PageShell({ brand, actions, banner, tabs, tabValue, onTabChange, children, className }) {
+/* ────────────────────────────────────────────────────────────────────
+ * PageShell — left sidebar (logo + primary nav + account) + main area.
+ *
+ * Renders as a single chrome surface (the sidebar) and lets every page
+ * own its own content area. The legacy `brand` / `actions` / `tabs`
+ * props remain supported and render inline as a page header above the
+ * content — no separate horizontal bar.
+ *
+ * Mobile: sidebar collapses off-canvas behind a hamburger toggle.
+ * ──────────────────────────────────────────────────────────────────── */
+export function PageShell({
+  brand,
+  actions,
+  banner,
+  tabs,
+  tabValue,
+  onTabChange,
+  nav,
+  navActive,
+  onNavChange,
+  account,
+  selectedAthlete,
+  children,
+  className,
+}) {
+  const [navOpen, setNavOpen] = useState(false)
+  const hasNav = Array.isArray(nav) && nav.length > 0
+  const showHeader = brand || actions || tabs || banner
+
   return (
-    <div className={cx('tp-shell', className)}>
-      <header className="tp-shell-header">
-        <div className="tp-shell-header-row">
-          <div className="tp-shell-brand">{brand}</div>
-          {actions && <div className="tp-shell-actions">{actions}</div>}
-        </div>
+    <div className={cx('tp-shell', hasNav && 'tp-shell--with-nav', className)}>
+      {hasNav && (
+        <>
+          <button
+            type="button"
+            className="tp-shell-hamburger"
+            aria-label="Vis meny"
+            aria-expanded={navOpen}
+            onClick={() => setNavOpen(v => !v)}
+          >
+            <span aria-hidden="true" />
+            <span aria-hidden="true" />
+            <span aria-hidden="true" />
+          </button>
+
+          {navOpen && (
+            <button
+              type="button"
+              className="tp-shell-nav-scrim"
+              aria-label="Lukk meny"
+              onClick={() => setNavOpen(false)}
+            />
+          )}
+
+          <aside
+            className={cx('tp-shell-nav', navOpen && 'is-open')}
+            aria-label="Hovedmeny"
+          >
+            <a className="tp-shell-nav-brand" href="#top" aria-label="Training Planner">
+              <span className="tp-shell-nav-mark" aria-hidden="true">TP</span>
+              <span className="tp-shell-nav-wordmark">Training Planner</span>
+            </a>
+
+            <nav className="tp-shell-nav-list">
+              {nav.map(item => (
+                <button
+                  type="button"
+                  key={item.key}
+                  className={cx('tp-shell-nav-item', navActive === item.key && 'is-active')}
+                  aria-current={navActive === item.key ? 'page' : undefined}
+                  onClick={() => { onNavChange?.(item.key); setNavOpen(false) }}
+                >
+                  {item.icon && <span className="tp-shell-nav-icon" aria-hidden="true">{item.icon}</span>}
+                  <span className="tp-shell-nav-label">{item.label}</span>
+                  {item.badge != null && <span className="tp-shell-nav-badge">{item.badge}</span>}
+                </button>
+              ))}
+            </nav>
+
+            {selectedAthlete && (
+              <div className="tp-shell-nav-context">{selectedAthlete}</div>
+            )}
+
+            {account && <div className="tp-shell-nav-account">{account}</div>}
+          </aside>
+        </>
+      )}
+
+      <main className="tp-shell-body">
+        {showHeader && (
+          <header className="tp-shell-pagehead">
+            <div className="tp-shell-pagehead-titles">{brand}</div>
+            {actions && <div className="tp-shell-pagehead-actions">{actions}</div>}
+          </header>
+        )}
 
         {banner && <div className="tp-shell-banner">{banner}</div>}
 
@@ -19,25 +106,27 @@ export function PageShell({ brand, actions, banner, tabs, tabValue, onTabChange,
             <Tabs items={tabs} value={tabValue} onChange={onTabChange} />
           </div>
         )}
-      </header>
 
-      <main className="tp-shell-body">{children}</main>
+        {children}
+      </main>
     </div>
   )
 }
 
-export function ShellBrand({ onBack, eyebrow, title, mark = 'TP' }) {
+/* ── ShellBrand: inline page-heading bundle (back arrow + eyebrow + title)
+ * Lives inside the page content area, not in the chrome.  Kept for
+ * back-compat with every PageShell call site. */
+export function ShellBrand({ onBack, eyebrow, title }) {
   return (
     <>
       {onBack && (
-        <IconButton ariaLabel="Tilbake" variant="ghost" onClick={onBack}>
+        <IconButton ariaLabel="Tilbake" variant="ghost" onClick={onBack} className="tp-shell-back">
           <span aria-hidden="true">‹</span>
         </IconButton>
       )}
-      <div className="tp-shell-mark" aria-hidden="true">{mark}</div>
       <div className="tp-shell-meta">
         {eyebrow && <span className="tp-shell-eyebrow">{eyebrow}</span>}
-        {title && <span className="tp-shell-title">{title}</span>}
+        {title && <h1 className="tp-shell-title">{title}</h1>}
       </div>
     </>
   )
@@ -92,7 +181,10 @@ export function EmptyState({ icon, title, description, action, className }) {
   )
 }
 
-/* ── WeekNav ────────────────────────────────────────────────────── */
+/* ── WeekNav ─────────────────────────────────────────────────────
+ * Dissolved into the page heading: large display type, no card,
+ * no border. Reads as content. Right-side slot holds inline ghost
+ * controls (layout toggle, overview toggle, etc.). */
 export function WeekNav({
   week,
   year,
@@ -110,19 +202,36 @@ export function WeekNav({
 
   return (
     <div className={cx('tp-weeknav', className)}>
-      <button className="tp-weeknav-arrow" onClick={onPrev} aria-label="Forrige uke">‹</button>
-      <button className="tp-weeknav-info" onClick={onToday} title="Gå til dagens uke">
-        <span className="tp-weeknav-eyebrow">{isThisWeek ? 'Denne uken' : 'Uke'}</span>
-        <span className="tp-weeknav-number tp-num">
-          {week}
+      <div className="tp-weeknav-titles">
+        <button
+          type="button"
+          className="tp-weeknav-eyebrow"
+          onClick={onToday}
+          title="Gå til denne uken"
+        >
+          {isThisWeek ? 'Denne uken' : 'Uke'}
           {isThisWeek && <span className="tp-weeknav-dot" aria-hidden="true" />}
-        </span>
+        </button>
+        <div className="tp-weeknav-headline">
+          <button
+            className="tp-weeknav-arrow"
+            onClick={onPrev}
+            aria-label="Forrige uke"
+            type="button"
+          >‹</button>
+          <h1 className="tp-weeknav-number tp-num">{week}</h1>
+          <button
+            className="tp-weeknav-arrow"
+            onClick={onNext}
+            aria-label="Neste uke"
+            type="button"
+          >›</button>
+        </div>
         <span className="tp-weeknav-range">
           {monday.getDate()}. {monthShort} – {sunday.getDate()}. {monthShortEnd} {year}
         </span>
-      </button>
-      <button className="tp-weeknav-arrow" onClick={onNext} aria-label="Neste uke">›</button>
-      {rightSlot}
+      </div>
+      {rightSlot && <div className="tp-weeknav-controls">{rightSlot}</div>}
     </div>
   )
 }

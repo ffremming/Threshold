@@ -69,9 +69,10 @@
 }
 
 .tp-block-card-title {
-  font-weight: 600;
-  font-size: 0.95rem;
-  letter-spacing: 0.02em;
+  font-family: var(--tp-font-mono);
+  font-weight: 500;
+  font-size: var(--tp-text-xs);
+  letter-spacing: var(--tp-tracking-label);
   text-transform: uppercase;
   color: var(--tp-ink-muted);
   overflow: hidden;
@@ -86,7 +87,7 @@
 }
 
 .tp-block-text-label {
-  font-size: 0.85rem;
+  font-size: var(--tp-text-xs);
   color: var(--tp-ink-muted);
 }
 
@@ -127,7 +128,7 @@
 }
 
 .tp-slider-row-label {
-  font-size: 0.85rem;
+  font-size: var(--tp-text-xs);
   color: var(--tp-ink-muted);
 }
 
@@ -226,10 +227,12 @@
 }
 
 .tp-block-total-label {
-  font-size: 0.75rem;
+  font-family: var(--tp-font-mono);
+  font-size: var(--tp-text-2xs);
   color: var(--tp-ink-muted);
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: var(--tp-tracking-label);
+  font-weight: 500;
 }
 
 .tp-block-total-value {

@@ -2,29 +2,38 @@
 
 .an-summary {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: var(--tp-space-3);
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: var(--tp-space-4);
 }
 
 .an-summary-cell {
   display: flex;
   flex-direction: column;
-  gap: var(--tp-space-1);
-  padding: var(--tp-space-4);
+  gap: var(--tp-space-2);
+  padding: var(--tp-space-5);
   background: var(--tp-surface);
   border: 1px solid var(--tp-line);
-  border-radius: var(--tp-radius-lg);
+  border-radius: var(--tp-radius-xl);
+  box-shadow: var(--tp-shadow-xs);
+  transition: border-color var(--tp-dur-base) var(--tp-ease),
+              box-shadow var(--tp-dur-base) var(--tp-ease);
+}
+
+.an-summary-cell:hover {
+  border-color: color-mix(in srgb, var(--tp-accent) 20%, var(--tp-line));
+  box-shadow: var(--tp-shadow-sm);
 }
 
 .an-summary-cell.is-highlight {
-  background: var(--tp-accent);
+  background: var(--tp-gradient);
   color: var(--tp-on-accent);
-  border-color: var(--tp-accent);
+  border-color: transparent;
+  box-shadow: var(--tp-shadow-accent);
 }
 
 .an-summary-cell.is-highlight .an-summary-label,
 .an-summary-cell.is-highlight .an-summary-note {
-  color: color-mix(in srgb, var(--tp-on-accent) 70%, transparent);
+  color: color-mix(in srgb, var(--tp-on-accent) 75%, transparent);
 }
 
 .an-summary-cell.is-highlight .an-summary-value {
@@ -32,19 +41,22 @@
 }
 
 .an-summary-label {
+  font-family: var(--tp-font-mono);
   font-size: var(--tp-text-2xs);
   text-transform: uppercase;
-  letter-spacing: var(--tp-tracking-wide);
-  font-weight: 700;
+  letter-spacing: var(--tp-tracking-label);
+  font-weight: 500;
   color: var(--tp-ink-muted);
 }
 
 .an-summary-value {
-  font-size: var(--tp-text-2xl);
-  font-weight: 700;
-  letter-spacing: -0.025em;
+  font-family: var(--tp-font-display);
+  font-size: var(--tp-text-3xl);
+  font-weight: 400;
+  letter-spacing: var(--tp-tracking-tight);
   color: var(--tp-ink);
   line-height: var(--tp-leading-tight);
+  font-variant-numeric: tabular-nums;
 }
 
 .an-summary-value.is-up { color: var(--tp-success); }
@@ -53,5 +65,5 @@
 .an-summary-note {
   font-size: var(--tp-text-xs);
   color: var(--tp-ink-muted);
-  line-height: var(--tp-leading-snug);
+  line-height: var(--tp-leading-body);
 }

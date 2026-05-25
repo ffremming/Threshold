@@ -138,18 +138,7 @@ export default function AdminDashboard({
   }
 
   return (
-    <Shell
-      tab={tab}
-      isSuperadmin={isSuperadmin}
-      onClose={onClose}
-      onOpenUserManagement={onOpenUserManagement}
-      onLogout={actions.handleLogout}
-      athletes={athletes}
-      selectedAthleteId={selectedAthleteId}
-      onSelectAthlete={onSelectAthlete}
-      userProfile={userProfile}
-      onTabChange={changeTab}
-    >
+    <Shell tab={tab} onTabChange={changeTab}>
       <TabContent {...tabProps} />
 
       {selectedWorkout && (

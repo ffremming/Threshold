@@ -1,76 +1,6 @@
 /* ────────────────────────────────────────────────────────────────────
- * AdminPlanBuilder — calendar days, workout slots, drop targets
+ * AdminPlanBuilder — week list, workout slots, drop targets
  * ──────────────────────────────────────────────────────────────────── */
-
-.pb-calendar-days {
-  display: flex;
-  flex-direction: column;
-  gap: var(--tp-space-2);
-}
-
-.pb-day {
-  background: var(--tp-bg);
-  border: 1px solid var(--tp-line);
-  border-radius: var(--tp-radius-md);
-  padding: var(--tp-space-2);
-  display: flex;
-  flex-direction: column;
-  gap: var(--tp-space-1);
-  transition: border-color var(--tp-dur-fast) var(--tp-ease),
-              box-shadow var(--tp-dur-fast) var(--tp-ease);
-}
-
-.pb-day.is-target {
-  border-color: var(--tp-accent);
-  box-shadow: 0 0 0 3px var(--tp-focus);
-  background: color-mix(in srgb, var(--tp-accent) 4%, var(--tp-bg));
-}
-
-.pb-day-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: var(--tp-space-2);
-  position: sticky;
-  top: 0;
-  z-index: 1;
-  padding: var(--tp-space-1) var(--tp-space-2);
-  margin: calc(-1 * var(--tp-space-2)) calc(-1 * var(--tp-space-2)) 0;
-  background: color-mix(in srgb, var(--tp-bg) 92%, transparent);
-  backdrop-filter: blur(6px);
-  border-bottom: 1px solid var(--tp-line);
-  border-radius: var(--tp-radius-md) var(--tp-radius-md) 0 0;
-}
-
-.pb-day-titles {
-  display: flex;
-  flex-direction: row;
-  align-items: baseline;
-  gap: var(--tp-space-2);
-}
-
-.pb-day-title {
-  font-size: var(--tp-text-sm);
-  font-weight: 700;
-  letter-spacing: var(--tp-tracking-snug);
-  color: var(--tp-ink);
-  margin: 0;
-  line-height: 1.1;
-}
-
-.pb-day-meta {
-  font-size: var(--tp-text-2xs);
-  text-transform: uppercase;
-  letter-spacing: var(--tp-tracking-wide);
-  font-weight: 700;
-  color: var(--tp-ink-muted);
-}
-
-.pb-day-slots {
-  display: flex;
-  flex-direction: column;
-  gap: var(--tp-space-2);
-}
 
 .pb-empty-slot {
   display: flex;
@@ -93,6 +23,53 @@
   background: var(--tp-hover);
   border-color: var(--tp-ink);
   color: var(--tp-ink);
+}
+
+/* ── Shared week list (Ukeplan + Planverktøy kalender) ────────────
+ * Renders the whole week as one flat list. Day labels become inline
+ * separator rows instead of cards/bubbles wrapping each day. */
+.pb-week-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tp-space-1);
+}
+
+.pb-week-day-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--tp-space-2);
+  padding: var(--tp-space-2) 0 var(--tp-space-1);
+  border-bottom: 1px solid var(--tp-line);
+}
+
+.pb-week-list > .pb-week-day-head:first-child {
+  padding-top: 0;
+}
+
+.pb-week-day-label {
+  font-size: var(--tp-text-sm);
+  font-weight: 700;
+  letter-spacing: var(--tp-tracking-snug);
+  color: var(--tp-ink);
+  line-height: 1.1;
+}
+
+.pb-week-day-meta {
+  font-size: var(--tp-text-2xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tp-tracking-wide);
+  font-weight: 700;
+  color: var(--tp-ink-muted);
+}
+
+.pb-week-day-end {
+  height: var(--tp-space-1);
+  border-top: 1px dashed transparent;
+  transition: border-color var(--tp-dur-fast) var(--tp-ease);
+}
+
+.pb-week-day-end.is-target {
+  border-top-color: var(--tp-accent);
 }
 
 .pb-workout-list { display: flex; flex-direction: column; gap: var(--tp-space-2); }

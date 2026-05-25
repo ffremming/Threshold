@@ -1,7 +1,7 @@
 .tp-athlete-list {
   display: flex;
   flex-direction: column;
-  gap: var(--tp-space-2);
+  gap: var(--tp-space-3);
 }
 
 .tp-athlete-row {
@@ -13,61 +13,83 @@
   text-align: left;
   appearance: none;
   cursor: pointer;
-  padding: var(--tp-space-3) var(--tp-space-4);
+  padding: var(--tp-space-4) var(--tp-space-5);
   background: var(--tp-surface);
   border: 1px solid var(--tp-line);
-  border-radius: var(--tp-radius-lg);
+  border-radius: var(--tp-radius-xl);
   box-shadow: var(--tp-shadow-xs);
   font: inherit;
   color: var(--tp-ink);
-  transition: background var(--tp-dur-fast) var(--tp-ease),
-              border-color var(--tp-dur-fast) var(--tp-ease),
-              transform var(--tp-dur-fast) var(--tp-ease);
+  transition: background var(--tp-dur-base) var(--tp-ease),
+              border-color var(--tp-dur-base) var(--tp-ease),
+              box-shadow var(--tp-dur-base) var(--tp-ease),
+              transform var(--tp-dur-base) var(--tp-ease);
 }
 
 .tp-athlete-row:hover {
-  background: var(--tp-hover);
-  border-color: var(--tp-line-strong);
+  border-color: color-mix(in srgb, var(--tp-accent) 25%, var(--tp-line));
+  box-shadow: var(--tp-shadow-md);
+  transform: translateY(-1px);
 }
 
-.tp-athlete-row:active {
-  transform: scale(0.998);
+.tp-athlete-row:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--tp-bg), 0 0 0 4px var(--tp-accent);
 }
+
+.tp-athlete-row:active { transform: translateY(0) scale(0.99); }
 
 .tp-athlete-row--alert {
-  border-color: color-mix(in srgb, #c0392b 25%, transparent);
-  background: color-mix(in srgb, #c0392b 4%, var(--tp-surface));
+  border-color: color-mix(in srgb, var(--tp-danger) 25%, transparent);
+  background: color-mix(in srgb, var(--tp-danger) 4%, var(--tp-surface));
+}
+
+.tp-athlete-row--alert:hover {
+  border-color: var(--tp-danger);
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--tp-danger) 22%, transparent);
 }
 
 .tp-athlete-row-main {
   display: flex;
   align-items: center;
-  gap: var(--tp-space-3);
+  gap: var(--tp-space-4);
   flex: 1;
   min-width: 0;
 }
 
 .tp-athlete-row-avatar {
-  width: 36px;
-  height: 36px;
+  width: 2.5rem;
+  height: 2.5rem;
   border-radius: 50%;
-  background: var(--tp-accent-soft);
-  color: var(--tp-accent);
+  background: var(--tp-gradient);
+  color: var(--tp-on-accent);
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 600;
+  font-size: var(--tp-text-md);
   flex-shrink: 0;
+  box-shadow: var(--tp-shadow-accent);
+}
+
+.tp-athlete-row--alert .tp-athlete-row-avatar {
+  background: color-mix(in srgb, var(--tp-danger) 20%, var(--tp-surface-2));
+  color: var(--tp-danger);
+  box-shadow: none;
 }
 
 .tp-athlete-row-info {
   display: flex;
   flex-direction: column;
+  gap: 2px;
   min-width: 0;
 }
 
 .tp-athlete-row-name {
+  font-size: var(--tp-text-md);
   font-weight: 600;
+  letter-spacing: var(--tp-tracking-snug);
+  color: var(--tp-ink);
   display: inline-flex;
   align-items: center;
   gap: var(--tp-space-2);
@@ -78,21 +100,22 @@
 
 .tp-athlete-row-meta {
   color: var(--tp-ink-muted);
-  font-size: 0.85rem;
+  font-size: var(--tp-text-sm);
 }
 
 .tp-athlete-alert-dot {
   display: inline-block;
-  width: 8px;
-  height: 8px;
+  width: 0.5rem;
+  height: 0.5rem;
   border-radius: 50%;
-  background: #c0392b;
+  background: var(--tp-danger);
+  animation: tp-pulse-dot 2s cubic-bezier(0.16, 1, 0.3, 1) infinite;
 }
 
 .tp-athlete-alert-badge {
-  background: color-mix(in srgb, #c0392b 12%, transparent);
-  color: #b03020;
-  border-color: color-mix(in srgb, #c0392b 30%, transparent);
+  background: var(--tp-danger-bg);
+  color: var(--tp-danger);
+  border-color: color-mix(in srgb, var(--tp-danger) 30%, transparent);
 }
 
 .tp-athlete-row-side {
@@ -102,6 +125,13 @@
 }
 
 .tp-athlete-row-chevron {
-  color: var(--tp-ink-muted);
+  color: var(--tp-ink-soft);
   flex-shrink: 0;
+  transition: color var(--tp-dur-base) var(--tp-ease),
+              transform var(--tp-dur-base) var(--tp-ease);
+}
+
+.tp-athlete-row:hover .tp-athlete-row-chevron {
+  color: var(--tp-accent);
+  transform: translateX(2px);
 }

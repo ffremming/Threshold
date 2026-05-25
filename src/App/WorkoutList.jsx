@@ -1,5 +1,5 @@
 import { CalendarX } from 'lucide-react'
-import { Section, EmptyState, WorkoutCard } from '../components/ui'
+import { Section, EmptyState, Stat, WorkoutCard } from '../components/ui'
 
 const TYPE_LABELS = {
   rolig: 'rolig',
@@ -41,27 +41,16 @@ function WeekSummary({ workouts, doneCount }) {
 
   return (
     <Section padded>
-      <div className="ah-week-strip">
-        <div className="ah-week-stat">
-          <span className="ah-week-stat-value">{formatDuration(totalMinutes)}</span>
-          <span className="ah-week-stat-label">planlagt</span>
-        </div>
-        <div className="ah-week-stat">
-          <span className="ah-week-stat-value">{workouts.length}</span>
-          <span className="ah-week-stat-label">økter</span>
-        </div>
-        <div className="ah-week-stat">
-          <span className="ah-week-stat-value">{doneCount}</span>
-          <span className="ah-week-stat-label">fullført</span>
-        </div>
-        {typeBreakdown && (
-          <div className="ah-week-breakdown" title="Fordeling per type">{typeBreakdown}</div>
-        )}
+      <div className="ah-summary-stats">
+        <Stat label="Planlagt" value={formatDuration(totalMinutes)} />
+        <Stat label="Økter" value={workouts.length} />
+        <Stat label="Fullført" value={`${doneCount}/${workouts.length}`} />
       </div>
 
-      <div className="ah-summary">
-        <div className="ah-summary-text">
-          <span className="tp-num">{doneCount}/{workouts.length}</span> fullført
+      <div className="ah-summary-progress">
+        <div className="ah-summary-progress-meta">
+          <span><span className="tp-num">{progressPct}%</span> fullført</span>
+          {typeBreakdown && <span className="ah-summary-breakdown">{typeBreakdown}</span>}
         </div>
         <div
           className="ah-progress"

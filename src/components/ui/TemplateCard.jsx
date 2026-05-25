@@ -23,6 +23,9 @@ export function TemplateCard({
   primaryDisabled,
   primaryVariant,
   primaryActive,
+  secondaryLabel,
+  onSecondary,
+  secondaryDisabled,
   onEdit,
   onDelete,
   pinned,
@@ -78,16 +81,30 @@ export function TemplateCard({
             {primaryLabel}
           </Button>
         )}
-        {onEdit && (
-          <IconButton ariaLabel="Rediger" onClick={onEdit} size="sm">
-            <SystemIcon name="edit" className="system-icon" />
-          </IconButton>
+        {onSecondary && (
+          <Button
+            block
+            size="sm"
+            variant="secondary"
+            onClick={onSecondary}
+            disabled={secondaryDisabled}
+            className="tp-template-card-secondary"
+          >
+            {secondaryLabel}
+          </Button>
         )}
-        {onDelete && (
-          <IconButton ariaLabel="Slett" onClick={onDelete} size="sm" variant="danger">
-            <SystemIcon name="delete" className="system-icon" />
-          </IconButton>
-        )}
+        <div className="tp-template-card-icon-actions">
+          {onEdit && (
+            <IconButton ariaLabel="Rediger" onClick={onEdit} size="sm">
+              <SystemIcon name="edit" className="system-icon" />
+            </IconButton>
+          )}
+          {onDelete && (
+            <IconButton ariaLabel="Slett" onClick={onDelete} size="sm" variant="danger">
+              <SystemIcon name="delete" className="system-icon" />
+            </IconButton>
+          )}
+        </div>
       </footer>
     </article>
   )

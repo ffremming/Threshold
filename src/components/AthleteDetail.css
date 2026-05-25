@@ -56,9 +56,15 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--tp-space-3);
-  padding: var(--tp-space-2) var(--tp-space-3);
+  padding: var(--tp-space-3) var(--tp-space-4);
   background: var(--tp-surface-2);
-  border-radius: var(--tp-radius-md);
+  border: 1px solid transparent;
+  border-radius: var(--tp-radius-lg);
+  transition: border-color var(--tp-dur-base) var(--tp-ease);
+}
+
+.tp-athlete-result-row:hover {
+  border-color: color-mix(in srgb, var(--tp-accent) 25%, transparent);
 }
 
 .tp-athlete-result-main {
@@ -81,5 +87,5 @@
 
 .tp-athlete-result-note {
   color: var(--tp-ink-muted);
-  font-size: 0.85rem;
+  font-size: var(--tp-text-xs);
 }

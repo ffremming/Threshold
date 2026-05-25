@@ -100,7 +100,6 @@ export default function UserManagement({ currentUser, onClose }) {
     <UserList
       users={users}
       loading={loading}
-      onClose={onClose}
       onSelectUser={u => setSelectedUid(u.uid)}
     />
   )

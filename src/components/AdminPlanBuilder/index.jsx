@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import './styles/index.css'
 import { getWeekKey } from '../../utils'
-import './chartOptions'
 import { DEFAULT_PANEL_SIZES } from './constants'
 import { useBuilderLayout } from './useBuilderLayout'
 import { useDragHandlers } from './useDragHandlers'
@@ -19,7 +18,6 @@ export default function AdminPlanBuilder({
   sunday,
   isThisWeek,
   workoutLayout = 'calendar',
-  selectedAthleteName,
   workouts,
   loadingWorkouts,
   templates,
@@ -27,9 +25,6 @@ export default function AdminPlanBuilder({
   overviewWeeks,
   overviewWorkoutsByWeekKey,
   loadingOverview,
-  analysisWeeks,
-  analysisWorkoutsByWeekKey,
-  loadingAnalysis,
   onWeekChange,
   onSelectWorkout,
   onDeleteWorkout,
@@ -62,11 +57,12 @@ export default function AdminPlanBuilder({
   const builderLayoutStyle = buildLayoutStyle(calendarPanelWidth)
   const selectedWeekKey = getWeekKey(currentWeek, currentYear)
 
-  const weekData = useWeekData({ workouts, analysisWeeks, analysisWorkoutsByWeekKey, currentWeek, currentYear })
+  const weekData = useWeekData({ workouts, currentWeek, currentYear })
 
   function getPanelShellStyle(panelId) {
     if (!isDesktopBuilder) return undefined
-    return { width: `${layout.panelSizes[panelId] || DEFAULT_PANEL_SIZES[panelId]}px` }
+    const width = layout.panelSizes[panelId] || DEFAULT_PANEL_SIZES[panelId]
+    return { flex: `0 0 ${width}px`, width: `${width}px` }
   }
 
   const panelMap = buildPanelMap({
@@ -97,24 +93,10 @@ export default function AdminPlanBuilder({
     onSelectWorkout,
     onMoveWorkout,
     handleWorkoutDragStart: drag.handleWorkoutDragStart,
-    weekStats: weekData.weekStats,
-    dailyLoadChartData: weekData.dailyLoadChartData,
-    loadingAnalysis,
-    focusTrendWeek: weekData.focusTrendWeek,
-    trendChartData: weekData.trendChartData,
-    workouts,
-    loadMixChartData: weekData.loadMixChartData,
-    distanceDistributionChartData: weekData.distanceDistributionChartData,
   })
 
   return (
     <div className="pb-shell">
-      {selectedAthleteName && (
-        <div className="pb-athlete-banner">
-          Planbygger for <strong>{selectedAthleteName}</strong>
-        </div>
-      )}
-
       <BuilderHeader
         currentWeek={currentWeek}
         currentYear={currentYear}

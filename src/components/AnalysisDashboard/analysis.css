@@ -1,10 +1,11 @@
 /* AnalysisDashboard — shared primitives */
 
 .an-eyebrow {
+  font-family: var(--tp-font-mono);
   font-size: var(--tp-text-2xs);
   text-transform: uppercase;
-  letter-spacing: var(--tp-tracking-wide);
-  font-weight: 700;
+  letter-spacing: var(--tp-tracking-label);
+  font-weight: 500;
   color: var(--tp-ink-muted);
 }
 

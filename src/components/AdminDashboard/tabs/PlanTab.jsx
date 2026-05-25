@@ -1,10 +1,8 @@
 import { CalendarPlus, Plus } from 'lucide-react'
 import { getWeekNumber } from '../../../utils'
-import BirdsEyeOverview from '../../BirdsEyeOverview'
 import {
   Button,
   EmptyState,
-  IconButton,
   LayoutToggle,
   Page,
   SportPicker,
@@ -14,15 +12,12 @@ import {
 } from '../../ui'
 import { EMPTY_TEMPLATE } from '../constants'
 import AdminWorkoutSlot from '../AdminWorkoutSlot'
-import DaySection from './DaySection'
+import WeekCalendarList from '../../AdminPlanBuilder/WeekCalendarList'
 
 export default function PlanTab(props) {
   const {
-    selectedAthleteName,
     currentWeek, currentYear, monday, sunday, isThisWeek,
     onWeekChange, prevWeek, nextWeek,
-    showOverview, setShowOverview, loadingOverview,
-    overviewWeeks, overviewWorkoutsByWeekKey, selectedWeekKey,
     workoutLayout, onWorkoutLayoutChange,
     workouts, filteredWorkouts, groupedWorkouts, loadingWorkouts,
     activeTagFilter, setActiveTagFilter,
@@ -47,12 +42,6 @@ export default function PlanTab(props) {
 
   return (
     <Page>
-      {selectedAthleteName && (
-        <div className="pb-athlete-banner">
-          Treningsplan for <strong>{selectedAthleteName}</strong>
-        </div>
-      )}
-
       <WeekNav
         week={currentWeek}
         year={currentYear}
@@ -62,46 +51,21 @@ export default function PlanTab(props) {
         onPrev={prevWeek}
         onNext={nextWeek}
         onToday={() => onWeekChange(getWeekNumber(new Date()), new Date().getFullYear())}
-        rightSlot={
-          <IconButton
-            ariaLabel="Vis ukeoversikt"
-            variant={showOverview ? undefined : 'ghost'}
-            onClick={() => setShowOverview(p => !p)}
-          >
-            <span className="pb-overview-glyph" aria-hidden="true"><span /><span /><span /><span /></span>
-          </IconButton>
-        }
       />
 
-      {showOverview && (
-        loadingOverview ? (
-          <div className="pb-overview-loading" id="admin-birds-eye-overview">Laster mengdeoversikt…</div>
-        ) : (
-          <div className="pb-overview-wrap" id="admin-birds-eye-overview">
-            <BirdsEyeOverview
-              weeks={overviewWeeks}
-              workoutsByWeekKey={overviewWorkoutsByWeekKey}
-              selectedWeekKey={selectedWeekKey}
-              onSelectWeek={(week, year) => {
-                onWeekChange(week, year)
-                setShowOverview(false)
-              }}
-            />
-          </div>
-        )
-      )}
-
       <Toolbar>
-        <ToolbarGroup label="Legg til">
-          <Button variant="secondary" size="sm" onClick={startPickFromBank}>
-            <CalendarPlus size={16} strokeWidth={2} aria-hidden="true" />
-            Fra øktbank
-          </Button>
-          <Button size="sm" onClick={startNewWorkout}>
-            <Plus size={16} strokeWidth={2} aria-hidden="true" />
-            Ny økt
-          </Button>
-        </ToolbarGroup>
+        {workoutLayout !== 'calendar' && (
+          <ToolbarGroup label="Legg til">
+            <Button variant="secondary" size="sm" onClick={startPickFromBank}>
+              <CalendarPlus size={16} strokeWidth={2} aria-hidden="true" />
+              Fra øktbank
+            </Button>
+            <Button size="sm" onClick={startNewWorkout}>
+              <Plus size={16} strokeWidth={2} aria-hidden="true" />
+              Ny økt
+            </Button>
+          </ToolbarGroup>
+        )}
         <ToolbarGroup label="Visning">
           <LayoutToggle value={workoutLayout} onChange={onWorkoutLayoutChange} />
         </ToolbarGroup>
@@ -131,9 +95,50 @@ export default function PlanTab(props) {
             )}
           />
         ) : workoutLayout === 'calendar' ? (
-          groupedWorkouts.map(day => (
-            <DaySection key={day.value} day={day} {...props} />
-          ))
+          <WeekCalendarList
+            days={groupedWorkouts}
+            isDayEndTarget={weekday => dropTarget?.weekday === weekday && !dropTarget?.beforeWorkoutId}
+            getDayDropZoneProps={weekday => ({
+              onDragOver(e) {
+                if (!draggedWorkoutId) return
+                e.preventDefault()
+                handleDropTargetChange(weekday)
+              },
+              async onDrop(e) {
+                if (!draggedWorkoutId) return
+                e.preventDefault()
+                await handleDropWorkout(weekday)
+              },
+            })}
+            renderWorkout={(workout, idx, total, weekday) => (
+              <AdminWorkoutSlot
+                key={workout.id}
+                workout={workout}
+                index={idx}
+                total={total}
+                onClick={setSelectedWorkout}
+                onDelete={handleDeleteWorkout}
+                onReplace={handleStartReplaceWorkout}
+                onToggleComplete={handleToggleComplete}
+                onMoveUp={() => moveWorkout(workout, -1)}
+                onMoveDown={() => moveWorkout(workout, 1)}
+                isDragging={draggedWorkoutId === workout.id}
+                isDropTarget={dropTarget?.weekday === weekday && dropTarget?.beforeWorkoutId === workout.id}
+                onDragStart={() => handleDragStart(workout)}
+                onDragEnd={handleDragEnd}
+                onDragOver={e => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  handleDropTargetChange(weekday, workout.id)
+                }}
+                onDrop={async e => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  await handleDropWorkout(weekday, workout.id)
+                }}
+              />
+            )}
+          />
         ) : (
           <div className="pb-workout-list">
             {filteredWorkouts.map((workout, index) => (

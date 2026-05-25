@@ -13,12 +13,11 @@ export function getVisibleActivitiesStorageKey(userId) {
   return userId ? `${VISIBLE_ACTIVITIES_BASE_KEY}:${userId}` : VISIBLE_ACTIVITIES_BASE_KEY
 }
 
-export const DEFAULT_PANEL_ORDER = ['bank', 'extra', 'calendar', 'insights']
+export const DEFAULT_PANEL_ORDER = ['bank', 'extra', 'calendar']
 export const DEFAULT_PANEL_SIZES = {
   bank: 360,
   extra: 360,
   calendar: 980,
-  insights: 420,
 }
 
 export const PINNED_ACTIVITY_TAGS = ['run', 'walking', 'strength']

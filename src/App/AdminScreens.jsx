@@ -11,13 +11,12 @@ export function UserManagementScreen({ userProfile, setShowUserManagement }) {
   )
 }
 
-export function AthleteOverviewScreen({ user, userProfile, athletes, setShowAthleteOverview }) {
+export function AthleteOverviewScreen({ user, userProfile, athletes }) {
   return (
     <AthleteOverview
       user={user}
       userProfile={userProfile}
       athletes={athletes}
-      onClose={() => setShowAthleteOverview(false)}
     />
   )
 }

@@ -13,7 +13,7 @@ export function usePlanCallbacks({
   const [bankWindows, setBankWindows] = useState([])
 
   const visiblePanelIds = useMemo(() => {
-    const base = ['bank', 'calendar', 'insights']
+    const base = ['bank', 'calendar']
     if (bankWindows.length > 0) base.splice(1, 0, 'extra')
     return panelOrder.filter(panelId => base.includes(panelId))
   }, [bankWindows.length, panelOrder])

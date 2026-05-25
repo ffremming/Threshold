@@ -1,13 +1,12 @@
+/* Tabs — flat top navbar style.
+ * Inside .tp-shell-tabs they sit flush at the top with a bottom border
+ * supplied by the wrapper; the active tab gets an inset underline bar. */
+
 .tp-tablist {
   display: flex;
-  gap: 2px;
-  padding: 2px;
-  background: var(--tp-surface-2);
-  border: 1px solid var(--tp-line);
-  border-radius: var(--tp-radius-sm);
+  gap: var(--tp-space-1);
   overflow-x: auto;
   scrollbar-width: none;
-  width: fit-content;
   max-width: 100%;
 }
 
@@ -15,6 +14,7 @@
 
 .tp-tab {
   appearance: none;
+  position: relative;
   border: none;
   background: transparent;
   color: var(--tp-ink-muted);
@@ -22,21 +22,40 @@
   font-size: var(--tp-text-sm);
   font-weight: 500;
   letter-spacing: var(--tp-tracking-snug);
-  padding: 0 var(--tp-space-3);
-  height: 1.85rem;
-  border-radius: var(--tp-radius-xs);
+  padding: 0 var(--tp-space-4);
+  height: 3rem;
   cursor: pointer;
   white-space: nowrap;
-  transition: background-color var(--tp-dur-fast) var(--tp-ease),
-              color var(--tp-dur-fast) var(--tp-ease);
+  transition: color var(--tp-dur-base) var(--tp-ease);
+}
+
+.tp-tab::after {
+  content: '';
+  position: absolute;
+  left: var(--tp-space-3);
+  right: var(--tp-space-3);
+  bottom: -1px;
+  height: 2px;
+  background: var(--tp-accent);
+  border-radius: 2px 2px 0 0;
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform var(--tp-dur-base) var(--tp-ease);
 }
 
 .tp-tab:hover { color: var(--tp-ink); }
+
 .tp-tab[aria-selected='true'] {
-  background: var(--tp-surface);
-  color: var(--tp-ink);
-  box-shadow: var(--tp-shadow-xs);
+  color: var(--tp-accent);
   font-weight: 600;
 }
 
-.tp-tab:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--tp-focus); }
+.tp-tab[aria-selected='true']::after {
+  transform: scaleX(1);
+}
+
+.tp-tab:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--tp-accent-ring);
+  border-radius: var(--tp-radius-sm);
+}

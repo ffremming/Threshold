@@ -4,7 +4,7 @@ import {
   ACTIVITY_TAG_MAP,
   normalizeIntensityZones,
 } from '../../utils'
-import { Button, Page, PageHeader } from '../ui'
+import { Button, Page } from '../ui'
 import FilterBar from './FilterBar'
 import ResultsGrid from './ResultsGrid'
 import '../LibraryBrowser.css'
@@ -106,18 +106,6 @@ export default function LibraryBrowser({
 
   return (
     <Page>
-      <PageHeader
-        eyebrow="Bibliotek"
-        title="Globalt øktbibliotek"
-        subtitle={`${globalTemplates.length} økter · søk og filtrer · legg til i din øktbank`}
-        actions={isSuperadmin && onCreateGlobal ? (
-          <Button onClick={onCreateGlobal}>
-            <Plus size={16} aria-hidden="true" />
-            Ny i bibliotek
-          </Button>
-        ) : null}
-      />
-
       <FilterBar
         search={search} onSearch={setSearch}
         activitySet={activitySet} onActivityChange={setActivitySet}
@@ -125,6 +113,12 @@ export default function LibraryBrowser({
         category={category} onCategoryChange={setCategory}
         zoneSet={zoneSet} onToggleZone={toggleZone}
         filtersActive={filtersActive} onClear={clearAll}
+        trailingAction={isSuperadmin && onCreateGlobal ? (
+          <Button onClick={onCreateGlobal}>
+            <Plus size={16} aria-hidden="true" />
+            Ny i bibliotek
+          </Button>
+        ) : null}
       />
 
       <ResultsGrid

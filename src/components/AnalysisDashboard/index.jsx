@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { EmptyState, Page, PageHeader } from '../ui'
+import { EmptyState, Page } from '../ui'
 import './charts/registry'
 import './analysis.css'
 import { METRIC_OPTIONS } from './constants'
@@ -11,9 +11,8 @@ import WindowControls from './filters/WindowControls'
 import SummaryRow from './sections/SummaryRow'
 import InsightGrid from './sections/InsightGrid'
 import ChartGrid from './sections/ChartGrid'
-import BottomGrid from './sections/BottomGrid'
 
-export default function AnalysisDashboard({ weeks, workoutsByWeekKey, athleteName, currentWeek, currentYear }) {
+export default function AnalysisDashboard({ weeks, workoutsByWeekKey, currentWeek, currentYear }) {
   const { range, setRange, activeTagFilter, setActiveTagFilter, primaryMetric, setPrimaryMetric } = usePersistedFilters()
   const { currentIndex, windowStart, setWindowStart, maxWindowStart, visibleWeeks } =
     useAnalysisWindow(weeks, currentWeek, currentYear, range)
@@ -25,7 +24,7 @@ export default function AnalysisDashboard({ weeks, workoutsByWeekKey, athleteNam
 
   const {
     weeklyStats, focusWeek, hasData, totals, zoneTotals, zoneLoadTotals,
-    topActivityEntries, peakWeek, trendDelta, monotony, strain, density, consistencyScore, topWorkouts,
+    topActivityEntries, peakWeek, trendDelta, monotony, strain, density, consistencyScore,
   } = analysis
 
   const labels = weeklyStats.map(({ week }) => getWeekLabel(week))
@@ -44,12 +43,6 @@ export default function AnalysisDashboard({ weeks, workoutsByWeekKey, athleteNam
 
   return (
     <Page wide>
-      <PageHeader
-        eyebrow="Performance Lab"
-        title="Analyse"
-        subtitle={`${athleteName ? athleteName + ' · ' : ''}Multi-aktivitet analyse med fokus på volum, belastning, frekvens og soneprofil.`}
-      />
-
       <AnalysisToolbar
         range={range}
         setRange={setRange}
@@ -107,8 +100,6 @@ export default function AnalysisDashboard({ weeks, workoutsByWeekKey, athleteNam
             topActivityEntries={topActivityEntries}
             currentVisibleIndex={currentVisibleIndex}
           />
-
-          <BottomGrid weeklyStats={weeklyStats} topWorkouts={topWorkouts} />
         </>
       )}
     </Page>

@@ -13,7 +13,7 @@
 
 .tp-athlete-pool-count {
   color: var(--tp-ink-muted);
-  font-size: 0.9rem;
+  font-size: var(--tp-text-sm);
 }
 
 .tp-athlete-pool-list {
@@ -37,8 +37,10 @@
 
 .tp-pool-card-title {
   margin: 0 0 var(--tp-space-1);
-  font-size: 1rem;
+  font-family: var(--tp-font-sans);
+  font-size: var(--tp-text-md);
   font-weight: 600;
+  letter-spacing: var(--tp-tracking-snug);
 }
 
 .tp-pool-card-meta {
@@ -47,7 +49,7 @@
   gap: var(--tp-space-2);
   align-items: center;
   color: var(--tp-ink-muted);
-  font-size: 0.85rem;
+  font-size: var(--tp-text-xs);
 }
 
 .tp-pool-card-stat {
@@ -59,7 +61,8 @@
 .tp-pool-card-desc {
   margin: var(--tp-space-1) 0 0;
   color: var(--tp-ink-muted);
-  font-size: 0.9rem;
+  font-size: var(--tp-text-sm);
+  line-height: var(--tp-leading-body);
 }
 
 .tp-pool-card-actions {

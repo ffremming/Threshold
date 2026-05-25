@@ -1,6 +1,6 @@
 import BuilderPanelHeader from './BuilderPanelHeader'
 import BuilderWorkoutSlot from './BuilderWorkoutSlot'
-import CalendarDay from './CalendarDay'
+import WeekCalendarList from './WeekCalendarList'
 import { makeDropZoneProps } from './dragProps'
 
 // List view places everything against weekday 1 since order is purely
@@ -40,22 +40,34 @@ export default function CalendarPanel({
       {loadingWorkouts ? (
         <div className="pb-empty-state">Laster uke…</div>
       ) : isCalendar ? (
-        <div className="pb-calendar-days">
-          {groupedWorkouts.map(day => (
-            <CalendarDay
-              key={day.value}
-              day={day}
-              dragState={dragState}
-              dropTarget={dropTarget}
-              handleDropTargetChange={handleDropTargetChange}
-              handleDrop={handleDrop}
-              onSelectWorkout={onSelectWorkout}
-              onMoveWorkout={onMoveWorkout}
-              handleWorkoutDragStart={handleWorkoutDragStart}
-              handleDragEnd={handleDragEnd}
+        <WeekCalendarList
+          days={groupedWorkouts}
+          isDayEndTarget={weekday => dropTarget?.weekday === weekday && !dropTarget?.beforeWorkoutId}
+          getDayDropZoneProps={weekday => makeDropZoneProps({ dragState, handleDropTargetChange, handleDrop, weekday })}
+          renderWorkout={(workout, idx, total, weekday) => (
+            <BuilderWorkoutSlot
+              key={workout.id}
+              workout={workout}
+              index={idx}
+              total={total}
+              isDragging={dragState?.kind === 'workout' && dragState.workoutId === workout.id}
+              isDropTarget={dropTarget?.weekday === weekday && dropTarget?.beforeWorkoutId === workout.id}
+              onClick={() => onSelectWorkout(workout)}
+              onMoveUp={() => onMoveWorkout(workout, -1)}
+              onMoveDown={() => onMoveWorkout(workout, 1)}
+              onDragStart={event => handleWorkoutDragStart(workout, event)}
+              onDragEnd={handleDragEnd}
+              {...makeDropZoneProps({
+                dragState,
+                handleDropTargetChange,
+                handleDrop,
+                weekday,
+                beforeWorkoutId: workout.id,
+                stopPropagation: true,
+              })}
             />
-          ))}
-        </div>
+          )}
+        />
       ) : sortedWorkouts.length === 0 ? (
         <div
           className={`pb-empty-state pb-empty-slot${dragState && !dropTarget?.beforeWorkoutId ? ' is-target' : ''}`}

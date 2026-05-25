@@ -6,21 +6,23 @@
 }
 
 .intensity-modal-title {
-  font-size: var(--tp-text-lg);
-  font-weight: 600;
+  font-family: var(--tp-font-display);
+  font-size: var(--tp-text-2xl);
+  font-weight: 400;
   letter-spacing: var(--tp-tracking-tight);
-  margin: 0 0 var(--tp-space-4) 0;
+  margin: 0 0 var(--tp-space-5) 0;
   color: var(--tp-ink);
+  line-height: var(--tp-leading-snug);
 }
 
 .intensity-zone-list {
   display: flex;
   flex-direction: column;
-  gap: var(--tp-space-2);
+  gap: var(--tp-space-3);
 }
 
 .intensity-zone {
-  border-radius: var(--tp-radius-md);
+  border-radius: var(--tp-radius-lg);
   overflow: hidden;
   border: 1px solid var(--tp-line);
   background: var(--tp-surface);
@@ -49,9 +51,10 @@
 }
 
 .intensity-zone-row .intensity-zone-label {
-  font-weight: 600;
+  font-family: var(--tp-font-mono);
+  font-weight: 500;
   color: var(--tp-ink-muted);
-  letter-spacing: var(--tp-tracking-wide);
+  letter-spacing: var(--tp-tracking-label);
   text-transform: uppercase;
   font-size: var(--tp-text-2xs);
   display: block;

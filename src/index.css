@@ -1,7 +1,104 @@
+@import "tailwindcss";
+
 /* ────────────────────────────────────────────────────────────────────
- * Legacy index.css has been emptied as part of the redesign.
- * All styles now live in component-local CSS files under src/components/
- * and src/styles/tokens.css for design tokens.
+ * Tailwind v4 theme — bridges utility classes onto --tp-* tokens.
  *
- * Add styles only to component files. This file is intentionally empty.
+ * Authoring rule:
+ *   • New components → Tailwind utilities (bg-accent, font-display).
+ *   • Existing .tp-* components keep working — they read the same vars.
+ *   • Never hard-code a color, font, or shadow here. Always reference
+ *     a --tp-* variable defined in styles/tokens.css.
  * ──────────────────────────────────────────────────────────────────── */
+
+@theme {
+  /* ── Color palette (tokens.css is the source of truth) ───────── */
+  --color-background:        var(--tp-bg);
+  --color-surface:           var(--tp-surface);
+  --color-surface-muted:     var(--tp-surface-2);
+  --color-foreground:        var(--tp-ink);
+  --color-muted:             var(--tp-surface-2);
+  --color-muted-foreground:  var(--tp-ink-muted);
+  --color-soft-foreground:   var(--tp-ink-soft);
+  --color-accent:            var(--tp-accent);
+  --color-accent-hover:      var(--tp-accent-hover);
+  --color-accent-secondary:  var(--tp-accent-secondary);
+  --color-accent-foreground: var(--tp-on-accent);
+  --color-border:            var(--tp-line);
+  --color-border-strong:     var(--tp-line-strong);
+  --color-card:              var(--tp-surface);
+  --color-ring:              var(--tp-accent);
+
+  --color-success:           var(--tp-success);
+  --color-warning:           var(--tp-warning);
+  --color-danger:            var(--tp-danger);
+
+  --color-zone-1: var(--tp-zone-1);
+  --color-zone-2: var(--tp-zone-2);
+  --color-zone-3: var(--tp-zone-3);
+  --color-zone-4: var(--tp-zone-4);
+  --color-zone-5: var(--tp-zone-5);
+
+  /* ── Fonts ───────────────────────────────────────────────────── */
+  --font-display: var(--tp-font-display);
+  --font-sans:    var(--tp-font-sans);
+  --font-mono:    var(--tp-font-mono);
+
+  /* ── Shadows — including accent-tinted lift ──────────────────── */
+  --shadow-accent:    var(--tp-shadow-accent);
+  --shadow-accent-lg: var(--tp-shadow-accent-lg);
+
+  /* ── Radii ───────────────────────────────────────────────────── */
+  --radius-xl: var(--tp-radius-xl);
+  --radius-2xl: var(--tp-radius-2xl);
+
+  /* ── Animations ──────────────────────────────────────────────── */
+  --animate-pulse-dot: pulse-dot 2s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+  --animate-float-y:   float-y 5s ease-in-out infinite;
+  --animate-float-y-alt: float-y-alt 4s ease-in-out infinite;
+  --animate-spin-slow: spin 60s linear infinite;
+  --animate-spin-slower: spin 90s linear infinite reverse;
+
+  @keyframes pulse-dot {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50%      { transform: scale(1.4); opacity: 0.6; }
+  }
+  @keyframes float-y {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-10px); }
+  }
+  @keyframes float-y-alt {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(10px); }
+  }
+}
+
+/* The dot pattern texture for inverted sections.
+   Used as a className utility on inverted backgrounds. */
+.tp-dot-pattern {
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+/* Generic radial-glow accent at section corners */
+.tp-glow-accent {
+  background: radial-gradient(
+    circle at center,
+    color-mix(in srgb, var(--tp-accent) 35%, transparent) 0%,
+    transparent 70%
+  );
+  filter: blur(120px);
+}
+
+/* Gradient text utility (mirrors design system .gradient-text) */
+.tp-gradient-text {
+  background: var(--tp-gradient-h);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Focus-visible ring helper for any element */
+.tp-focus-ring:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--tp-bg), 0 0 0 4px var(--tp-accent);
+}

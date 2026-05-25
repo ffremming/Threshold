@@ -1,7 +1,6 @@
 import BankPanel from './BankPanel'
 import ExtraPanel from './ExtraPanel'
 import CalendarPanel from './CalendarPanel'
-import InsightsPanel from './InsightsPanel'
 
 export function buildPanelMap(props) {
   const {
@@ -32,14 +31,6 @@ export function buildPanelMap(props) {
     onSelectWorkout,
     onMoveWorkout,
     handleWorkoutDragStart,
-    weekStats,
-    dailyLoadChartData,
-    loadingAnalysis,
-    focusTrendWeek,
-    trendChartData,
-    workouts,
-    loadMixChartData,
-    distanceDistributionChartData,
   } = props
 
   return {
@@ -94,20 +85,6 @@ export function buildPanelMap(props) {
         onMoveWorkout={onMoveWorkout}
         handleWorkoutDragStart={handleWorkoutDragStart}
         handleDragEnd={handleDragEnd}
-      />
-    ),
-    insights: (
-      <InsightsPanel
-        visiblePanelIds={visiblePanelIds}
-        movePanel={movePanel}
-        weekStats={weekStats}
-        dailyLoadChartData={dailyLoadChartData}
-        loadingAnalysis={loadingAnalysis}
-        focusTrendWeek={focusTrendWeek}
-        trendChartData={trendChartData}
-        workouts={workouts}
-        loadMixChartData={loadMixChartData}
-        distanceDistributionChartData={distanceDistributionChartData}
       />
     ),
   }

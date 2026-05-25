@@ -1,0 +1,45 @@
+/* BibliotekTab — scope segmented control above the active scope's view */
+
+.bib-scope-wrap {
+  display: flex;
+  justify-content: center;
+  padding-top: var(--tp-space-5);
+}
+
+.bib-scope {
+  display: inline-flex;
+  padding: 3px;
+  background: var(--tp-surface-2);
+  border: 1px solid var(--tp-line);
+  border-radius: var(--tp-radius-pill);
+}
+
+.bib-scope-btn {
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: var(--tp-ink-muted);
+  font-family: var(--tp-font-sans);
+  font-size: var(--tp-text-xs);
+  font-weight: 600;
+  letter-spacing: var(--tp-tracking-snug);
+  height: 2rem;
+  padding: 0 var(--tp-space-4);
+  border-radius: var(--tp-radius-pill);
+  cursor: pointer;
+  transition: background-color var(--tp-dur-base) var(--tp-ease),
+              color var(--tp-dur-base) var(--tp-ease);
+}
+
+.bib-scope-btn:hover { color: var(--tp-ink); }
+
+.bib-scope-btn.is-active {
+  background: var(--tp-surface);
+  color: var(--tp-accent);
+  box-shadow: var(--tp-shadow-xs);
+}
+
+.bib-scope-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--tp-accent-ring);
+}

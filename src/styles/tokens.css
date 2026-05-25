@@ -1,75 +1,88 @@
 /* ────────────────────────────────────────────────────────────────────
- * Design tokens — minimalist 10-color palette, light only
+ * Design tokens — "Minimalist Modern"
  *
- * Five neutrals + accent, plus five intensity zones. All other UI
- * surfaces (borders, hovers, selected states) are derived via
- * color-mix from these primitives — keeps the palette honest.
+ * Clarity through structure, character through bold detail.
+ * Electric Blue accent + Inter-only modern type system.
+ *
+ * Five intensity zones preserved (semantic — encodes training data).
+ * Old --tp-* names kept as source of truth so existing components
+ * inherit the new aesthetic without code changes.
  * ──────────────────────────────────────────────────────────────────── */
 
 :root {
   /* ── Base palette ───────────────────────────────────────────────── */
-  --tp-bg:        #f4f1ec;   /* warm paper page background */
-  --tp-surface:   #ffffff;   /* card / panel surface */
-  --tp-surface-2: #faf8f4;   /* subtle inset surface (rows, table bands) */
-  --tp-ink:       #14171a;   /* primary text */
-  --tp-ink-muted: #6b7280;   /* secondary text / labels */
-  --tp-ink-soft:  #9aa0a6;   /* tertiary text / placeholders */
+  --tp-bg:        #FAFAFA;   /* warmer off-white canvas */
+  --tp-surface:   #FFFFFF;   /* elevated card surface */
+  --tp-surface-2: #F1F5F9;   /* muted inset (slate-100) */
+  --tp-ink:       #0F172A;   /* deep slate, not pure black */
+  --tp-ink-muted: #64748B;   /* slate-500 — secondary text */
+  --tp-ink-soft:  #94A3B8;   /* slate-400 — placeholders */
 
-  /* ── Accent (subtle, used for primary interaction only) ─────────── */
-  --tp-accent:        #2f6b8a;   /* muted editorial blue */
-  --tp-accent-hover:  #25577a;
-  --tp-accent-soft:   color-mix(in srgb, var(--tp-accent) 10%, transparent);
-  --tp-accent-ring:   color-mix(in srgb, var(--tp-accent) 28%, transparent);
-  --tp-on-accent:     #ffffff;
+  /* ── Accent (Electric Blue) — the heartbeat ─────────────────────── */
+  --tp-accent:           #0052FF;
+  --tp-accent-hover:     #003ECC;
+  --tp-accent-secondary: #4D7CFF;   /* gradient endpoint */
+  --tp-accent-soft:      color-mix(in srgb, var(--tp-accent) 8%, transparent);
+  --tp-accent-ring:      color-mix(in srgb, var(--tp-accent) 35%, transparent);
+  --tp-on-accent:        #FFFFFF;
 
-  /* ── Intensity zones (5) ───────────────────────────────────────── */
-  --tp-zone-1:    #6cb4d8;   /* easy   — cool blue */
-  --tp-zone-2:    #6fbe83;   /* aerob  — green */
-  --tp-zone-3:    #ddb340;   /* terskel — amber */
-  --tp-zone-4:    #df7d3a;   /* hard   — orange */
-  --tp-zone-5:    #c4523f;   /* max    — red */
+  /* The signature gradient — used everywhere accent has presence */
+  --tp-gradient: linear-gradient(135deg, var(--tp-accent), var(--tp-accent-secondary));
+  --tp-gradient-h: linear-gradient(to right, var(--tp-accent), var(--tp-accent-secondary));
 
-  /* ── Derived surfaces (no new hues, just opacity/mix) ───────────── */
-  --tp-line:        color-mix(in srgb, var(--tp-ink) 8%, transparent);
-  --tp-line-strong: color-mix(in srgb, var(--tp-ink) 16%, transparent);
+  /* ── Intensity zones (5) — semantic, preserved ──────────────────── */
+  --tp-zone-1:    #6cb4d8;
+  --tp-zone-2:    #6fbe83;
+  --tp-zone-3:    #ddb340;
+  --tp-zone-4:    #df7d3a;
+  --tp-zone-5:    #c4523f;
+
+  /* ── Derived surfaces ───────────────────────────────────────────── */
+  --tp-line:        #E2E8F0;   /* slate-200 */
+  --tp-line-strong: #CBD5E1;   /* slate-300 */
   --tp-hover:       color-mix(in srgb, var(--tp-ink) 4%, transparent);
   --tp-pressed:     color-mix(in srgb, var(--tp-ink) 8%, transparent);
-  --tp-overlay:     color-mix(in srgb, var(--tp-ink) 45%, transparent);
+  --tp-overlay:     color-mix(in srgb, var(--tp-ink) 55%, transparent);
   --tp-focus:       var(--tp-accent-ring);
 
-  /* ── Status colors (soft, paper-tone) ───────────────────────────── */
-  --tp-success:     #4f8a5f;
-  --tp-success-bg:  #e8f1e9;
-  --tp-warning:     #b07e23;
-  --tp-warning-bg:  #f4ecd8;
-  --tp-danger:      #b54a3a;
-  --tp-danger-bg:   #f5e5e1;
+  /* ── Status colors ──────────────────────────────────────────────── */
+  --tp-success:     #16a34a;
+  --tp-success-bg:  #ecfdf5;
+  --tp-warning:     #c2410c;
+  --tp-warning-bg:  #fff7ed;
+  --tp-danger:      #dc2626;
+  --tp-danger-bg:   #fef2f2;
   --tp-info:        var(--tp-accent);
   --tp-info-bg:     var(--tp-accent-soft);
 
-  /* ── Type ───────────────────────────────────────────────────────── */
-  --tp-font-sans: 'Inter Tight', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-  --tp-font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  /* ── Type — unified modern sans ─────────────────────────────────── */
+  --tp-font-sans:    'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --tp-font-display: var(--tp-font-sans);
+  --tp-font-mono:    'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 
-  --tp-text-2xs: 0.6875rem;   /* 11 */
-  --tp-text-xs:  0.75rem;     /* 12 */
-  --tp-text-sm:  0.8125rem;   /* 13 */
-  --tp-text-md:  0.9375rem;   /* 15 */
-  --tp-text-lg:  1.0625rem;   /* 17 */
-  --tp-text-xl:  1.25rem;     /* 20 */
-  --tp-text-2xl: 1.5rem;      /* 24 */
-  --tp-text-3xl: 1.875rem;    /* 30 */
+  --tp-text-2xs: 0.6875rem;
+  --tp-text-xs:  0.75rem;
+  --tp-text-sm:  0.8125rem;
+  --tp-text-md:  0.9375rem;
+  --tp-text-lg:  1.0625rem;
+  --tp-text-xl:  1.25rem;
+  --tp-text-2xl: 1.5rem;
+  --tp-text-3xl: 1.875rem;
+  --tp-text-4xl: 2.5rem;
+  --tp-text-5xl: 3.5rem;
+  --tp-text-display: clamp(2.75rem, 6vw, 5.25rem);
 
-  --tp-leading-tight: 1.15;
-  --tp-leading-snug:  1.3;
-  --tp-leading-body:  1.55;
+  --tp-leading-tight: 1.05;
+  --tp-leading-snug:  1.15;
+  --tp-leading-body:  1.625;
 
-  --tp-tracking-tight: -0.022em;
-  --tp-tracking-snug:  -0.012em;
+  --tp-tracking-tight: -0.02em;
+  --tp-tracking-snug:  -0.01em;
   --tp-tracking-normal: 0;
   --tp-tracking-wide:  0.04em;
+  --tp-tracking-label: 0.15em;   /* mono section labels */
 
-  /* ── Spacing (4px base) ─────────────────────────────────────────── */
+  /* ── Spacing ────────────────────────────────────────────────────── */
   --tp-space-1:  0.25rem;
   --tp-space-2:  0.5rem;
   --tp-space-3:  0.75rem;
@@ -80,42 +93,47 @@
   --tp-space-10: 2.5rem;
   --tp-space-12: 3rem;
   --tp-space-16: 4rem;
+  --tp-space-20: 5rem;
+  --tp-space-28: 7rem;
 
-  /* ── Radii (tight, editorial) ───────────────────────────────────── */
-  --tp-radius-xs: 4px;
-  --tp-radius-sm: 6px;
-  --tp-radius-md: 8px;
-  --tp-radius-lg: 12px;
-  --tp-radius-xl: 16px;
+  /* ── Radii — more generous than before ──────────────────────────── */
+  --tp-radius-xs:   4px;
+  --tp-radius-sm:   6px;
+  --tp-radius-md:   8px;
+  --tp-radius-lg:   12px;
+  --tp-radius-xl:   16px;
+  --tp-radius-2xl:  20px;
   --tp-radius-pill: 999px;
 
-  /* ── Elevation (very restrained) ────────────────────────────────── */
-  --tp-shadow-xs: 0 1px 1px color-mix(in srgb, var(--tp-ink) 4%, transparent);
-  --tp-shadow-sm: 0 1px 3px color-mix(in srgb, var(--tp-ink) 6%, transparent);
-  --tp-shadow-md: 0 6px 18px color-mix(in srgb, var(--tp-ink) 8%, transparent);
-  --tp-shadow-lg: 0 16px 40px color-mix(in srgb, var(--tp-ink) 12%, transparent);
+  /* ── Elevation — layered, accent-tinted on prominence ───────────── */
+  --tp-shadow-xs:  0 1px 2px rgba(15, 23, 42, 0.04);
+  --tp-shadow-sm:  0 1px 3px rgba(15, 23, 42, 0.06);
+  --tp-shadow-md:  0 4px 12px rgba(15, 23, 42, 0.08);
+  --tp-shadow-lg:  0 10px 25px rgba(15, 23, 42, 0.10);
+  --tp-shadow-xl:  0 20px 40px rgba(15, 23, 42, 0.12);
+  --tp-shadow-accent:    0 4px 14px rgba(0, 82, 255, 0.25);
+  --tp-shadow-accent-lg: 0 12px 32px rgba(0, 82, 255, 0.35);
 
   /* ── Motion ─────────────────────────────────────────────────────── */
-  --tp-ease: cubic-bezier(0.2, 0, 0, 1);
-  --tp-dur-fast: 120ms;
-  --tp-dur-base: 180ms;
-  --tp-dur-slow: 280ms;
+  --tp-ease:     cubic-bezier(0.16, 1, 0.3, 1);  /* design system spec */
+  --tp-ease-out: var(--tp-ease);
+  --tp-dur-fast: 150ms;
+  --tp-dur-base: 200ms;
+  --tp-dur-slow: 300ms;
+  --tp-dur-enter: 700ms;
 
-  /* ── Z-index ───────────────────────────────────────────────────── */
+  /* ── Z-index ────────────────────────────────────────────────────── */
   --tp-z-sticky:   20;
   --tp-z-elevated: 30;
   --tp-z-overlay:  50;
   --tp-z-modal:    60;
 
-  /* ── Aliases used by legacy/ui CSS variants ─────────────────────── */
-  --tp-bg-elev:    var(--tp-surface);
-  --tp-bg-sunken:  var(--tp-surface-2);
+  /* ── Legacy aliases ─────────────────────────────────────────────── */
+  --tp-bg-elev:     var(--tp-surface);
+  --tp-bg-sunken:   var(--tp-surface-2);
   --tp-ink-onbrand: var(--tp-on-accent);
-  --tp-brand-600:  var(--tp-accent);
-  --tp-ease-out:   var(--tp-ease);
+  --tp-brand-600:   var(--tp-accent);
 }
-
-/* No dark mode in this round. Light is the only theme. */
 
 html, body {
   font-family: var(--tp-font-sans);
@@ -135,22 +153,30 @@ html, body {
 
 button { font: inherit; color: inherit; }
 
-::selection { background: var(--tp-ink); color: var(--tp-on-accent); }
+::selection { background: var(--tp-accent); color: var(--tp-on-accent); }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
 }
 
-/* Mono numbers utility */
+/* Tabular / mono numeric utilities (kept from old system) */
 .tp-num {
   font-family: var(--tp-font-mono);
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.02em;
 }
 
-.tp-tnum {
-  font-variant-numeric: tabular-nums;
+.tp-tnum { font-variant-numeric: tabular-nums; }
+
+/* ── Gradient text — signature treatment for hero words ──────────── */
+.tp-gradient-text {
+  background: var(--tp-gradient-h);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  background-size: 200% auto;
 }

@@ -15,20 +15,22 @@
   text-align: left;
   font: inherit;
   color: inherit;
-  background: color-mix(in srgb, var(--zone-color, var(--tp-ink)) 10%, var(--tp-surface));
-  border: 1px solid color-mix(in srgb, var(--zone-color, var(--tp-ink)) 28%, transparent);
-  border-radius: var(--tp-radius-md);
-  padding: var(--tp-space-3);
+  background: color-mix(in srgb, var(--zone-color, var(--tp-ink)) 7%, var(--tp-surface));
+  border: 1px solid color-mix(in srgb, var(--zone-color, var(--tp-ink)) 22%, transparent);
+  border-radius: var(--tp-radius-lg);
+  padding: var(--tp-space-4);
   cursor: pointer;
-  transition: background-color var(--tp-dur-fast) var(--tp-ease);
+  transition: background-color var(--tp-dur-base) var(--tp-ease),
+              border-color var(--tp-dur-base) var(--tp-ease);
 }
 
 .zone-summary:hover {
-  background: color-mix(in srgb, var(--zone-color, var(--tp-ink)) 16%, var(--tp-surface));
+  background: color-mix(in srgb, var(--zone-color, var(--tp-ink)) 12%, var(--tp-surface));
+  border-color: color-mix(in srgb, var(--zone-color, var(--tp-ink)) 40%, transparent);
 }
 
 .zone-summary .section-label {
-  color: color-mix(in srgb, var(--zone-color, var(--tp-ink)) 80%, var(--tp-ink));
+  color: color-mix(in srgb, var(--zone-color, var(--tp-ink)) 72%, var(--tp-ink));
   margin-bottom: var(--tp-space-2);
 }
 
@@ -40,7 +42,7 @@
 
 /* Border-top accent on the detail modal driven by --zone-color */
 .workout-detail-modal {
-  border-top: 3px solid var(--zone-color, var(--tp-ink));
+  border-top: 3px solid var(--zone-color, var(--tp-accent));
 }
 
 /* Mark complete button */
@@ -49,9 +51,9 @@
   display: inline-flex;
   align-items: center;
   gap: var(--tp-space-2);
-  height: 2rem;
-  padding: 0 var(--tp-space-3);
-  border-radius: var(--tp-radius-sm);
+  height: 2.25rem;
+  padding: 0 var(--tp-space-4);
+  border-radius: var(--tp-radius-md);
   border: 1px solid var(--tp-line-strong);
   background: var(--tp-surface);
   color: var(--tp-ink);
@@ -59,9 +61,9 @@
   font-size: var(--tp-text-xs);
   font-weight: 500;
   cursor: pointer;
-  transition: background-color var(--tp-dur-fast) var(--tp-ease),
-              border-color var(--tp-dur-fast) var(--tp-ease),
-              color var(--tp-dur-fast) var(--tp-ease);
+  transition: background-color var(--tp-dur-base) var(--tp-ease),
+              border-color var(--tp-dur-base) var(--tp-ease),
+              color var(--tp-dur-base) var(--tp-ease);
 }
 
 .btn-complete:hover { border-color: var(--tp-success); color: var(--tp-success); }
@@ -85,8 +87,8 @@
 
 .session-block-row {
   border: 1px solid var(--tp-line);
-  border-radius: var(--tp-radius-sm);
-  padding: var(--tp-space-2) var(--tp-space-3);
+  border-radius: var(--tp-radius-md);
+  padding: var(--tp-space-3) var(--tp-space-4);
   background: var(--tp-surface);
 }
 

@@ -72,15 +72,19 @@
 }
 
 .tp-session-total-label {
-  font-size: 0.75rem;
-  color: var(--tp-ink-muted);
+  font-family: var(--tp-font-mono);
+  font-size: var(--tp-text-2xs);
+  color: var(--tp-accent);
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: var(--tp-tracking-label);
+  font-weight: 500;
 }
 
 .tp-session-total-value {
-  font-size: 1.1rem;
-  font-weight: 700;
+  font-family: var(--tp-font-display);
+  font-size: var(--tp-text-xl);
+  font-weight: 400;
   font-variant-numeric: tabular-nums;
+  letter-spacing: var(--tp-tracking-tight);
   color: var(--tp-ink);
 }

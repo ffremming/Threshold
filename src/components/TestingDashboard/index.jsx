@@ -11,13 +11,13 @@ import {
   where,
 } from 'firebase/firestore'
 import { db } from '../../firebase'
-import { EmptyState, Page, PageHeader } from '../ui'
+import { EmptyState, Page } from '../ui'
 import TestLibrary from './TestLibrary'
 import TestEditor from './TestEditor'
 import { TEST_CATEGORIES, EMPTY_FORM, sortTests } from './constants'
 import '../TestingDashboard.css'
 
-export default function TestingDashboard({ selectedAthleteId, athleteName, userProfile }) {
+export default function TestingDashboard({ selectedAthleteId, userProfile }) {
   const [tests, setTests] = useState([])
   const [loading, setLoading] = useState(true)
   const [editingTest, setEditingTest] = useState(null)
@@ -103,11 +103,6 @@ export default function TestingDashboard({ selectedAthleteId, athleteName, userP
   if (!selectedAthleteId) {
     return (
       <Page>
-        <PageHeader
-          eyebrow="Testing"
-          title="Tester"
-          subtitle="Opprett og vedlikehold testprotokoller for styrke og utholdenhet."
-        />
         <EmptyState
           title="Ingen utøver valgt"
           description="Velg en utøver for å se og redigere testprotokoller."
@@ -118,18 +113,11 @@ export default function TestingDashboard({ selectedAthleteId, athleteName, userP
 
   return (
     <Page>
-      <PageHeader
-        eyebrow="Testing"
-        title={`Tester for ${athleteName || 'valgt utøver'}`}
-        subtitle="Opprett og vedlikehold testprotokoller for styrke og utholdenhet."
-        actions={
-          <div className="td-stats">
-            <Stat label="Totalt" value={tests.length} />
-            <Stat label="Styrke" value={styrkeCount} />
-            <Stat label="Utholdenhet" value={utholdCount} />
-          </div>
-        }
-      />
+      <div className="td-stats td-stats--inline">
+        <Stat label="Totalt" value={tests.length} />
+        <Stat label="Styrke" value={styrkeCount} />
+        <Stat label="Utholdenhet" value={utholdCount} />
+      </div>
 
       <div className="td-layout">
         <div className="td-library">

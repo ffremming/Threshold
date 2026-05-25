@@ -7,7 +7,6 @@ import {
 import {
   Button,
   Page,
-  PageHeader,
   EmptyState,
   Toolbar,
   ToolbarGroup,
@@ -67,24 +66,6 @@ export default function OktbankTab({
 
   return (
     <Page>
-      <PageHeader
-        eyebrow="Øktbank"
-        title={pickingFromBank ? `Velg økt for uke ${currentWeek}` : 'Mine øktmaler'}
-        subtitle={
-          pickingFromBank
-            ? (replacementTarget
-              ? `Trykk på en økt for å bytte ut «${replacementTarget.title}»`
-              : 'Trykk på en økt for å legge den til i planen')
-            : `${templates.length} ${templates.length === 1 ? 'mal' : 'maler'} · trykk for å redigere`
-        }
-        actions={!pickingFromBank ? (
-          <Button onClick={startNewTemplate}>
-            <Plus size={16} strokeWidth={2} aria-hidden="true" />
-            Ny mal
-          </Button>
-        ) : null}
-      />
-
       <Toolbar>
         <SearchBox value={search} onChange={setSearch} placeholder="Søk i mine maler…" />
         <ToolbarGroup label="Sport">
@@ -105,6 +86,12 @@ export default function OktbankTab({
         </ToolbarGroup>
         {filtersActive && (
           <Button variant="ghost" size="sm" onClick={clearAll}>Tøm filter</Button>
+        )}
+        {!pickingFromBank && (
+          <Button onClick={startNewTemplate} className="tp-toolbar-action">
+            <Plus size={16} strokeWidth={2} aria-hidden="true" />
+            Ny mal
+          </Button>
         )}
       </Toolbar>
 

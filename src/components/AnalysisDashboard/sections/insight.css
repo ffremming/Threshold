@@ -19,11 +19,13 @@
 }
 
 .an-insight-title {
-  font-size: var(--tp-text-lg);
-  font-weight: 700;
+  font-family: var(--tp-font-display);
+  font-size: var(--tp-text-xl);
+  font-weight: 400;
   letter-spacing: var(--tp-tracking-tight);
   color: var(--tp-ink);
   margin: 0;
+  line-height: var(--tp-leading-snug);
 }
 
 .an-insight-copy {
@@ -47,19 +49,22 @@
 }
 
 .an-stat dt {
+  font-family: var(--tp-font-mono);
   font-size: var(--tp-text-2xs);
   text-transform: uppercase;
-  letter-spacing: var(--tp-tracking-wide);
-  font-weight: 700;
+  letter-spacing: var(--tp-tracking-label);
+  font-weight: 500;
   color: var(--tp-ink-muted);
 }
 
 .an-stat dd {
-  font-size: var(--tp-text-xl);
-  font-weight: 700;
-  letter-spacing: -0.02em;
+  font-family: var(--tp-font-display);
+  font-size: var(--tp-text-2xl);
+  font-weight: 400;
+  letter-spacing: var(--tp-tracking-tight);
   color: var(--tp-ink);
   line-height: var(--tp-leading-tight);
+  font-variant-numeric: tabular-nums;
   margin: 0;
 }
 

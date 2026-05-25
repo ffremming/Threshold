@@ -3,28 +3,33 @@
   grid-template-columns: auto 1fr auto;
   gap: var(--tp-space-3);
   align-items: flex-start;
-  padding: var(--tp-space-4);
+  padding: var(--tp-space-5);
   background: var(--tp-surface);
   border: 1px solid var(--tp-line);
-  border-radius: var(--tp-radius-lg);
+  border-radius: var(--tp-radius-xl);
+  box-shadow: var(--tp-shadow-xs);
   transition: border-color var(--tp-dur-base) var(--tp-ease),
               background-color var(--tp-dur-base) var(--tp-ease),
-              box-shadow var(--tp-dur-base) var(--tp-ease);
+              box-shadow var(--tp-dur-base) var(--tp-ease),
+              transform var(--tp-dur-base) var(--tp-ease);
 }
 
 .tp-workout-card.is-interactive { cursor: pointer; }
+
 .tp-workout-card.is-interactive:hover {
-  border-color: var(--tp-line-strong);
-  box-shadow: var(--tp-shadow-xs);
+  border-color: color-mix(in srgb, var(--tp-accent) 25%, var(--tp-line));
+  box-shadow: var(--tp-shadow-md);
+  transform: translateY(-1px);
 }
+
 .tp-workout-card.is-interactive:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 3px var(--tp-focus);
+  box-shadow: 0 0 0 2px var(--tp-bg), 0 0 0 4px var(--tp-accent);
 }
 
 .tp-workout-card.is-completed {
-  background: color-mix(in srgb, var(--tp-success) 6%, var(--tp-surface));
-  border-color: color-mix(in srgb, var(--tp-success) 30%, var(--tp-line));
+  background: color-mix(in srgb, var(--tp-success) 4%, var(--tp-surface));
+  border-color: color-mix(in srgb, var(--tp-success) 22%, var(--tp-line));
 }
 
 .tp-workout-card-side {
@@ -57,17 +62,19 @@
 }
 
 .tp-workout-card-time {
+  font-family: var(--tp-font-mono);
   font-size: var(--tp-text-2xs);
   text-transform: uppercase;
-  letter-spacing: var(--tp-tracking-wide);
-  font-weight: 700;
+  letter-spacing: var(--tp-tracking-label);
+  font-weight: 500;
   color: var(--tp-ink-muted);
   font-variant-numeric: tabular-nums;
 }
 
 .tp-workout-card-title {
-  font-size: var(--tp-text-md);
-  font-weight: 700;
+  font-family: var(--tp-font-sans);
+  font-size: var(--tp-text-lg);
+  font-weight: 600;
   letter-spacing: var(--tp-tracking-snug);
   color: var(--tp-ink);
   margin: 0;
@@ -109,9 +116,10 @@
   color: var(--tp-ink-muted);
   cursor: pointer;
   font-size: 0.95rem;
-  transition: background-color var(--tp-dur-fast) var(--tp-ease),
-              border-color var(--tp-dur-fast) var(--tp-ease),
-              color var(--tp-dur-fast) var(--tp-ease);
+  transition: background-color var(--tp-dur-base) var(--tp-ease),
+              border-color var(--tp-dur-base) var(--tp-ease),
+              color var(--tp-dur-base) var(--tp-ease),
+              transform var(--tp-dur-base) var(--tp-ease);
 }
 
 .tp-workout-check:hover {
@@ -123,4 +131,9 @@
   background: var(--tp-success);
   border-color: var(--tp-success);
   color: var(--tp-on-accent);
+}
+
+.tp-workout-check:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--tp-accent-ring);
 }

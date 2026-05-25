@@ -26,8 +26,7 @@ export const EMPTY_TEMPLATE = {
 
 export const TAB_ITEMS = [
   { value: 'plan',     label: 'Ukeplan' },
-  { value: 'oktbank',  label: 'Øktbank' },
-  { value: 'library',  label: 'Bibliotek' },
+  { value: 'oktbank',  label: 'Bibliotek' },
   { value: 'builder',  label: 'Planverktøy' },
   { value: 'analysis', label: 'Analyse' },
   { value: 'tests',    label: 'Tester' },

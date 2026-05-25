@@ -73,12 +73,20 @@
 
 .tp-template-card-foot {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--tp-space-2);
   align-items: center;
   margin-top: auto;
 }
 
-.tp-template-card-foot .tp-btn { flex: 1; }
+.tp-template-card-foot .tp-btn { flex: 1 1 auto; min-width: 0; }
+
+.tp-template-card-icon-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--tp-space-1);
+  margin-left: auto;
+}
 
 .tp-template-card-foot .tp-btn.is-active {
   background: color-mix(in srgb, var(--tp-zone-2) 14%, var(--tp-surface));

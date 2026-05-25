@@ -16,6 +16,7 @@ export default function FilterBar({
   category, onCategoryChange,
   zoneSet, onToggleZone,
   filtersActive, onClear,
+  trailingAction,
 }) {
   return (
     <Toolbar>
@@ -51,6 +52,8 @@ export default function FilterBar({
       {filtersActive && (
         <Button variant="ghost" size="sm" onClick={onClear}>Tøm filter</Button>
       )}
+
+      {trailingAction && <div className="tp-toolbar-action">{trailingAction}</div>}
     </Toolbar>
   )
 }

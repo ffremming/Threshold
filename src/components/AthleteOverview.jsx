@@ -4,15 +4,12 @@ import { collection, onSnapshot, query, where } from 'firebase/firestore'
 import { db } from '../firebase'
 import { getAdjacentWeek, getWeekNumber, chunkArray } from '../utils'
 import {
-  Button,
   PageShell,
-  ShellBrand,
   Page,
-  Section,
   EmptyState,
   Badge,
 } from './ui'
-import SystemIcon from './SystemIcon'
+import { useNav } from '../App/primaryNav'
 import AthleteDetail from './AthleteDetail'
 import './AthleteOverview.css'
 
@@ -20,8 +17,8 @@ export default function AthleteOverview({
   user,
   userProfile,
   athletes,
-  onClose,
 }) {
+  const nav = useNav()
   const today = new Date()
   const currentWeek = getWeekNumber(today)
   const currentYear = today.getFullYear()
@@ -85,28 +82,15 @@ export default function AthleteOverview({
     )
   }
 
-  const alertCount = coachableAthletes.filter(a => (workoutCountByAthlete[a.uid] || 0) === 0).length
-
   return (
     <PageShell
-      brand={<ShellBrand eyebrow="Trener" title="Utøvere" />}
-      actions={
-        <Button variant="ghost" size="sm" onClick={onClose}>
-          <SystemIcon name="close" className="button-icon" />
-          Lukk
-        </Button>
-      }
+      nav={nav?.items}
+      navActive="athletes"
+      onNavChange={nav?.onChange}
+      account={nav?.account}
+      selectedAthlete={nav?.selectedAthlete}
     >
       <Page>
-        <Section
-          title="Oversikt"
-          subtitle={
-            alertCount > 0
-              ? `${alertCount} utøver${alertCount === 1 ? '' : 'e'} mangler økter neste uke (uke ${nextWeek.week})`
-              : `Alle utøvere har økter neste uke (uke ${nextWeek.week})`
-          }
-        />
-
         {coachableAthletes.length === 0 ? (
           <EmptyState
             title="Ingen utøvere"

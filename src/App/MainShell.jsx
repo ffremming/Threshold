@@ -1,54 +1,39 @@
 import Login from '../components/Login'
-import BirdsEyeOverview from '../components/BirdsEyeOverview'
 import {
-  IconButton,
   PageShell,
-  ShellBrand,
   Page,
-  Section,
   WeekNav,
-  AthletePicker,
   LayoutToggle,
 } from '../components/ui'
-import ShellActions from './ShellActions'
+import { useNav } from './primaryNav'
 import WorkoutList from './WorkoutList'
 import WorkoutDetailModal from './WorkoutDetailModal'
 import TemplatePickerModal from './TemplatePickerModal'
 
 export default function MainShell(props) {
   const {
-    isSuperadmin, canManageWorkouts, activeHomeAthlete,
+    canManageWorkouts, activeHomeAthlete,
     currentWeek, currentYear, monday, sunday, isThisWeek,
-    prevWeek, nextWeek, goToToday, handleWeekChange,
-    showOverview, setShowOverview, overviewLoading, overviewWeeks, overviewByWeekKey, selectedWeekKey,
-    athletes, selectedAthleteId, setSelectedAthleteId, userProfile,
+    prevWeek, nextWeek, goToToday,
+    athletes,
     homeWorkoutLayout, handleWorkoutLayoutChange,
     loading, workouts, doneCount, workoutDays,
     selectedWorkout, setSelectedWorkout,
     handleToggleComplete, handleSaveComment, handleStartReplaceWorkout, handleDuplicateWorkout,
     replacementTarget, templates, loadingTemplates, closeTemplatePicker, handleReplaceWithTemplate,
     showLogin, setShowLogin,
-    setShowUserManagement, setShowAthleteOverview, setShowAdmin, handleLogout,
   } = props
+
+  const nav = useNav()
+  const showCoachControls = canManageWorkouts && athletes.length > 0
 
   return (
     <PageShell
-      brand={
-        <ShellBrand
-          eyebrow="Training Planner"
-          title={canManageWorkouts && activeHomeAthlete?.displayName ? `Plan: ${activeHomeAthlete.displayName}` : 'Treningsplan'}
-        />
-      }
-      actions={
-        <ShellActions
-          isSuperadmin={isSuperadmin}
-          canManageWorkouts={canManageWorkouts}
-          setShowUserManagement={setShowUserManagement}
-          setShowAthleteOverview={setShowAthleteOverview}
-          setShowAdmin={setShowAdmin}
-          handleLogout={handleLogout}
-        />
-      }
+      nav={nav.items}
+      navActive="plan"
+      onNavChange={nav.onChange}
+      account={nav.account}
+      selectedAthlete={nav.selectedAthlete}
     >
       <Page>
         <WeekNav
@@ -61,40 +46,11 @@ export default function MainShell(props) {
           onNext={nextWeek}
           onToday={goToToday}
           rightSlot={
-            <IconButton
-              ariaLabel="Vis oversikt for siste 4 og neste 4 uker"
-              onClick={() => setShowOverview(p => !p)}
-              variant={showOverview ? undefined : 'ghost'}
-            >
-              <span className="ah-overview-glyph" aria-hidden="true"><span /><span /><span /><span /></span>
-            </IconButton>
+            showCoachControls
+              ? <LayoutToggle value={homeWorkoutLayout} onChange={handleWorkoutLayoutChange} />
+              : null
           }
         />
-
-        {canManageWorkouts && athletes.length > 0 && (
-          <div className="ah-controls">
-            <AthletePicker
-              athletes={athletes}
-              selectedId={selectedAthleteId}
-              onSelect={setSelectedAthleteId}
-              currentUserProfile={userProfile}
-            />
-            <LayoutToggle value={homeWorkoutLayout} onChange={handleWorkoutLayoutChange} />
-          </div>
-        )}
-
-        {showOverview && (
-          overviewLoading ? (
-            <Section title="Mengdeoversikt"><div className="ah-loading">Laster…</div></Section>
-          ) : (
-            <BirdsEyeOverview
-              weeks={overviewWeeks}
-              workoutsByWeekKey={overviewByWeekKey}
-              selectedWeekKey={selectedWeekKey}
-              onSelectWeek={(week, year) => { handleWeekChange(week, year); setShowOverview(false) }}
-            />
-          )
-        )}
 
         <WorkoutList
           loading={loading}

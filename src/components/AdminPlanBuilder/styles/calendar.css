@@ -72,6 +72,148 @@
   border-top-color: var(--tp-accent);
 }
 
+/* ── Flat workout row used inside .pb-week-list ───────────────────
+ * Plain list row — no background, no border, no rounded corners.
+ * The whole week reads as one continuous list with hairlines
+ * between rows. Drag/drop and actions still work inline. */
+.pb-week-row {
+  display: flex;
+  align-items: center;
+  gap: var(--tp-space-2);
+  padding: var(--tp-space-1) 0;
+  cursor: grab;
+  border-bottom: 1px solid var(--tp-line);
+  transition: background var(--tp-dur-fast) var(--tp-ease),
+              opacity var(--tp-dur-fast) var(--tp-ease);
+}
+
+.pb-week-row:active { cursor: grabbing; }
+.pb-week-row:hover { background: var(--tp-hover); }
+.pb-week-row.is-completed { color: var(--tp-ink-muted); }
+.pb-week-row.is-dragging { opacity: 0.4; }
+.pb-week-row.is-target {
+  background: color-mix(in srgb, var(--tp-accent) 8%, transparent);
+}
+
+.pb-week-row-grip,
+.pb-week-row-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--tp-ink-muted);
+  flex-shrink: 0;
+}
+
+.pb-week-row-icon .tag-icon-svg { width: 1rem; height: 1rem; }
+
+.pb-week-row-main {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  text-align: left;
+  display: flex;
+  align-items: baseline;
+  gap: var(--tp-space-2);
+  flex: 1;
+  min-width: 0;
+  cursor: pointer;
+  padding: 0;
+}
+
+.pb-week-row-main:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--tp-focus);
+  border-radius: var(--tp-radius-sm);
+}
+
+.pb-week-row-time {
+  font-size: var(--tp-text-2xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tp-tracking-wide);
+  font-weight: 700;
+  color: var(--tp-ink-muted);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+  min-width: 2.6rem;
+}
+
+.pb-week-row-title {
+  font-size: var(--tp-text-sm);
+  font-weight: 600;
+  letter-spacing: var(--tp-tracking-snug);
+  color: var(--tp-ink);
+  word-break: break-word;
+  line-height: 1.25;
+  flex: 1;
+}
+
+.pb-week-row.is-completed .pb-week-row-title {
+  text-decoration: line-through;
+  color: var(--tp-ink-muted);
+}
+
+.pb-week-row-tag {
+  font-size: var(--tp-text-2xs);
+  font-weight: 600;
+  color: var(--tp-ink-muted);
+  flex-shrink: 0;
+}
+
+.pb-week-row-actions {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  flex-shrink: 0;
+}
+
+.pb-week-row-btn {
+  appearance: none;
+  width: 1.6rem;
+  height: 1.6rem;
+  border: 1px solid transparent;
+  border-radius: var(--tp-radius-sm);
+  background: transparent;
+  color: var(--tp-ink-muted);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pb-week-row-btn:hover:not(:disabled) {
+  background: var(--tp-hover);
+  color: var(--tp-ink);
+}
+
+.pb-week-row-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+.pb-week-row-btn--danger:hover:not(:disabled) {
+  color: var(--tp-danger, #c0392b);
+}
+
+.pb-week-row-check {
+  appearance: none;
+  width: 1.6rem;
+  height: 1.6rem;
+  border: 1px solid var(--tp-line-strong);
+  border-radius: var(--tp-radius-sm);
+  background: transparent;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--tp-ink-muted);
+}
+
+.pb-week-row-check.is-checked {
+  background: var(--tp-success, #16a34a);
+  border-color: var(--tp-success, #16a34a);
+  color: #fff;
+}
+
+.pb-week-row-btn .system-icon,
+.pb-week-row-check .system-icon { width: 0.85rem; height: 0.85rem; }
+
 .pb-workout-list { display: flex; flex-direction: column; gap: var(--tp-space-2); }
 
 /* ── Workout slot ─────────────────────────────────────────────── */

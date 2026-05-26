@@ -28,31 +28,31 @@ export default function ChartGrid({
 
   return (
     <div className="an-chart-grid">
-      <ChartCard title="Performance trend" caption="Bytt mellom load, tid, distanse og frekvens for å lese periodiseringen fra flere vinkler." span="wide">
+      <ChartCard title="Performance trend" caption="Switch between load, time, distance, and frequency to read the periodization from multiple angles." span="wide">
         <Bar data={performanceData} options={performanceOptions(currentVisibleIndex)} />
       </ChartCard>
-      <ChartCard title="Load balance" caption="Akutt og kronisk last med ratio-linje for å spotte topper og avlastningsbehov." span="wide">
+      <ChartCard title="Load balance" caption="Acute and chronic load with a ratio line to spot peaks and recovery needs." span="wide">
         <Line data={balanceData} options={balanceOptions(currentVisibleIndex)} />
       </ChartCard>
-      <ChartCard title="Aktivitetsmiks per uke" caption="Stablede load-barer viser hvordan ulike idretter bygger totalbelastningen." span="wide">
+      <ChartCard title="Activity mix per week" caption="Stacked load bars show how different sports build the total load." span="wide">
         {activityStackData.datasets.length > 0
           ? <Bar data={activityStackData} options={stackedOptions(currentVisibleIndex)} />
-          : <div className="an-empty-mini">Ingen aktivitetsdata</div>}
+          : <div className="an-empty-mini">No activity data</div>}
       </ChartCard>
-      <ChartCard title="Sonefordeling tid" caption="Estimert tidsbruk per sone." size="doughnut">
+      <ChartCard title="Zone distribution time" caption="Estimated time spent per zone." size="doughnut">
         {zoneDurationData.datasets[0].data.length > 0
           ? <Doughnut data={zoneDurationData} options={doughnutOptions} />
-          : <div className="an-empty-mini">Ingen sonedata</div>}
+          : <div className="an-empty-mini">No zone data</div>}
       </ChartCard>
-      <ChartCard title="Sonefordeling load" caption="Belastning splittet per sone." size="doughnut">
+      <ChartCard title="Zone distribution load" caption="Load split per zone." size="doughnut">
         {zoneLoadData.datasets[0].data.length > 0
           ? <Doughnut data={zoneLoadData} options={doughnutOptions} />
-          : <div className="an-empty-mini">Ingen sonedata</div>}
+          : <div className="an-empty-mini">No zone data</div>}
       </ChartCard>
-      <ChartCard title="Load share" caption="Aktiviteter rangert etter bidrag til total treningsstress." size="doughnut">
+      <ChartCard title="Load share" caption="Activities ranked by contribution to total training stress." size="doughnut">
         {activityShareData.datasets[0].data.length > 0
           ? <Doughnut data={activityShareData} options={doughnutOptions} />
-          : <div className="an-empty-mini">Ingen aktivitetsdata</div>}
+          : <div className="an-empty-mini">No activity data</div>}
       </ChartCard>
     </div>
   )

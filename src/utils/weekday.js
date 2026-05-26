@@ -1,13 +1,13 @@
 import { getWeekDates } from './week'
 
 export const WEEKDAY_OPTIONS = [
-  { value: 1, label: 'Mandag', shortLabel: 'Man' },
-  { value: 2, label: 'Tirsdag', shortLabel: 'Tir' },
-  { value: 3, label: 'Onsdag', shortLabel: 'Ons' },
-  { value: 4, label: 'Torsdag', shortLabel: 'Tor' },
-  { value: 5, label: 'Fredag', shortLabel: 'Fre' },
-  { value: 6, label: 'Lørdag', shortLabel: 'Lør' },
-  { value: 7, label: 'Søndag', shortLabel: 'Søn' },
+  { value: 1, label: 'Monday', shortLabel: 'Mon' },
+  { value: 2, label: 'Tuesday', shortLabel: 'Tue' },
+  { value: 3, label: 'Wednesday', shortLabel: 'Wed' },
+  { value: 4, label: 'Thursday', shortLabel: 'Thu' },
+  { value: 5, label: 'Friday', shortLabel: 'Fri' },
+  { value: 6, label: 'Saturday', shortLabel: 'Sat' },
+  { value: 7, label: 'Sunday', shortLabel: 'Sun' },
 ]
 
 export function normalizeWeekday(weekday) {

@@ -40,7 +40,7 @@ function SteadySliders({ block, unit, onPatch }) {
   return (
     <div className="tp-block-sliders">
       <SliderRow
-        label="Lengde"
+        label="Length"
         value={block.distanceKm}
         min={DISTANCE_MIN}
         max={DISTANCE_MAX}
@@ -51,11 +51,11 @@ function SteadySliders({ block, unit, onPatch }) {
       <PaceOrSpeedSlider unit={unit} paceSecPerKm={block.paceSecPerKm} speedKmh={speedKmh} onPatch={onPatch} />
       <div className="tp-block-totals">
         <span className="tp-block-total">
-          <span className="tp-block-total-label">Tid</span>
+          <span className="tp-block-total-label">Time</span>
           <span className="tp-block-total-value">{formatDuration(block.durationMin)}</span>
         </span>
         <span className="tp-block-total">
-          <span className="tp-block-total-label">Distanse</span>
+          <span className="tp-block-total-label">Distance</span>
           <span className="tp-block-total-value">{formatDistance(block.distanceKm)}</span>
         </span>
       </div>

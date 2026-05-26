@@ -85,21 +85,21 @@ export default function PlanTab(props) {
 
       <Toolbar>
         {workoutLayout !== 'calendar' && (
-          <ToolbarGroup label="Legg til">
+          <ToolbarGroup label="Add">
             <Button variant="secondary" size="sm" onClick={startPickFromBank}>
               <CalendarPlus size={16} strokeWidth={2} aria-hidden="true" />
-              Fra øktbank
+              From session bank
             </Button>
             <Button size="sm" onClick={startNewWorkout}>
               <Plus size={16} strokeWidth={2} aria-hidden="true" />
-              Ny økt
+              New session
             </Button>
           </ToolbarGroup>
         )}
-        <ToolbarGroup label="Visning">
+        <ToolbarGroup label="View">
           <LayoutToggle value={workoutLayout} onChange={onWorkoutLayoutChange} />
         </ToolbarGroup>
-        <ToolbarGroup label="Aktivitet">
+        <ToolbarGroup label="Activity">
           <SportPicker
             value={activeTagFilter ? [activeTagFilter] : []}
             onChange={(next) => setActiveTagFilter(next.length ? next[next.length - 1] : null)}
@@ -110,17 +110,17 @@ export default function PlanTab(props) {
 
       <div className="pb-plan-list">
         {loadingWorkouts ? (
-          <EmptyState title="Laster…" />
+          <EmptyState title="Loading…" />
         ) : filteredWorkouts.length === 0 ? (
           <EmptyState
-            title={activeTagFilter ? 'Ingen økter matcher valgt aktivitet' : 'Ingen økter denne uken'}
-            description={activeTagFilter ? 'Prøv å fjerne aktivitetsfilteret.' : 'Legg til en økt fra øktbanken eller opprett en ny.'}
+            title={activeTagFilter ? 'No sessions match selected activity' : 'No sessions this week'}
+            description={activeTagFilter ? 'Try removing the activity filter.' : 'Add a session from the session bank or create a new one.'}
             action={activeTagFilter ? (
-              <Button variant="secondary" onClick={() => setActiveTagFilter(null)}>Fjern filter</Button>
+              <Button variant="secondary" onClick={() => setActiveTagFilter(null)}>Remove filter</Button>
             ) : (
               <Button onClick={startNewWorkout}>
                 <Plus size={16} strokeWidth={2} aria-hidden="true" />
-                Ny økt
+                New session
               </Button>
             )}
           />

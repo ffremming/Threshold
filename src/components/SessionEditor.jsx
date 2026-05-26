@@ -73,7 +73,7 @@ export default function SessionEditor({ value, onChange, activityTag, workoutTyp
   return (
     <div className="tp-session-editor">
       {sections.length === 0 ? (
-        <div className="tp-session-empty">Legg til en del for å starte.</div>
+        <div className="tp-session-empty">Add a section to start.</div>
       ) : (
         sections.map((section, index) => (
           <SectionCard
@@ -108,12 +108,12 @@ export default function SessionEditor({ value, onChange, activityTag, workoutTyp
 
       <div className="tp-session-totals">
         <div className="tp-session-total">
-          <span className="tp-session-total-label">Total tid</span>
+          <span className="tp-session-total-label">Total time</span>
           <span className="tp-session-total-value">{formatDuration(totals.totalDuration)}</span>
         </div>
         {showDistanceTotal && (
           <div className="tp-session-total">
-            <span className="tp-session-total-label">Total distanse</span>
+            <span className="tp-session-total-label">Total distance</span>
             <span className="tp-session-total-value">{formatDistance(totals.totalDistance)}</span>
           </div>
         )}

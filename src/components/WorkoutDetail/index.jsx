@@ -95,14 +95,14 @@ export default function WorkoutDetail({ workout, onClose, canEdit, onDelete, onT
   if (editing) {
     return (
       <div className="modal-backdrop" onClick={handleBackdrop}>
-        <div className="modal add-modal" role="dialog" aria-modal="true" aria-label="Rediger økt">
-          <button className="modal-close" onClick={() => setEditing(false)} aria-label="Lukk"><SystemIcon name="close" className="system-icon" /></button>
-          <h2 className="modal-title-h2">Rediger økt</h2>
+        <div className="modal add-modal" role="dialog" aria-modal="true" aria-label="Edit session">
+          <button className="modal-close" onClick={() => setEditing(false)} aria-label="Close"><SystemIcon name="close" className="system-icon" /></button>
+          <h2 className="modal-title-h2">Edit session</h2>
           <form onSubmit={handleSave}>
             <WorkoutForm value={form} onChange={setForm} showScheduleFields />
             <div className="form-actions workout-detail-form-actions">
-              <button type="button" className="btn-cancel" onClick={() => setEditing(false)}>Avbryt</button>
-              <button type="submit" className="btn-save">Lagre</button>
+              <button type="button" className="btn-cancel" onClick={() => setEditing(false)}>Cancel</button>
+              <button type="submit" className="btn-save">Save</button>
             </div>
           </form>
         </div>
@@ -119,7 +119,7 @@ export default function WorkoutDetail({ workout, onClose, canEdit, onDelete, onT
         style={{ '--zone-color': zoneColorVar }}
         role="dialog"
         aria-modal="true"
-        aria-label={workout.title || 'Øktdetaljer'}
+        aria-label={workout.title || 'Session details'}
       >
         <WorkoutDetailHeader
           onClose={onClose}
@@ -140,12 +140,12 @@ export default function WorkoutDetail({ workout, onClose, canEdit, onDelete, onT
         />
 
         <div className="modal-section">
-          <div className="section-label">Kommentar på økten</div>
+          <div className="section-label">Comment on the session</div>
           <textarea
             className="workout-comment-input"
             value={commentDraft}
             onChange={e => setCommentDraft(e.target.value)}
-            placeholder="Skriv hvordan økten gikk, justeringer eller annet du vil følge opp."
+            placeholder="Write how the session went, adjustments, or anything else to follow up."
             rows={4}
           />
           <div className="comment-actions">
@@ -157,7 +157,7 @@ export default function WorkoutDetail({ workout, onClose, canEdit, onDelete, onT
                 || commentDraft.trim() === (workout.userComment || '').trim()
               }
             >
-              {commentSaving ? 'Lagrer...' : 'Lagre kommentar'}
+              {commentSaving ? 'Saving...' : 'Save comment'}
             </button>
           </div>
         </div>
@@ -178,19 +178,19 @@ export default function WorkoutDetail({ workout, onClose, canEdit, onDelete, onT
             className={`btn-complete${workout.completed ? ' done' : ''}`}
             onClick={() => onToggleComplete(workout)}
           >
-            {workout.completed ? 'Fullført' : 'Marker som fullført'}
+            {workout.completed ? 'Completed' : 'Mark as completed'}
           </button>
           {onReplace && canEdit && (
-            <button className="btn-edit" onClick={() => onReplace(workout)}><SystemIcon name="replace" className="button-icon" />Bytt</button>
+            <button className="btn-edit" onClick={() => onReplace(workout)}><SystemIcon name="replace" className="button-icon" />Swap</button>
           )}
           {onDuplicate && canEdit && (
-            <button className="btn-edit" onClick={() => onDuplicate(workout)}><SystemIcon name="duplicate" className="button-icon" />Dupliser</button>
+            <button className="btn-edit" onClick={() => onDuplicate(workout)}><SystemIcon name="duplicate" className="button-icon" />Duplicate</button>
           )}
           {canEdit && onEdit && (
-            <button className="btn-edit" onClick={() => setEditing(true)}><SystemIcon name="edit" className="button-icon" />Rediger</button>
+            <button className="btn-edit" onClick={() => setEditing(true)}><SystemIcon name="edit" className="button-icon" />Edit</button>
           )}
           {canEdit && onDelete && (
-            <button className="btn-delete" onClick={() => onDelete(workout)}><SystemIcon name="delete" className="button-icon" />Slett</button>
+            <button className="btn-delete" onClick={() => onDelete(workout)}><SystemIcon name="delete" className="button-icon" />Delete</button>
           )}
         </div>
       </div>

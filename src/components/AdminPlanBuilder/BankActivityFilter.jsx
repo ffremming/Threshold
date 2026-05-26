@@ -40,7 +40,7 @@ export default function BankActivityFilter({
         type="button"
         className={`pb-filter-chip${!activeTagFilter ? ' is-active' : ''}`}
         onClick={() => setActiveTagFilter(null)}
-      >Alle</button>
+      >All</button>
       {visibleTags.map(tag => {
         const isPinned = PINNED_ACTIVITY_TAGS.includes(tag.value)
         return (
@@ -58,8 +58,8 @@ export default function BankActivityFilter({
                 type="button"
                 className="pb-filter-chip-remove"
                 onClick={() => onRemoveActivity(tag.value)}
-                aria-label={`Skjul ${tag.label}`}
-                title={`Skjul ${tag.label}`}
+                aria-label={`Hide ${tag.label}`}
+                title={`Hide ${tag.label}`}
               >
                 <X className="pb-btn-icon" aria-hidden="true" strokeWidth={2.2} />
               </button>
@@ -76,7 +76,7 @@ export default function BankActivityFilter({
             aria-expanded={showActivityPicker}
           >
             <Plus className="pb-btn-icon" aria-hidden="true" strokeWidth={2.2} />
-            <span>Aktivitet</span>
+            <span>Activity</span>
           </button>
           {showActivityPicker ? (
             <div className="pb-activity-menu" role="menu">

@@ -62,11 +62,11 @@ export default function BankPickerWindow({
       {!isPrimary && (
         <header className="pb-picker-head">
           <div>
-            <h3 className="pb-column-title">Vindu {windowNumber}</h3>
-            <span className="pb-column-count">{filteredTemplates.length} økter</span>
+            <h3 className="pb-column-title">Window {windowNumber}</h3>
+            <span className="pb-column-count">{filteredTemplates.length} sessions</span>
           </div>
           {canRemove ? (
-            <button type="button" className="pb-mini-btn pb-mini-btn--icon" onClick={onRemove} aria-label="Lukk vindu">
+            <button type="button" className="pb-mini-btn pb-mini-btn--icon" onClick={onRemove} aria-label="Close window">
               <X className="pb-btn-icon" aria-hidden="true" strokeWidth={2} />
             </button>
           ) : null}
@@ -86,7 +86,7 @@ export default function BankPickerWindow({
           type="button"
           className={`pb-filter-chip${activeIntensityFilters.length === 0 ? ' is-active' : ''}`}
           onClick={() => setActiveIntensityFilters([])}
-        >Alle</button>
+        >All</button>
         {[1, 2, 3, 4, 5].map(zone => (
           <button
             key={zone}
@@ -94,15 +94,15 @@ export default function BankPickerWindow({
             className={`pb-zone-chip pb-zone-${zone}${activeIntensityFilters.includes(zone) ? ' is-active' : ''}`}
             onClick={() => toggleIntensityFilter(zone)}
           >
-            S{zone}
+            Z{zone}
           </button>
         ))}
       </div>
 
       <div className="pb-picker-grid">
         <SessionColumn
-          title="Hardøkter"
-          subtitle={`${hardTemplates.length} økter`}
+          title="Hard sessions"
+          subtitle={`${hardTemplates.length} sessions`}
           sessions={hardTemplates}
           onDragStart={onDragStart}
           onDragEnd={onDragEnd}
@@ -111,8 +111,8 @@ export default function BankPickerWindow({
           onDeleteTemplate={onDeleteTemplate}
         />
         <SessionColumn
-          title="Rolige økter"
-          subtitle={`${easyTemplates.length} økter`}
+          title="Easy sessions"
+          subtitle={`${easyTemplates.length} sessions`}
           sessions={easyTemplates}
           onDragStart={onDragStart}
           onDragEnd={onDragEnd}

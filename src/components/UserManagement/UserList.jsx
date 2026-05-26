@@ -38,34 +38,34 @@ export default function UserList({ users, loading, onSelectUser }) {
     >
       <Page>
         <PageHeader
-          eyebrow="Brukeradministrasjon"
-          title="Alle brukere"
-          subtitle="Nye brukere får rollen «Utøver». Velg en bruker for å endre roller og koble trenere og utøvere."
+          eyebrow="User administration"
+          title="All users"
+          subtitle="New users get the «Athlete» role. Select a user to change roles and link coaches and athletes."
         />
 
         {!loading && users.length > 0 && (
           <SearchBox
             value={search}
             onChange={setSearch}
-            placeholder="Søk på navn eller e-post…"
+            placeholder="Search by name or email…"
           />
         )}
 
         {loading ? (
           <Card aria-busy="true" style={{ padding: 'var(--tp-space-5)', textAlign: 'center', color: 'var(--tp-ink-muted)' }}>
-            Laster brukere…
+            Loading users…
           </Card>
         ) : users.length === 0 ? (
           <EmptyState
             icon={<Users size={28} aria-hidden="true" />}
-            title="Ingen brukere ennå"
-            description="Brukere dukker opp her så snart de registrerer seg."
+            title="No users yet"
+            description="Users appear here as soon as they register."
           />
         ) : sorted.length === 0 ? (
           <EmptyState
             icon={<Users size={28} aria-hidden="true" />}
-            title="Ingen treff"
-            description={`Fant ingen brukere som matcher «${search}».`}
+            title="No matches"
+            description={`Found no users matching «${search}».`}
           />
         ) : (
           <List className="tp-um-list">
@@ -74,7 +74,7 @@ export default function UserList({ users, loading, onSelectUser }) {
                 <div className="tp-um-user">
                   <span className="tp-um-avatar" aria-hidden="true">{initialOf(u)}</span>
                   <span className="tp-um-user-meta">
-                    <span className="tp-um-name">{u.displayName || 'Uten navn'}</span>
+                    <span className="tp-um-name">{u.displayName || 'No name'}</span>
                     <span className="tp-um-email">{u.email}</span>
                   </span>
                 </div>

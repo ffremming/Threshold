@@ -16,13 +16,13 @@ export default function AthleteSelector({
     : athletes
 
   const labelFor = (a) =>
-    a.uid === currentUserProfile?.uid ? `${a.displayName} (meg)` : a.displayName
+    a.uid === currentUserProfile?.uid ? `${a.displayName} (me)` : a.displayName
 
   return (
     <div className="athlete-selector">
       {!hideLabel && (
         <label className="athlete-selector-label" htmlFor="athlete-selector">
-          Utøver:
+          Athlete:
         </label>
       )}
       <Select
@@ -30,11 +30,11 @@ export default function AthleteSelector({
         className="athlete-dropdown"
         value={selectedAthleteId || ''}
         onChange={e => onSelect(e.target.value)}
-        aria-label="Velg utøver"
+        aria-label="Select athlete"
       >
         {isSuperadmin && (
           <option value={currentUserProfile.uid}>
-            {currentUserProfile.displayName} (meg)
+            {currentUserProfile.displayName} (me)
           </option>
         )}
         {visibleAthletes.map(a => (

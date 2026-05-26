@@ -1,9 +1,9 @@
 import { migrateWorkoutType, normalizeIntensityZone, normalizeIntensityZones } from './intensity'
 
 export const LOAD_TAGS = [
-  { value: 'low', label: 'Lav load', shortLabel: 'Lav', color: '#166534', bg: '#dcfce7' },
-  { value: 'medium', label: 'Moderat load', shortLabel: 'Moderat', color: '#9a3412', bg: '#ffedd5' },
-  { value: 'high', label: 'Høy load', shortLabel: 'Høy', color: '#991b1b', bg: '#fee2e2' },
+  { value: 'low', label: 'Low load', shortLabel: 'Low', color: '#166534', bg: '#dcfce7' },
+  { value: 'medium', label: 'Moderate load', shortLabel: 'Moderate', color: '#9a3412', bg: '#ffedd5' },
+  { value: 'high', label: 'High load', shortLabel: 'High', color: '#991b1b', bg: '#fee2e2' },
 ]
 
 export const LOAD_TAG_MAP = Object.fromEntries(LOAD_TAGS.map(tag => [tag.value, tag]))
@@ -87,7 +87,7 @@ export function formatDurationLabel(minutes) {
   if (minutes >= 60) {
     const hours = Math.floor(minutes / 60)
     const remainingMinutes = minutes % 60
-    return remainingMinutes > 0 ? `${hours}t ${remainingMinutes}m` : `${hours}t`
+    return remainingMinutes > 0 ? `${hours}h ${remainingMinutes}m` : `${hours}h`
   }
   return `${minutes}m`
 }

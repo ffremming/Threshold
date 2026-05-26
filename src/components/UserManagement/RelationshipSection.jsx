@@ -33,11 +33,11 @@ export default function RelationshipSection({
           members.map(member => (
             <div key={member.uid} className="tp-rel-row">
               <span className="tp-rel-meta">
-                <span className="tp-rel-name">{member.displayName || 'Uten navn'}</span>
+                <span className="tp-rel-name">{member.displayName || 'No name'}</span>
                 <span className="tp-rel-email">{member.email}</span>
               </span>
               <IconButton
-                ariaLabel={`Fjern kobling til ${member.displayName || member.email}`}
+                ariaLabel={`Remove link to ${member.displayName || member.email}`}
                 onClick={() => onRemove(member)}
               >
                 <UserMinus size={16} aria-hidden="true" />
@@ -50,7 +50,7 @@ export default function RelationshipSection({
           <div className="tp-um-section-body" style={{ marginTop: 'var(--tp-space-2)' }}>
             <div className="tp-rel-meta" style={{ justifyContent: 'space-between' }}>
               <span className="tp-rel-name">{assignTitle}</span>
-              <IconButton ariaLabel="Avbryt" onClick={() => setAssigning(false)}>
+              <IconButton ariaLabel="Cancel" onClick={() => setAssigning(false)}>
                 <X size={16} aria-hidden="true" />
               </IconButton>
             </div>

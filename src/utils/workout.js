@@ -10,23 +10,23 @@ import {
 } from './weekday'
 
 export function getDefaultWarmup(_type, activityTag = '') {
-  if (activityTag === 'run') return '10-15 min rolig jogg + 3-4 stigningsløp'
-  if (activityTag === 'walking') return '10-15 min rolig gange med gradvis progresjon'
-  if (activityTag === 'bike') return '10-15 min rolig sykling med gradvis progresjon'
-  if (activityTag === 'swim') return '200-400 m rolig innsvømming + teknikk'
-  if (activityTag === 'xc_skiing') return '10-15 min rolig diagonalgang/skøyting + drill'
-  if (activityTag === 'strength') return '10-15 min generell oppvarming + aktivering'
-  return '10-15 min rolig oppvarming'
+  if (activityTag === 'run') return '10-15 min easy jog + 3-4 strides'
+  if (activityTag === 'walking') return '10-15 min easy walk with gradual progression'
+  if (activityTag === 'bike') return '10-15 min easy cycling with gradual progression'
+  if (activityTag === 'swim') return '200-400 m easy swim-in + technique'
+  if (activityTag === 'xc_skiing') return '10-15 min easy diagonal/skating + drills'
+  if (activityTag === 'strength') return '10-15 min general warmup + activation'
+  return '10-15 min easy warmup'
 }
 
 export function getDefaultCooldown(_type, activityTag = '') {
-  if (activityTag === 'run') return '5-10 min rolig jogg eller gange'
-  if (activityTag === 'walking') return '5-10 min rolig gange og lett mobilitet'
-  if (activityTag === 'bike') return '10 min rolig sykling'
-  if (activityTag === 'swim') return '100-200 m rolig utsvømming'
-  if (activityTag === 'xc_skiing') return '5-10 min rolig nedkjøring'
-  if (activityTag === 'strength') return '5-10 min rolig nedtrapping og lett mobilitet'
-  return '5-10 min rolig nedkjøling'
+  if (activityTag === 'run') return '5-10 min easy jog or walk'
+  if (activityTag === 'walking') return '5-10 min easy walk and light mobility'
+  if (activityTag === 'bike') return '10 min easy cycling'
+  if (activityTag === 'swim') return '100-200 m easy swim-out'
+  if (activityTag === 'xc_skiing') return '5-10 min easy cooldown'
+  if (activityTag === 'strength') return '5-10 min easy cooldown and light mobility'
+  return '5-10 min easy cooldown'
 }
 
 export function normalizeWorkout(workout) {
@@ -68,13 +68,13 @@ export function formatWorkoutSchedule(workout, options = {}) {
 
   const schedule = parts.join(' · ')
   if (workout?.time) {
-    return schedule ? `${schedule} kl. ${workout.time}` : `Kl. ${workout.time}`
+    return schedule ? `${schedule} at ${workout.time}` : `At ${workout.time}`
   }
   return schedule
 }
 
 export function formatWorkoutTime(workout) {
-  return workout?.time ? `Kl. ${workout.time}` : ''
+  return workout?.time ? `At ${workout.time}` : ''
 }
 
 export function compareWorkoutsBySchedule(a, b) {
@@ -106,10 +106,10 @@ export function getIntensityZoneLabel(workout) {
 }
 
 export const TEMPLATE_CATEGORIES = [
-  'Intervall',
-  'Terskel',
-  'Rolig',
-  'Mølle + styrke',
-  'Styrke',
-  'Annet',
+  'Interval',
+  'Threshold',
+  'Easy',
+  'Treadmill + strength',
+  'Strength',
+  'Other',
 ]

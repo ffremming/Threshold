@@ -1,7 +1,7 @@
 import { formatDurationLabel, formatKmValue } from '../../utils'
 
 export function getWeekLabel(week) {
-  return `Uke ${week.week}`
+  return `Week ${week.week}`
 }
 
 export function clampWindowStart(nextStart, totalWeeks, range) {
@@ -44,7 +44,7 @@ export function formatMetricValue(metric, value) {
 
   if (metric === 'distance') return formatKmValue(value)
   if (metric === 'duration') return formatDurationLabel(Math.round(value))
-  if (metric === 'count') return `${Math.round(value)} økter`
+  if (metric === 'count') return `${Math.round(value)} sessions`
   return `${Math.round(value)}`
 }
 

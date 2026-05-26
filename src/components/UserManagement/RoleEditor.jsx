@@ -6,7 +6,7 @@ export default function RoleEditor({ user, busyRole, onToggle }) {
   const activeRoles = getUserRoles(user)
 
   return (
-    <div className="tp-role-editor" role="group" aria-label="Roller">
+    <div className="tp-role-editor" role="group" aria-label="Roles">
       {ROLE_OPTIONS.map(role => {
         const Icon = ROLE_ICONS[role]
         const on = activeRoles.includes(role)

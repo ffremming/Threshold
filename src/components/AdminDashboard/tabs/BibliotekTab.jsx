@@ -6,15 +6,15 @@ import OktbankTab from './OktbankTab'
 import './bibliotek.css'
 
 /* ────────────────────────────────────────────────────────────────────
- * BibliotekTab — merged "Øktbank" view with a scope switcher.
+ * BibliotekTab — merged "Session bank" view with a scope switcher.
  *
  * Three scopes:
- *   • 'global'  — Bibliotek (read for all, edit/create only superadmin)
+ *   • 'global'  — Library (read for all, edit/create only superadmin)
  *   • 'mine'    — Coach's personal bank (default for the tab)
  *   • 'athlete' — Sessions tailored for the currently-selected athlete
  *
- * Adding workouts to an athlete's plan happens only from Planverktøy —
- * the Øktbank is a browsing/curation surface, not an add-to-plan entry.
+ * Adding workouts to an athlete's plan happens only from Plan builder —
+ * the Session bank is a browsing/curation surface, not an add-to-plan entry.
  *
  * Adding TO the global library is intentionally not supported here —
  * library curation lives only inside scope='global' as the create
@@ -22,9 +22,9 @@ import './bibliotek.css'
  * ──────────────────────────────────────────────────────────────────── */
 
 const SCOPES = [
-  { value: 'mine',    label: 'Min bank' },
-  { value: 'global',  label: 'Bibliotek' },
-  { value: 'athlete', label: 'Utøver' },
+  { value: 'mine',    label: 'My bank' },
+  { value: 'global',  label: 'Library' },
+  { value: 'athlete', label: 'Athlete' },
 ]
 
 export default function BibliotekTab(p) {
@@ -39,7 +39,7 @@ export default function BibliotekTab(p) {
   return (
     <>
       <div className="bib-scope-wrap">
-        <div className="bib-scope" role="tablist" aria-label="Velg bibliotek">
+        <div className="bib-scope" role="tablist" aria-label="Select library">
           {visibleScopes.map(s => (
             <button
               key={s.value}
@@ -92,8 +92,8 @@ export default function BibliotekTab(p) {
         ) : (
           <Page>
             <EmptyState
-              title="Ingen utøver valgt"
-              description="Velg en utøver i sidemenyen for å se deres egne økter."
+              title="No athlete selected"
+              description="Select an athlete in the sidebar to see their own sessions."
             />
           </Page>
         )

@@ -12,11 +12,11 @@ export default function TopWorkoutRow({ workout }) {
       </span>
       <div className="an-top-main">
         <div className="an-top-head">
-          <strong className="an-top-title">{workout.title || 'Uten tittel'}</strong>
+          <strong className="an-top-title">{workout.title || 'Untitled'}</strong>
           <Pill>{Math.round(workout.load)} load</Pill>
         </div>
         <div className="an-top-meta">
-          <span>{activity?.label || 'Aktivitet'}</span>
+          <span>{activity?.label || 'Activity'}</span>
           <span>·</span>
           <span>{formatWorkoutSchedule(workout, { includeWeekday: true, includeDate: true })}</span>
           <span>·</span>

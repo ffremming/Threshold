@@ -37,16 +37,16 @@ export default function CalendarPanel({
   return (
     <main className="pb-panel pb-panel--calendar">
       <BuilderPanelHeader
-        title={isCalendar ? 'Kalender' : 'Liste'}
+        title={isCalendar ? 'Calendar' : 'List'}
         copy={isCalendar
-          ? 'Slipp økter på ønsket dag. Eksisterende økter kan også dras mellom dager.'
-          : 'Sortert etter dag og tidspunkt. Dra økter for å flytte, eller slipp foran en økt for å plassere den i listen.'}
+          ? 'Drop sessions on the desired day. Existing sessions can also be dragged between days.'
+          : 'Sorted by day and time. Drag sessions to move them, or drop in front of a session to place it in the list.'}
         panelId="calendar"
         visiblePanelIds={visiblePanelIds}
       />
 
       {loadingWorkouts ? (
-        <div className="pb-empty-state">Laster uke…</div>
+        <div className="pb-empty-state">Loading week…</div>
       ) : isCalendar ? (
         <WeekCalendarList
           days={groupedWorkouts}
@@ -65,7 +65,7 @@ export default function CalendarPanel({
           className={`pb-empty-state pb-empty-slot${dragState && !dropTarget?.beforeWorkoutId ? ' is-target' : ''}`}
           {...makeDropZoneProps({ dragState, handleDropTargetChange, handleDrop, weekday: LIST_WEEKDAY, stopPropagation: true })}
         >
-          {dragState ? 'Slipp økt her' : 'Ingen økter denne uken'}
+          {dragState ? 'Drop session here' : 'No sessions this week'}
         </div>
       ) : (
         <div className="pb-workout-list">

@@ -32,27 +32,27 @@ export default function TemplatePickerModal({ targetWorkout, templates, loading,
     <Modal
       open
       onClose={onClose}
-      eyebrow="Bytt økt"
-      title={`Erstatt «${targetWorkout.title}»`}
+      eyebrow="Swap session"
+      title={`Replace «${targetWorkout.title}»`}
       size="lg"
     >
       {loading ? (
-        <EmptyState title="Laster øktbank…" />
+        <EmptyState title="Loading session bank…" />
       ) : templates.length === 0 ? (
-        <EmptyState title="Tom øktbank" description="Du har ingen økter i banken ennå." />
+        <EmptyState title="Empty session bank" description="You have no sessions in the bank yet." />
       ) : (
         <>
           <div style={{ marginBottom: 'var(--tp-space-3)' }}>
             <SearchBox
               value={searchQuery}
               onChange={setSearchQuery}
-              placeholder="Søk økter (tittel, kategori, type, sport)…"
+              placeholder="Search sessions (title, category, type, sport)…"
             />
           </div>
           {filtered.length === 0 ? (
             <EmptyState
-              title="Ingen treff"
-              description="Prøv et annet søkeord."
+              title="No matches"
+              description="Try a different search term."
             />
           ) : (
             <div className="ah-template-grid">
@@ -60,7 +60,7 @@ export default function TemplatePickerModal({ targetWorkout, templates, loading,
                 <TemplateCard
                   key={template.id}
                   template={template}
-                  primaryLabel="Bytt til denne"
+                  primaryLabel="Swap to this"
                   onPrimary={() => onPick(template)}
                 />
               ))}

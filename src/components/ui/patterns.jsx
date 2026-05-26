@@ -45,7 +45,7 @@ export function PageShell({
           <button
             type="button"
             className="tp-shell-hamburger"
-            aria-label="Vis meny"
+            aria-label="Show menu"
             aria-expanded={navOpen}
             onClick={() => setNavOpen(v => !v)}
           >
@@ -58,7 +58,7 @@ export function PageShell({
             <button
               type="button"
               className="tp-shell-nav-scrim"
-              aria-label="Lukk meny"
+              aria-label="Close menu"
               onClick={() => setNavOpen(false)}
             />
           )}
@@ -126,7 +126,7 @@ export function ShellBrand({ onBack, eyebrow, title }) {
   return (
     <>
       {onBack && (
-        <IconButton ariaLabel="Tilbake" variant="ghost" onClick={onBack} className="tp-shell-back">
+        <IconButton ariaLabel="Back" variant="ghost" onClick={onBack} className="tp-shell-back">
           <span aria-hidden="true">‹</span>
         </IconButton>
       )}
@@ -203,8 +203,8 @@ export function WeekNav({
   rightSlot,
   className,
 }) {
-  const monthShort = monday.toLocaleString('nb', { month: 'short' })
-  const monthShortEnd = sunday.toLocaleString('nb', { month: 'short' })
+  const monthShort = monday.toLocaleString('en', { month: 'short' })
+  const monthShortEnd = sunday.toLocaleString('en', { month: 'short' })
 
   return (
     <div className={cx('tp-weeknav', className)}>
@@ -213,23 +213,23 @@ export function WeekNav({
           type="button"
           className="tp-weeknav-eyebrow"
           onClick={onToday}
-          title="Gå til denne uken"
+          title="Go to this week"
         >
-          {isThisWeek ? 'Denne uken' : 'Uke'}
+          {isThisWeek ? 'This week' : 'Week'}
           {isThisWeek && <span className="tp-weeknav-dot" aria-hidden="true" />}
         </button>
         <div className="tp-weeknav-headline">
           <button
             className="tp-weeknav-arrow"
             onClick={onPrev}
-            aria-label="Forrige uke"
+            aria-label="Previous week"
             type="button"
           >‹</button>
           <h1 className="tp-weeknav-number tp-num">{week}</h1>
           <button
             className="tp-weeknav-arrow"
             onClick={onNext}
-            aria-label="Neste uke"
+            aria-label="Next week"
             type="button"
           >›</button>
         </div>
@@ -245,7 +245,7 @@ export function WeekNav({
 /* ── AthletePicker (simple select wrapper) ──────────────────────── */
 export function AthletePicker({ athletes, selectedId, onSelect, currentUserProfile, className }) {
   const items = currentUserProfile && !athletes.some(a => a.uid === currentUserProfile.uid)
-    ? [{ uid: currentUserProfile.uid, displayName: `${currentUserProfile.displayName} (deg)` }, ...athletes]
+    ? [{ uid: currentUserProfile.uid, displayName: `${currentUserProfile.displayName} (you)` }, ...athletes]
     : athletes
   return (
     <select
@@ -253,7 +253,7 @@ export function AthletePicker({ athletes, selectedId, onSelect, currentUserProfi
       value={selectedId || ''}
       onChange={e => onSelect(e.target.value || null)}
     >
-      <option value="">Velg utøver…</option>
+      <option value="">Select athlete…</option>
       {items.map(athlete => (
         <option key={athlete.uid} value={athlete.uid}>{athlete.displayName}</option>
       ))}

@@ -25,7 +25,7 @@
   .tp-shell--with-nav .tp-shell-body { margin-left: 0; }
 }
 
-/* Collapsed nav (e.g. inside Planverktøy): treat desktop like mobile —
+/* Collapsed nav (e.g. inside Plan builder): treat desktop like mobile —
  * sidebar slides off-canvas behind a hamburger so the page takes full width. */
 .tp-shell--nav-collapsed .tp-shell-body { margin-left: 0; }
 

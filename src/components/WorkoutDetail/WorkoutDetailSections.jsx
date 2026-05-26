@@ -30,13 +30,13 @@ export default function WorkoutDetailSections({
 
       {/* Distance is only meaningful for distance-based sports (run/swim/bike/row). */}
       {isDistanceWorkout && !showBlocks && workout.distance && (
-        <Section label="Antall km">{workout.distance}</Section>
+        <Section label="Distance (km)">{workout.distance}</Section>
       )}
 
       {/* Strength sessions list exercises (sets/reps/load live in each line). */}
       {isStrengthWorkout && exerciseLines.length > 0 && (
         <div className="modal-section">
-          <div className="section-label">Øvelser</div>
+          <div className="section-label">Exercises</div>
           <ul className="detail-list">
             {exerciseLines.map((line, index) => (
               <li key={`${line}-${index}`}>{line}</li>
@@ -46,14 +46,14 @@ export default function WorkoutDetailSections({
       )}
 
       {isStrengthWorkout && workout.rest && (
-        <Section label="Pause">{workout.rest}</Section>
+        <Section label="Rest">{workout.rest}</Section>
       )}
 
       {/* Free-text instructions: shown for non-strength sessions, or for
           strength sessions only when there is no structured exercise list. */}
       {sessionInstructions && (!isStrengthWorkout || exerciseLines.length === 0) && (
         <Section
-          label={isStrengthWorkout ? 'Treningsøkt' : 'Hva skal gjøres'}
+          label={isStrengthWorkout ? 'Training session' : 'What to do'}
           preLine
           className="workout-desc"
         >
@@ -61,11 +61,11 @@ export default function WorkoutDetailSections({
         </Section>
       )}
 
-      {workout.warmup && <Section label="Oppvarming">{workout.warmup}</Section>}
-      {workout.cooldown && <Section label="Nedkjøling">{workout.cooldown}</Section>}
+      {workout.warmup && <Section label="Warmup">{workout.warmup}</Section>}
+      {workout.cooldown && <Section label="Cooldown">{workout.cooldown}</Section>}
 
       {workout.notes && (
-        <Section label="Notater" preLine>{workout.notes}</Section>
+        <Section label="Notes" preLine>{workout.notes}</Section>
       )}
     </>
   )

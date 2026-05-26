@@ -31,7 +31,7 @@ export default function ProfileCard({ profile }) {
       ])
       setDirty(false)
     } catch (err) {
-      window.alert(`Kunne ikke lagre profilen: ${err.message}`)
+      window.alert(`Could not save the profile: ${err.message}`)
     } finally {
       setSaving(false)
     }
@@ -47,22 +47,22 @@ export default function ProfileCard({ profile }) {
   return (
     <Card className="tp-athlete-profile">
       <div className="tp-athlete-profile-grid">
-        <Field label="Maks HR (slag/min)">
+        <Field label="Max HR (bpm)">
           <Input
             type="number"
             inputMode="numeric"
             value={maxHr}
             onChange={set(setMaxHr)}
-            placeholder="f.eks. 190"
+            placeholder="e.g. 190"
           />
         </Field>
-        <Field label="Terskel HR">
+        <Field label="Threshold HR">
           <Input
             type="number"
             inputMode="numeric"
             value={thresholdHr}
             onChange={set(setThresholdHr)}
-            placeholder="f.eks. 175"
+            placeholder="e.g. 175"
           />
         </Field>
         <Field label="VO2max HR">
@@ -71,27 +71,27 @@ export default function ProfileCard({ profile }) {
             inputMode="numeric"
             value={vo2maxHr}
             onChange={set(setVo2maxHr)}
-            placeholder="f.eks. 185"
+            placeholder="e.g. 185"
           />
         </Field>
-        <Field label="Rolig tempo">
+        <Field label="Easy pace">
           <Input
             value={easyTempo}
             onChange={set(setEasyTempo)}
-            placeholder="f.eks. 5:30 /km"
+            placeholder="e.g. 5:30 /km"
           />
         </Field>
-        <Field label="Langtempo">
+        <Field label="Long pace">
           <Input
             value={longTempo}
             onChange={set(setLongTempo)}
-            placeholder="f.eks. 4:30 /km"
+            placeholder="e.g. 4:30 /km"
           />
         </Field>
       </div>
       <div className="tp-athlete-profile-actions">
         <Button onClick={handleSave} disabled={!dirty || saving}>
-          {saving ? 'Lagrer…' : 'Lagre'}
+          {saving ? 'Saving…' : 'Save'}
         </Button>
       </div>
     </Card>

@@ -1,13 +1,13 @@
 export const ROLE_LABELS = {
   superadmin: 'Superadmin',
-  coach: 'Trener',
-  athlete: 'Utøver',
+  coach: 'Coach',
+  athlete: 'Athlete',
 }
 
 export const ROLE_DESCRIPTIONS = {
-  superadmin: 'Full tilgang. Administrerer brukere, roller og koblinger.',
-  coach: 'Planlegger økter og følger opp tildelte utøvere.',
-  athlete: 'Ser egne treningsuker og økter.',
+  superadmin: 'Full access. Manages users, roles, and relationships.',
+  coach: 'Plans sessions and follows up with assigned athletes.',
+  athlete: 'Views own training weeks and sessions.',
 }
 
 export const ROLE_OPTIONS = ['athlete', 'coach', 'superadmin']

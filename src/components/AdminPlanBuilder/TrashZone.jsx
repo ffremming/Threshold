@@ -10,7 +10,7 @@ export default function TrashZone({ dragState, handleTrashDrop }) {
     <div
       className={`pb-trash${isOver ? ' is-target' : ''}`}
       role="button"
-      aria-label="Slipp en økt her for å slette den"
+      aria-label="Drop a session here to delete it"
       onDragOver={event => {
         event.preventDefault()
         if (event.dataTransfer) event.dataTransfer.dropEffect = 'move'
@@ -24,7 +24,7 @@ export default function TrashZone({ dragState, handleTrashDrop }) {
       }}
     >
       <SystemIcon name="delete" className="system-icon" />
-      <span>Slipp her for å slette økten</span>
+      <span>Drop here to delete the session</span>
     </div>
   )
 }

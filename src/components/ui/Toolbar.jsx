@@ -14,7 +14,7 @@ export function ToolbarGroup({ label, children, className }) {
   )
 }
 
-export function SearchBox({ value, onChange, placeholder = 'Søk…', className }) {
+export function SearchBox({ value, onChange, placeholder = 'Search…', className }) {
   return (
     <div className={cx('tp-searchbox', className)}>
       <span className="tp-searchbox-icon" aria-hidden="true">⌕</span>
@@ -30,7 +30,7 @@ export function SearchBox({ value, onChange, placeholder = 'Søk…', className 
           type="button"
           className="tp-searchbox-clear"
           onClick={() => onChange('')}
-          aria-label="Tøm søk"
+          aria-label="Clear search"
         >×</button>
       )}
     </div>

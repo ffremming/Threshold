@@ -8,7 +8,7 @@ import { Button } from '../components/ui'
  *
  * Provides via context:
  *   • items / onChange / account  → primary nav + account block
- *   • selectedAthlete             → contextual "valgt utøver" block,
+ *   • selectedAthlete             → contextual "selected athlete" block,
  *                                    rendered in the sidebar between
  *                                    the nav list and the account block.
  *                                    Clickable; opens a popover with the
@@ -57,8 +57,8 @@ function SidebarAthlete({
 
   const selected = visibleAthletes.find(a => a.uid === selectedAthleteId) || null
   const displayName = selected
-    ? (selected.uid === userProfile?.uid ? `${selected.displayName} (meg)` : selected.displayName)
-    : 'Velg utøver'
+    ? (selected.uid === userProfile?.uid ? `${selected.displayName} (me)` : selected.displayName)
+    : 'Select athlete'
 
   return (
     <div className="tp-sb-athlete" ref={ref}>
@@ -73,7 +73,7 @@ function SidebarAthlete({
           {initialOf(selected)}
         </span>
         <span className="tp-sb-athlete-meta">
-          <span className="tp-sb-athlete-eyebrow">Valgt utøver</span>
+          <span className="tp-sb-athlete-eyebrow">Selected athlete</span>
           <span className="tp-sb-athlete-name">{displayName}</span>
         </span>
         <ChevronRight
@@ -84,13 +84,13 @@ function SidebarAthlete({
       </button>
 
       {open && (
-        <div className="tp-sb-athlete-popover" role="listbox" aria-label="Bytt utøver">
+        <div className="tp-sb-athlete-popover" role="listbox" aria-label="Switch athlete">
           <div className="tp-sb-athlete-popover-head">
-            <span className="tp-sb-athlete-eyebrow">Utøvere</span>
+            <span className="tp-sb-athlete-eyebrow">Athletes</span>
           </div>
           <ul className="tp-sb-athlete-popover-list">
             {visibleAthletes.length === 0 && (
-              <li className="tp-sb-athlete-popover-empty">Ingen utøvere</li>
+              <li className="tp-sb-athlete-popover-empty">No athletes</li>
             )}
             {visibleAthletes.map(a => {
               const isActive = a.uid === selectedAthleteId
@@ -111,7 +111,7 @@ function SidebarAthlete({
                       {initialOf(a)}
                     </span>
                     <span className="tp-sb-athlete-option-name">
-                      {isSelf ? `${a.displayName} (meg)` : (a.displayName || a.email || 'Uten navn')}
+                      {isSelf ? `${a.displayName} (me)` : (a.displayName || a.email || 'No name')}
                     </span>
                     {isActive && <span className="tp-sb-athlete-option-dot" aria-hidden="true" />}
                   </button>
@@ -154,19 +154,19 @@ export function NavProvider({
       },
       canManageWorkouts && {
         key: 'athletes',
-        label: 'Utøvere',
+        label: 'Athletes',
         icon: <SystemIcon name="users" />,
         onSelect: () => { goPlan(); setShowAthleteOverview(true) },
       },
       canManageWorkouts && {
         key: 'admin',
-        label: 'Trenerpanel',
+        label: 'Coach panel',
         icon: <SystemIcon name="dashboard" />,
         onSelect: () => { goPlan(); setShowAdmin(true) },
       },
       isSuperadmin && {
         key: 'users',
-        label: 'Brukere',
+        label: 'Users',
         icon: <SystemIcon name="settings" />,
         onSelect: () => { goPlan(); setShowUserManagement(true) },
       },
@@ -183,7 +183,7 @@ export function NavProvider({
           <span className="tp-account-avatar" aria-hidden="true">{initials}</span>
           <div className="tp-account-info">
             <span className="tp-account-name">
-              {userProfile?.displayName || userProfile?.email || 'Bruker'}
+              {userProfile?.displayName || userProfile?.email || 'User'}
             </span>
             {userProfile?.email && userProfile?.displayName && (
               <span className="tp-account-email">{userProfile.email}</span>
@@ -198,7 +198,7 @@ export function NavProvider({
           className="tp-account-logout"
         >
           <SystemIcon name="logout" className="button-icon" />
-          Logg ut
+          Sign out
         </Button>
       </div>
     )

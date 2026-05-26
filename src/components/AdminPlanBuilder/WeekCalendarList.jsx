@@ -1,6 +1,6 @@
 import WorkoutRow from './WorkoutRow'
 
-// One flat week list shared by Ukeplan (PlanTab) and Planverktøy
+// One flat week list shared by Week plan (PlanTab) and Plan builder
 // (AdminPlanBuilder). Day labels are inline divider rows inside a
 // single list with an invisible drop-line at each day's end. Rows
 // have no card chrome — only a hairline separator — so the whole
@@ -25,7 +25,7 @@ export default function WeekCalendarList({
       {days.flatMap(day => {
         const dropProps = getDayDropZoneProps(day.value)
         const countLabel = day.workouts.length > 0
-          ? `${day.workouts.length} økt${day.workouts.length > 1 ? 'er' : ''}`
+          ? `${day.workouts.length} session${day.workouts.length > 1 ? 's' : ''}`
           : ''
         return [
           <div key={`head-${day.value}`} className="pb-week-day-head" {...dropProps}>

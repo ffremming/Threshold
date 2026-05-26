@@ -40,7 +40,7 @@ export default function ActivityPicker({ selected, onSelect }) {
       <input
         type="search"
         className="activity-picker-search"
-        placeholder="Søk etter annen aktivitet…"
+        placeholder="Search for another activity…"
         value={query}
         onChange={e => setQuery(e.target.value)}
       />

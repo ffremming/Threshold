@@ -16,10 +16,10 @@ export default function WorkoutForm({ value, onChange, showScheduleFields = fals
   const allowedZones = getAllowedIntensityZones(type)
   const domain = getSessionDomain(value.activityTag)
   const descriptionPlaceholder = domain === 'strength'
-    ? 'F.eks. Knebøy 3 x 8, markløft 3 x 5, 90 sek pause'
+    ? 'E.g. Squat 3 x 8, deadlift 3 x 5, 90 sec rest'
     : domain === 'duration'
-      ? 'F.eks. 45 min flyt, fokus på pust og mobilitet'
-      : 'F.eks. 4 x 1km @ 11.5 km/t, 5:15 pace, 2 min pause'
+      ? 'E.g. 45 min flow, focus on breathing and mobility'
+      : 'E.g. 4 x 1km @ 11.5 km/h, 5:15 pace, 2 min rest'
 
   function set(key, val) {
     onChange({ ...value, [key]: val })
@@ -60,7 +60,7 @@ export default function WorkoutForm({ value, onChange, showScheduleFields = fals
   return (
     <div className="add-form">
       <label>
-        Aktivitet
+        Activity
         <ActivityPicker
           selected={value.activityTag}
           onSelect={setActivityTag}
@@ -79,20 +79,20 @@ export default function WorkoutForm({ value, onChange, showScheduleFields = fals
       {showScheduleFields && (
         <div className="date-time-row">
           <label>
-            Fast dag
+            Fixed day
             <select
               value={value.weekday || ''}
               onChange={e => set('weekday', Number(e.target.value))}
               required
             >
-              <option value="">Velg dag</option>
+              <option value="">Select day</option>
               {WEEKDAY_OPTIONS.map(day => (
                 <option key={day.value} value={day.value}>{day.label}</option>
               ))}
             </select>
           </label>
           <label>
-            Klokkeslett
+            Time
             <input
               type="time"
               value={value.time || ''}
@@ -103,14 +103,14 @@ export default function WorkoutForm({ value, onChange, showScheduleFields = fals
       )}
 
       {showScheduleFields && (
-        <div className="field-hint">Du kan legge flere økter på samme dag. Tid brukes for rekkefølge hvis den er satt.</div>
+        <div className="field-hint">You can add multiple sessions on the same day. Time is used for ordering when set.</div>
       )}
 
       <label>
-        Tittel *
+        Title *
         <input
           type="text"
-          placeholder="F.eks. Rolig jogg"
+          placeholder="E.g. Easy jog"
           value={value.title || ''}
           onChange={e => set('title', e.target.value)}
           required
@@ -118,8 +118,8 @@ export default function WorkoutForm({ value, onChange, showScheduleFields = fals
       </label>
 
       <label>
-        Intensitetssone
-        <div className="field-hint">Velg en eller flere soner</div>
+        Intensity zone
+        <div className="field-hint">Select one or more zones</div>
         <div className="zone-picker">
           {allowedZones.map(z => (
             <button
@@ -128,14 +128,14 @@ export default function WorkoutForm({ value, onChange, showScheduleFields = fals
               className={`tp-zone-btn tp-zone-${z}${normalizeIntensityZones(type, value.intensityZone).includes(z) ? ' is-active' : ''}`}
               onClick={() => toggleIntensityZone(z)}
             >
-              Sone {z}
+              Zone {z}
             </button>
           ))}
         </div>
       </label>
 
       <label>
-        Beskrivelse
+        Description
         <textarea
           placeholder={descriptionPlaceholder}
           value={value.description || ''}
@@ -152,9 +152,9 @@ export default function WorkoutForm({ value, onChange, showScheduleFields = fals
       />
 
       <label>
-        Notater
+        Notes
         <textarea
-          placeholder="Tips, fokuspunkter, utstyr..."
+          placeholder="Tips, focus points, equipment..."
           value={value.notes || ''}
           onChange={e => set('notes', e.target.value)}
           rows={2}

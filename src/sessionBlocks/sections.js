@@ -18,12 +18,12 @@ export function getAddableKinds(activityTag) {
 }
 
 export const SECTION_LABELS = {
-  warmup: 'Oppvarming',
-  steady: 'Rolig økt',
-  interval: 'Intervaller',
-  cooldown: 'Nedjogg',
-  exercise: 'Øvelse',
-  effort: 'Hoveddel',
+  warmup: 'Warmup',
+  steady: 'Easy session',
+  interval: 'Intervals',
+  cooldown: 'Cooldown',
+  exercise: 'Exercise',
+  effort: 'Main set',
 }
 
 export const INTERVAL_PACE_MODES = ['pace', 'length', 'time']

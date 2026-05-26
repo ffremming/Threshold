@@ -26,14 +26,14 @@ export default function WorkoutDetailModal({
       onReplace={canManageWorkouts ? handleStartReplaceWorkout : undefined}
       onDuplicate={canManageWorkouts ? handleDuplicateWorkout : undefined}
       onDelete={canManageWorkouts ? async (w) => {
-        const ok = window.confirm(`Slette økten "${w.title || 'uten tittel'}"? Dette kan ikke angres.`)
+        const ok = window.confirm(`Delete the session "${w.title || 'untitled'}"? This cannot be undone.`)
         if (!ok) return
         try {
           await deleteDoc(doc(db, 'workouts', w.id))
           setSelectedWorkout(null)
         } catch (err) {
-          console.error('Kunne ikke slette økten', err)
-          window.alert('Kunne ikke slette økten. Prøv igjen.')
+          console.error('Could not delete the session', err)
+          window.alert('Could not delete the session. Please try again.')
         }
       } : undefined}
       onToggleComplete={handleToggleComplete}
@@ -53,8 +53,8 @@ export default function WorkoutDetailModal({
           })
           setSelectedWorkout(null)
         } catch (err) {
-          console.error('Kunne ikke lagre endringen', err)
-          window.alert('Kunne ikke lagre endringen. Prøv igjen.')
+          console.error('Could not save the change', err)
+          window.alert('Could not save the change. Please try again.')
         }
       } : undefined}
     />

@@ -42,13 +42,13 @@ export default function UserManagement({ currentUser, onClose }) {
       : [...currentRoles, role]
 
     if (nextRoles.length === 0) {
-      window.alert('En bruker må ha minst én rolle.')
+      window.alert('A user must have at least one role.')
       return
     }
 
     if (user.uid === currentUser.uid && !nextRoles.includes('superadmin')) {
       const ok = window.confirm(
-        'Er du sikker på at du vil endre din egen rolle? Du kan miste admin-tilgang.',
+        'Are you sure you want to change your own role? You may lose admin access.',
       )
       if (!ok) return
     }
@@ -57,7 +57,7 @@ export default function UserManagement({ currentUser, onClose }) {
     try {
       await updateUserRole(user.uid, nextRoles)
     } catch (err) {
-      window.alert(`Kunne ikke oppdatere rollen: ${err.message}`)
+      window.alert(`Could not update the role: ${err.message}`)
     } finally {
       setBusyRole(null)
     }
@@ -67,16 +67,16 @@ export default function UserManagement({ currentUser, onClose }) {
     try {
       await addRelationship(coachId, athleteId)
     } catch (err) {
-      window.alert(`Kunne ikke opprette koblingen: ${err.message}`)
+      window.alert(`Could not create the link: ${err.message}`)
     }
   }
 
   async function handleRemoveRelationship(coachId, athleteId) {
-    if (!window.confirm('Fjerne denne trener-utøver-koblingen?')) return
+    if (!window.confirm('Remove this coach-athlete link?')) return
     try {
       await removeRelationship(coachId, athleteId)
     } catch (err) {
-      window.alert(`Kunne ikke fjerne koblingen: ${err.message}`)
+      window.alert(`Could not remove the link: ${err.message}`)
     }
   }
 

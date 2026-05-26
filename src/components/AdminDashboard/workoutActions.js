@@ -54,7 +54,7 @@ export function createWorkoutCrud(ctx) {
   }
 
   async function handleDeleteWorkout(workout) {
-    if (!window.confirm(`Slett "${workout.title}"?`)) return
+    if (!window.confirm(`Delete "${workout.title}"?`)) return
     await deleteDoc(doc(db, 'workouts', workout.id))
     setSelectedWorkout(null)
   }

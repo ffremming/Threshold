@@ -46,7 +46,7 @@ export default function UserDetail({
       brand={
         <ShellBrand
           onBack={onBack}
-          eyebrow="Brukerprofil"
+          eyebrow="User profile"
           title={selectedUser.displayName || selectedUser.email}
         />
       }
@@ -58,35 +58,35 @@ export default function UserDetail({
     >
       <Page>
         <Card style={{ padding: 'var(--tp-space-4)', display: 'flex', flexWrap: 'wrap', gap: 'var(--tp-space-4)' }}>
-          <Stat label="Navn" value={selectedUser.displayName || 'Uten navn'} />
+          <Stat label="Name" value={selectedUser.displayName || 'No name'} />
           <Stat
-            label="E-post"
+            label="Email"
             value={
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
                 <Mail size={14} aria-hidden="true" /> {selectedUser.email}
               </span>
             }
           />
-          <Stat label="Aktive roller" value={getUserRoles(selectedUser).length} />
+          <Stat label="Active roles" value={getUserRoles(selectedUser).length} />
         </Card>
 
         <Section
-          title="Roller"
-          subtitle="Trykk for å gi eller fjerne en rolle. En bruker må ha minst én rolle."
+          title="Roles"
+          subtitle="Click to grant or remove a role. A user must have at least one role."
         >
           <RoleEditor user={selectedUser} busyRole={busyRole} onToggle={role => onRoleToggle(selectedUser, role)} />
         </Section>
 
         {isCoach && (
           <RelationshipSection
-            title="Utøvere"
-            subtitle="Utøvere denne treneren følger opp."
-            emptyLabel="Ingen utøvere tildelt ennå."
+            title="Athletes"
+            subtitle="Athletes this coach follows up."
+            emptyLabel="No athletes assigned yet."
             members={coachAthletes}
             unassigned={unassignedAthletes}
-            addLabel="Legg til utøver"
-            assignTitle="Velg utøver å koble til"
-            noneLeftLabel="Alle utøvere er allerede koblet til denne treneren."
+            addLabel="Add athlete"
+            assignTitle="Select athlete to link"
+            noneLeftLabel="All athletes are already linked to this coach."
             onAdd={athlete => onAddRelationship(selectedUser.uid, athlete.uid)}
             onRemove={athlete => onRemoveRelationship(selectedUser.uid, athlete.uid)}
           />
@@ -94,14 +94,14 @@ export default function UserDetail({
 
         {isAthlete && (
           <RelationshipSection
-            title="Trenere"
-            subtitle="Trenere som følger opp denne utøveren."
-            emptyLabel="Ingen trener tildelt ennå."
+            title="Coaches"
+            subtitle="Coaches who follow up this athlete."
+            emptyLabel="No coach assigned yet."
             members={athleteCoaches}
             unassigned={unassignedCoaches}
-            addLabel="Legg til trener"
-            assignTitle="Velg trener å koble til"
-            noneLeftLabel="Alle trenere er allerede koblet til denne utøveren."
+            addLabel="Add coach"
+            assignTitle="Select coach to link"
+            noneLeftLabel="All coaches are already linked to this athlete."
             onAdd={coach => onAddRelationship(coach.uid, selectedUser.uid)}
             onRemove={coach => onRemoveRelationship(coach.uid, selectedUser.uid)}
           />

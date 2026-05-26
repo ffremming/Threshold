@@ -78,7 +78,7 @@ export function WorkoutCard({
               type="button"
               className={cx('tp-workout-check', workout.completed && 'is-checked')}
               onClick={e => { e.stopPropagation(); onToggleComplete() }}
-              aria-label={workout.completed ? 'Marker som ikke fullført' : 'Marker som fullført'}
+              aria-label={workout.completed ? 'Mark as not completed' : 'Mark as completed'}
             >
               {workout.completed && <Check size={16} aria-hidden="true" />}
             </button>

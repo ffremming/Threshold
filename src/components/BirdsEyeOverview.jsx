@@ -22,7 +22,7 @@ export default function BirdsEyeOverview({ weeks, workoutsByWeekKey, selectedWee
     const workouts = workoutsByWeekKey[weekEntry.key] || []
     return {
       key: weekEntry.key,
-      label: `Uke ${weekEntry.week}`,
+      label: `Week ${weekEntry.week}`,
       planned: getWeeklyDistance(workouts),
       target: weeklyTargets.get(weekEntry.key) || 0,
       isSelected: weekEntry.key === selectedWeekKey,
@@ -33,13 +33,13 @@ export default function BirdsEyeOverview({ weeks, workoutsByWeekKey, selectedWee
     <section className="birds-eye-panel" id="birds-eye-overview">
       <div className="birds-eye-summary">
         <div>
-          <h2 className="birds-eye-title">Mengdeoversikt</h2>
-          <p className="birds-eye-subtitle">Planlagte kilometer mot ukentlig target. Forankret til 17 km i uke 13, 2026, med 7% progresjon per uke.</p>
+          <h2 className="birds-eye-title">Volume overview</h2>
+          <p className="birds-eye-subtitle">Planned kilometers against weekly target. Anchored to 17 km in week 13, 2026, with 7% progression per week.</p>
         </div>
-        <div className="birds-eye-legend" aria-label="Forklaring">
+        <div className="birds-eye-legend" aria-label="Legend">
           <span className="birds-eye-legend-item">
             <span className="birds-eye-legend-dot planned" aria-hidden="true" />
-            Planlagt
+            Planned
           </span>
           <span className="birds-eye-legend-item">
             <span className="birds-eye-legend-dot target" aria-hidden="true" />
@@ -63,10 +63,10 @@ export default function BirdsEyeOverview({ weeks, workoutsByWeekKey, selectedWee
               type="button"
               className={`birds-eye-week${isSelected ? ' selected' : ''}`}
               onClick={() => onSelectWeek(weekEntry.week, weekEntry.year)}
-              aria-label={`Uke ${weekEntry.week}, ${formatKmValue(weeklyDistance)} planlagt, ${formatKmValue(targetDistance)} target`}
+              aria-label={`Week ${weekEntry.week}, ${formatKmValue(weeklyDistance)} planned, ${formatKmValue(targetDistance)} target`}
             >
               <div className="birds-eye-week-meta">
-                <span className="birds-eye-week-label">Uke {weekEntry.week}</span>
+                <span className="birds-eye-week-label">Week {weekEntry.week}</span>
                 <span className="birds-eye-week-target">Target {formatKmValue(targetDistance)}</span>
               </div>
               <div className="birds-eye-workouts">
@@ -138,7 +138,7 @@ function WeeklyKmChart({ points }) {
 
   return (
     <div className="birds-eye-chart">
-      <svg viewBox={`0 0 ${width} ${height}`} className="birds-eye-chart-svg" role="img" aria-label="Planlagte kilometer mot target">
+      <svg viewBox={`0 0 ${width} ${height}`} className="birds-eye-chart-svg" role="img" aria-label="Planned kilometers against target">
         {[0, 0.5, 1].map(fraction => {
           const value = Number((maxValue * fraction).toFixed(1))
           const y = getY(value)
@@ -176,7 +176,7 @@ function WeeklyKmChart({ points }) {
               className={`birds-eye-chart-point planned${point.isSelected ? ' selected' : ''}`}
             />
             <text x={getX(index)} y={height - 10} textAnchor="middle" className="birds-eye-chart-week-label">
-              {point.label.replace('Uke ', 'U')}
+              {point.label.replace('Week ', 'W')}
             </text>
           </g>
         ))}

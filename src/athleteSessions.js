@@ -15,7 +15,7 @@ function stripSessionFields(template) {
     exercises, rest, distance, blocks,
   } = template || {}
   return {
-    title: title || 'Ny økt',
+    title: title || 'New session',
     type: type || 'rolig',
     activityTag: activityTag || 'run',
     intensityZone: Array.isArray(intensityZone) ? intensityZone : (intensityZone ? [intensityZone] : []),

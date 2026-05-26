@@ -33,7 +33,7 @@ export default function TestingDashboard({ selectedAthleteId, userProfile }) {
         setLoading(false)
       },
       err => {
-        console.error('Kunne ikke hente tester', err)
+        console.error('Could not fetch tests', err)
         setTests([])
         setLoading(false)
       }
@@ -95,7 +95,7 @@ export default function TestingDashboard({ selectedAthleteId, userProfile }) {
   }
 
   async function handleDelete(test) {
-    if (!window.confirm(`Slett testen "${test.title}"?`)) return
+    if (!window.confirm(`Delete the test "${test.title}"?`)) return
     await deleteDoc(doc(db, 'tests', test.id))
     if (editingTest === test.id) resetForm()
   }
@@ -104,8 +104,8 @@ export default function TestingDashboard({ selectedAthleteId, userProfile }) {
     return (
       <Page>
         <EmptyState
-          title="Ingen utøver valgt"
-          description="Velg en utøver for å se og redigere testprotokoller."
+          title="No athlete selected"
+          description="Select an athlete to view and edit test protocols."
         />
       </Page>
     )
@@ -114,9 +114,9 @@ export default function TestingDashboard({ selectedAthleteId, userProfile }) {
   return (
     <Page>
       <div className="td-stats td-stats--inline">
-        <Stat label="Totalt" value={tests.length} />
-        <Stat label="Styrke" value={styrkeCount} />
-        <Stat label="Utholdenhet" value={utholdCount} />
+        <Stat label="Total" value={tests.length} />
+        <Stat label="Strength" value={styrkeCount} />
+        <Stat label="Endurance" value={utholdCount} />
       </div>
 
       <div className="td-layout">

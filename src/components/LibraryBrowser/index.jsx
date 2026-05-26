@@ -41,7 +41,7 @@ export default function LibraryBrowser({
 }) {
   const [search, setSearch] = useState('')
   const [activitySet, setActivitySet] = useState([])
-  const [category, setCategory] = useState('Alle')
+  const [category, setCategory] = useState('All')
   const [zoneSet, setZoneSet] = useState(() => new Set())
   const [pendingAddIds, setPendingAddIds] = useState(() => new Set())
 
@@ -67,7 +67,7 @@ export default function LibraryBrowser({
     return globalTemplates
       .filter(t => matchesSearch(t, search.trim()))
       .filter(t => activitySet.length === 0 || activitySet.includes(t.activityTag))
-      .filter(t => category === 'Alle' || t.category === category)
+      .filter(t => category === 'All' || t.category === category)
       .filter(t => {
         if (zoneSet.size === 0) return true
         const zones = normalizeIntensityZones(t.type, t.intensityZone)
@@ -94,14 +94,14 @@ export default function LibraryBrowser({
   function clearAll() {
     setSearch('')
     setActivitySet([])
-    setCategory('Alle')
+    setCategory('All')
     setZoneSet(new Set())
   }
 
   const filtersActive =
     search.length > 0 ||
     activitySet.length > 0 ||
-    category !== 'Alle' ||
+    category !== 'All' ||
     zoneSet.size > 0
 
   return (
@@ -116,7 +116,7 @@ export default function LibraryBrowser({
         trailingAction={isSuperadmin && onCreateGlobal ? (
           <Button onClick={onCreateGlobal}>
             <Plus size={16} aria-hidden="true" />
-            Ny i bibliotek
+            New in library
           </Button>
         ) : null}
       />

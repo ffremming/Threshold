@@ -32,7 +32,7 @@ export default function BuilderHeader({
         onToday={() => onWeekChange(getWeekNumber(new Date()), new Date().getFullYear())}
         rightSlot={
           <IconButton
-            ariaLabel={showOverview ? 'Skjul ukeoversikt' : 'Vis ukeoversikt'}
+            ariaLabel={showOverview ? 'Hide week overview' : 'Show week overview'}
             aria-expanded={showOverview}
             aria-controls="admin-builder-overview"
             variant={showOverview ? undefined : 'ghost'}
@@ -45,7 +45,7 @@ export default function BuilderHeader({
 
       {showOverview && (
         loadingOverview ? (
-          <div className="pb-overview-loading" id="admin-builder-overview">Laster ukeoversikt…</div>
+          <div className="pb-overview-loading" id="admin-builder-overview">Loading week overview…</div>
         ) : (
           <div className="pb-overview-wrap" id="admin-builder-overview">
             <BirdsEyeOverview

@@ -21,8 +21,8 @@ export default function AthleteDetail({ athlete, coach, onBack }) {
       brand={
         <ShellBrand
           onBack={onBack}
-          eyebrow="Utøver"
-          title={profile?.displayName || profile?.email || 'Utøver'}
+          eyebrow="Athlete"
+          title={profile?.displayName || profile?.email || 'Athlete'}
         />
       }
       nav={nav?.items}
@@ -33,22 +33,22 @@ export default function AthleteDetail({ athlete, coach, onBack }) {
     >
       <Page>
         <Section
-          title="Profil & soner"
-          subtitle="Maks HR og terskel-tempo brukes til å forme treningssoner"
+          title="Profile & zones"
+          subtitle="Max HR and threshold pace are used to shape training zones"
         >
           <ProfileCard profile={profile} />
         </Section>
 
         <Section
-          title="Resultater"
-          subtitle="Logg distanse og tid fra konkurranser og tester"
+          title="Results"
+          subtitle="Log distance and time from races and tests"
         >
           <ResultsCard profile={profile} />
         </Section>
 
         <Section
-          title="Øktbank for utøver"
-          subtitle="Egne økter for denne utøveren. Endringer her påvirker ikke trenerens bank."
+          title="Session bank for athlete"
+          subtitle="Personal sessions for this athlete. Changes here do not affect the coach's bank."
         >
           <AthleteSessionPool
             coachId={coach?.uid}

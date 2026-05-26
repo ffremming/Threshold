@@ -7,7 +7,7 @@ export default function ZoneSummary({ zones, colors, zoneLabel, onClick }) {
       className="modal-section zone-summary"
       style={{ '--zone-color': colors.border }}
       onClick={onClick}
-      title="Trykk for å se din intensitetsskala"
+      title="Click to see your intensity scale"
     >
       <div className="section-label">{zoneLabel}</div>
       <div className="zone-multi-stats">
@@ -23,13 +23,13 @@ export default function ZoneSummary({ zones, colors, zoneLabel, onClick }) {
             >
               <strong>{zoneColors.label}</strong>
               <span>HR {zoneInfo.hr} bpm</span>
-              <span>Pust {zoneInfo.breathing}</span>
+              <span>Breathing {zoneInfo.breathing}</span>
             </div>
           )
         })}
       </div>
       <div className="zone-summary-hint">
-        Trykk for å se full intensitetsskala
+        Click to see full intensity scale
       </div>
     </button>
   )

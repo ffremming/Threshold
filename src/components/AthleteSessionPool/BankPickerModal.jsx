@@ -17,26 +17,26 @@ export default function BankPickerModal({ bankTemplates, onClose, onPick }) {
     <Modal
       open
       onClose={onClose}
-      eyebrow="Øktbank"
-      title="Velg økt fra banken"
+      eyebrow="Session bank"
+      title="Select session from the bank"
       size="lg"
     >
       <div className="tp-pool-picker">
         <Input
           type="search"
-          placeholder="Søk i banken…"
+          placeholder="Search the bank…"
           value={search}
           onChange={e => setSearch(e.target.value)}
         />
         {filtered.length === 0 ? (
-          <EmptyState title="Ingen treff" description="Prøv å justere søket." />
+          <EmptyState title="No matches" description="Try adjusting your search." />
         ) : (
           <div className="tp-pool-picker-grid">
             {filtered.map(template => (
               <TemplateCard
                 key={template.id}
                 template={template}
-                primaryLabel="Legg til"
+                primaryLabel="Add"
                 onPrimary={() => onPick(template)}
               />
             ))}

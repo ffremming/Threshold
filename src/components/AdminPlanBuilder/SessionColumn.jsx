@@ -9,7 +9,7 @@ export default function SessionColumn({ title, subtitle, sessions, onDragStart, 
       </header>
 
       {sessions.length === 0 ? (
-        <div className="pb-empty-copy">Ingen økter i denne kolonnen.</div>
+        <div className="pb-empty-copy">No sessions in this column.</div>
       ) : (
         <div className="pb-card-list">
           {sessions.map(session => (

@@ -11,23 +11,23 @@ export default function WindowControls({
     <Card className="an-window">
       <div className="an-window-nav">
         <IconButton
-          ariaLabel="Flytt analysevindu bakover"
+          ariaLabel="Move analysis window backward"
           variant="ghost"
           disabled={windowStart <= 0}
           onClick={() => setWindowStart(prev => clampWindowStart(prev - Math.max(1, Math.floor(range / 2)), weeks.length, range))}
         ><ChevronLeft size={18} aria-hidden="true" /></IconButton>
         <div className="an-window-meta">
-          <span className="an-eyebrow">Tidsvindu</span>
+          <span className="an-eyebrow">Time window</span>
           <strong className="an-window-label">
-            {visibleStartWeek ? getWeekLabel(visibleStartWeek) : 'Ingen data'}
+            {visibleStartWeek ? getWeekLabel(visibleStartWeek) : 'No data'}
             {visibleEndWeek ? ` – ${getWeekLabel(visibleEndWeek)}` : ''}
           </strong>
           <span className="an-window-help">
-            {isCurrentWeekVisible ? 'Nåværende uke er i vinduet' : 'Bla for å se tidligere blokker eller fremover'}
+            {isCurrentWeekVisible ? 'Current week is in the window' : 'Scroll to see earlier blocks or ahead'}
           </span>
         </div>
         <IconButton
-          ariaLabel="Flytt analysevindu fremover"
+          ariaLabel="Move analysis window forward"
           variant="ghost"
           disabled={windowStart >= maxWindowStart}
           onClick={() => setWindowStart(prev => clampWindowStart(prev + Math.max(1, Math.floor(range / 2)), weeks.length, range))}
@@ -36,9 +36,9 @@ export default function WindowControls({
 
       <div className="an-window-slider">
         <div className="an-window-slider-head">
-          <span>Historikk</span>
+          <span>History</span>
           <span className="tp-num">{timelineProgress}%</span>
-          <span>Framtid</span>
+          <span>Future</span>
         </div>
         <input
           type="range"
@@ -55,7 +55,7 @@ export default function WindowControls({
             variant="secondary"
             disabled={currentIndex === -1}
             onClick={() => setWindowStart(clampWindowStart(currentIndex - Math.floor(range / 2), weeks.length, range))}
-          >Sentrer på nå</Button>
+          >Center on now</Button>
         </div>
       </div>
     </Card>

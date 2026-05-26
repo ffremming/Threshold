@@ -43,7 +43,7 @@ export default function AdminDashboard({
   const [showCustomForm, setShowCustomForm] = useState(false)
   const [customForm, setCustomForm] = useState({ ...EMPTY_TEMPLATE })
   const [replacementTarget, setReplacementTarget] = useState(null)
-  const [activeCategory, setActiveCategory] = useState('Alle')
+  const [activeCategory, setActiveCategory] = useState('All')
   const [editingTemplate, setEditingTemplate] = useState(null)
   const [templateForm, setTemplateForm] = useState({ ...EMPTY_TEMPLATE })
   const [editingGlobalTemplate, setEditingGlobalTemplate] = useState(null)

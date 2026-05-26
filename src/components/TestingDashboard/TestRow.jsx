@@ -10,19 +10,19 @@ export default function TestRow({ test, groupLabel, onEdit, onDelete }) {
           <h4 className="td-test-title">{test.title}</h4>
         </div>
         <div className="td-test-actions">
-          <Button size="sm" variant="secondary" onClick={onEdit}>Rediger</Button>
-          <IconButton size="sm" variant="danger" ariaLabel="Slett test" onClick={onDelete}>
+          <Button size="sm" variant="secondary" onClick={onEdit}>Edit</Button>
+          <IconButton size="sm" variant="danger" ariaLabel="Delete test" onClick={onDelete}>
             <SystemIcon name="delete" className="system-icon" />
           </IconButton>
         </div>
       </header>
 
       <dl className="td-test-meta">
-        <MetaItem label="Protokoll" value={test.protocol} />
-        <MetaItem label="Målepunkt" value={test.metric} />
-        <MetaItem label="Siste resultat" value={test.baseline} />
-        <MetaItem label="Mål" value={test.target} />
-        <MetaItem label="Testdato" value={test.scheduledDate} fallback="Ikke planlagt" />
+        <MetaItem label="Protocol" value={test.protocol} />
+        <MetaItem label="Measurement" value={test.metric} />
+        <MetaItem label="Last result" value={test.baseline} />
+        <MetaItem label="Target" value={test.target} />
+        <MetaItem label="Test date" value={test.scheduledDate} fallback="Not scheduled" />
       </dl>
 
       {test.notes && <p className="td-test-notes">{test.notes}</p>}
@@ -30,7 +30,7 @@ export default function TestRow({ test, groupLabel, onEdit, onDelete }) {
   )
 }
 
-function MetaItem({ label, value, fallback = 'Ikke satt' }) {
+function MetaItem({ label, value, fallback = 'Not set' }) {
   return (
     <div className="td-meta">
       <dt>{label}</dt>

@@ -32,7 +32,7 @@ export function createTemplateInsertActions(ctx) {
     const { id, createdAt, ...fields } = template
     if (replacementTarget) {
       const shouldReplace = window.confirm(
-        `Er du sikker på at du vil bytte ut økten "${replacementTarget.title}" med "${template.title}"?`
+        `Are you sure you want to replace the session "${replacementTarget.title}" with "${template.title}"?`
       )
       if (!shouldReplace) return
 

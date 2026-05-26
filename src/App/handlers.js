@@ -17,7 +17,7 @@ import { updateUserProfile } from '../userService'
 function reportError(message, error) {
   console.error(message, error)
   if (typeof window !== 'undefined') {
-    window.alert(`${message} Prøv igjen.`)
+    window.alert(`${message} Please try again.`)
   }
 }
 
@@ -37,7 +37,7 @@ export function createHandlers({
     try {
       await signOut(auth)
     } catch (err) {
-      reportError('Kunne ikke logge ut.', err)
+      reportError('Could not sign out.', err)
       return
     }
     setShowAdmin(false)
@@ -58,7 +58,7 @@ export function createHandlers({
         setSelectedWorkout(prev => ({ ...prev, completed: !prev.completed }))
       }
     } catch (err) {
-      reportError('Kunne ikke oppdatere status.', err)
+      reportError('Could not update status.', err)
     }
   }
 
@@ -80,7 +80,7 @@ export function createHandlers({
         }))
       }
     } catch (err) {
-      reportError('Kunne ikke lagre kommentaren.', err)
+      reportError('Could not save the comment.', err)
     }
   }
 
@@ -93,7 +93,7 @@ export function createHandlers({
     if (!replacementTarget) return
 
     const shouldReplace = window.confirm(
-      `Er du sikker på at du vil bytte ut økten "${replacementTarget.title}" med "${template.title}"?`
+      `Are you sure you want to replace the session "${replacementTarget.title}" with "${template.title}"?`
     )
     if (!shouldReplace) return
 
@@ -120,7 +120,7 @@ export function createHandlers({
       })
       setReplacementTarget(null)
     } catch (err) {
-      reportError('Kunne ikke bytte ut økten.', err)
+      reportError('Could not swap the session.', err)
     }
   }
 
@@ -158,7 +158,7 @@ export function createHandlers({
       })
       setSelectedWorkout(null)
     } catch (err) {
-      reportError('Kunne ikke duplisere økten.', err)
+      reportError('Could not duplicate the session.', err)
     }
   }
 
@@ -172,7 +172,7 @@ export function createHandlers({
     try {
       await updateUserProfile(targetUserId, { workoutLayout: nextLayout })
     } catch (err) {
-      reportError('Kunne ikke lagre visningsinnstillingen.', err)
+      reportError('Could not save the display setting.', err)
     }
   }
 

@@ -14,7 +14,7 @@ export default function SectionCard({
   onMoveUp,
   onMoveDown,
 }) {
-  const label = SECTION_LABELS[section.kind] || 'Del'
+  const label = SECTION_LABELS[section.kind] || 'Section'
   // The exercise name doubles as the card title when present.
   const title = section.kind === 'exercise' && section.exerciseName?.trim()
     ? section.exerciseName.trim()
@@ -29,8 +29,8 @@ export default function SectionCard({
             className="tp-block-card-icon-btn"
             onClick={onMoveUp}
             disabled={!canMoveUp}
-            aria-label="Flytt opp"
-            title="Flytt opp"
+            aria-label="Move up"
+            title="Move up"
           >
             <ArrowUp size={15} aria-hidden="true" />
           </button>
@@ -39,8 +39,8 @@ export default function SectionCard({
             className="tp-block-card-icon-btn"
             onClick={onMoveDown}
             disabled={!canMoveDown}
-            aria-label="Flytt ned"
-            title="Flytt ned"
+            aria-label="Move down"
+            title="Move down"
           >
             <ArrowDown size={15} aria-hidden="true" />
           </button>
@@ -48,8 +48,8 @@ export default function SectionCard({
             type="button"
             className="tp-block-card-icon-btn tp-block-card-remove"
             onClick={onRemove}
-            aria-label={`Fjern ${label.toLowerCase()}`}
-            title="Fjern del"
+            aria-label={`Remove ${label.toLowerCase()}`}
+            title="Remove section"
           >
             <X size={15} aria-hidden="true" />
           </button>

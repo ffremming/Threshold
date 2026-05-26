@@ -14,19 +14,19 @@ export default function SessionEditModal({ session, onClose, onSave }) {
     <Modal
       open
       onClose={onClose}
-      eyebrow="Rediger økt"
-      title={draft.title || 'Ny økt'}
+      eyebrow="Edit session"
+      title={draft.title || 'New session'}
       size="lg"
       footer={
         <>
-          <Button variant="ghost" onClick={onClose}>Avbryt</Button>
-          <Button onClick={() => onSave(draft)}>Lagre</Button>
+          <Button variant="ghost" onClick={onClose}>Cancel</Button>
+          <Button onClick={() => onSave(draft)}>Save</Button>
         </>
       }
     >
       <div className="tp-pool-edit">
         <div className="tp-pool-edit-grid">
-          <Field label="Tittel">
+          <Field label="Title">
             <Input value={draft.title || ''} onChange={e => patch('title', e.target.value)} />
           </Field>
           <Field label="Type">
@@ -34,9 +34,9 @@ export default function SessionEditModal({ session, onClose, onSave }) {
               {WORKOUT_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
             </Select>
           </Field>
-          <Field label="Aktivitet">
+          <Field label="Activity">
             <Select value={draft.activityTag || ''} onChange={e => patch('activityTag', e.target.value)}>
-              <option value="">Velg aktivitet</option>
+              <option value="">Select activity</option>
               {ACTIVITY_TAGS.map(tag => (
                 <option key={tag.value} value={tag.value}>{tag.label}</option>
               ))}
@@ -44,7 +44,7 @@ export default function SessionEditModal({ session, onClose, onSave }) {
           </Field>
         </div>
 
-        <Field label="Beskrivelse">
+        <Field label="Description">
           <Textarea
             rows={2}
             value={draft.description || ''}
@@ -59,7 +59,7 @@ export default function SessionEditModal({ session, onClose, onSave }) {
           onChange={(blocks) => patch('blocks', blocks)}
         />
 
-        <Field label="Notater">
+        <Field label="Notes">
           <Textarea
             rows={2}
             value={draft.notes || ''}

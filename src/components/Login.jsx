@@ -31,7 +31,7 @@ export default function Login({ onClose, fullScreen }) {
     setError('')
     try {
       if (isRegistering) {
-        if (!displayName.trim()) { setError('Skriv inn navnet ditt'); setLoading(false); return }
+        if (!displayName.trim()) { setError('Enter your name'); setLoading(false); return }
         const cred = await createUserWithEmailAndPassword(auth, email, password)
         await createUserProfile(cred.user.uid, email, displayName.trim(), 'athlete')
       } else {
@@ -40,11 +40,11 @@ export default function Login({ onClose, fullScreen }) {
       onClose?.()
     } catch (err) {
       if (isRegistering) {
-        if (err.code === 'auth/email-already-in-use') setError('Denne e-posten er allerede registrert')
-        else if (err.code === 'auth/weak-password')   setError('Passordet må være minst 6 tegn')
-        else                                          setError('Kunne ikke registrere. Prøv igjen.')
+        if (err.code === 'auth/email-already-in-use') setError('This email is already registered')
+        else if (err.code === 'auth/weak-password')   setError('Password must be at least 6 characters')
+        else                                          setError('Could not register. Please try again.')
       } else {
-        setError('Feil e-post eller passord')
+        setError('Wrong email or password')
       }
       setLoading(false)
     }
@@ -55,30 +55,30 @@ export default function Login({ onClose, fullScreen }) {
   const form = (
     <form onSubmit={handleSubmit} className="tp-login-form">
       {isRegistering && (
-        <Field label="Navn">
+        <Field label="Name">
           <Input
             type="text"
             value={displayName}
             onChange={e => setDisplayName(e.target.value)}
-            placeholder="Ditt fulle navn"
+            placeholder="Your full name"
             autoComplete="name"
             required
             autoFocus
           />
         </Field>
       )}
-      <Field label="E-post">
+      <Field label="Email">
         <Input
           type="email"
           value={email}
           onChange={e => setEmail(e.target.value)}
-          placeholder="din@epost.no"
+          placeholder="your@email.com"
           autoComplete="email"
           required
           autoFocus={!isRegistering}
         />
       </Field>
-      <Field label="Passord" hint={isRegistering ? 'Minst 6 tegn' : null}>
+      <Field label="Password" hint={isRegistering ? 'At least 6 characters' : null}>
         <Input
           type="password"
           value={password}
@@ -93,14 +93,14 @@ export default function Login({ onClose, fullScreen }) {
 
       <Button type="submit" variant="primary" size="lg" block disabled={loading}>
         {loading
-          ? (isRegistering ? 'Registrerer…' : 'Logger inn…')
-          : (isRegistering ? 'Opprett konto' : 'Logg inn')}
+          ? (isRegistering ? 'Registering…' : 'Signing in…')
+          : (isRegistering ? 'Create account' : 'Sign in')}
       </Button>
 
       <p className="tp-login-toggle">
-        <span>{isRegistering ? 'Har allerede konto?' : 'Ny her?'}</span>
+        <span>{isRegistering ? 'Already have an account?' : 'New here?'}</span>
         <button type="button" className="tp-login-toggle-btn" onClick={toggleMode}>
-          {isRegistering ? 'Logg inn' : 'Opprett en konto'}
+          {isRegistering ? 'Sign in' : 'Create an account'}
         </button>
       </p>
     </form>
@@ -126,18 +126,18 @@ export default function Login({ onClose, fullScreen }) {
             </m.div>
 
             <m.div variants={fadeInUp}>
-              <SectionLabel>Bygg form mot målet</SectionLabel>
+              <SectionLabel>Build form toward the goal</SectionLabel>
             </m.div>
 
             <m.h1 variants={fadeInUp} className="tp-login-headline">
-              Bygg uka.<br />
-              Vinn <GradientText>løpet</GradientText>
+              Build the week.<br />
+              Win the <GradientText>race</GradientText>
               <span className="tp-login-headline-bar" aria-hidden="true" />
             </m.h1>
 
             <m.p variants={fadeInUp} className="tp-login-tagline">
-              Et profesjonelt verktøy for trenere og utøvere — planlegg økter,
-              følg belastning og bygg form mot målet.
+              A professional tool for coaches and athletes — plan sessions,
+              track load, and build form toward the goal.
             </m.p>
 
             <m.div variants={fadeInUp} className="tp-login-marks" aria-hidden="true">
@@ -153,10 +153,10 @@ export default function Login({ onClose, fullScreen }) {
           >
             <header className="tp-login-card-head">
               <span className="tp-login-eyebrow">
-                {isRegistering ? 'Ny bruker' : 'Velkommen tilbake'}
+                {isRegistering ? 'New user' : 'Welcome back'}
               </span>
               <h2 className="tp-login-card-title">
-                {isRegistering ? 'Opprett konto' : 'Logg inn'}
+                {isRegistering ? 'Create account' : 'Sign in'}
               </h2>
             </header>
             {form}
@@ -177,7 +177,7 @@ export default function Login({ onClose, fullScreen }) {
   }
 
   return (
-    <Modal open onClose={onClose} title={isRegistering ? 'Registrer deg' : 'Logg inn'}>
+    <Modal open onClose={onClose} title={isRegistering ? 'Sign up' : 'Sign in'}>
       {form}
     </Modal>
   )
@@ -211,15 +211,15 @@ function HeroGraphic() {
       </div>
 
       <m.div className="tp-hero-card tp-hero-card--a" animate={floatY}>
-        <span className="tp-hero-card-eyebrow">Mandag · Z3</span>
+        <span className="tp-hero-card-eyebrow">Monday · Z3</span>
         <span className="tp-hero-card-num">8 km</span>
         <span className="tp-hero-card-bar"><span style={{ width: '64%' }} /></span>
       </m.div>
 
       <m.div className="tp-hero-card tp-hero-card--b" animate={floatYAlt}>
-        <span className="tp-hero-card-eyebrow">Uke 18</span>
+        <span className="tp-hero-card-eyebrow">Week 18</span>
         <span className="tp-hero-card-num">42 km</span>
-        <span className="tp-hero-card-meta">+12 % vs forrige</span>
+        <span className="tp-hero-card-meta">+12 % vs previous</span>
       </m.div>
 
       <span className="tp-hero-block" aria-hidden="true" />

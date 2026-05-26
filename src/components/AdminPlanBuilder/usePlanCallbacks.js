@@ -12,7 +12,7 @@ export function usePlanCallbacks({
 }) {
   const [bankWindows, setBankWindows] = useState([])
 
-  // Bank (Øktvelger) and calendar are always adjacent. The optional extra
+  // Bank (Session picker) and calendar are always adjacent. The optional extra
   // panel sits on the outer side; panelOrder is only consulted to remember
   // which side (left vs right of the bank+calendar pair) the user prefers.
   const visiblePanelIds = useMemo(() => {

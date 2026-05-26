@@ -19,7 +19,7 @@ export default function BuilderPanelHeader({ title, copy, panelId, visiblePanelI
               className="pb-panel-move-btn"
               onClick={() => onMove(panelId, -1)}
               disabled={!canMoveLeft}
-              aria-label={`Flytt ${title} til venstre`}
+              aria-label={`Move ${title} to the left`}
             >
               <ArrowLeft className="system-icon" aria-hidden="true" strokeWidth={1.9} />
             </button>
@@ -28,7 +28,7 @@ export default function BuilderPanelHeader({ title, copy, panelId, visiblePanelI
               className="pb-panel-move-btn"
               onClick={() => onMove(panelId, 1)}
               disabled={!canMoveRight}
-              aria-label={`Flytt ${title} til høyre`}
+              aria-label={`Move ${title} to the right`}
             >
               <ArrowRight className="system-icon" aria-hidden="true" strokeWidth={1.9} />
             </button>

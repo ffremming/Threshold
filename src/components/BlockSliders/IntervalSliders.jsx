@@ -86,14 +86,14 @@ export default function IntervalSliders({ block, unit, activityTag, onPatch }) {
 
   return (
     <div className="tp-block-sliders">
-      <div className="tp-block-mode-toggle" role="tablist" aria-label="Definer intervall etter">
+      <div className="tp-block-mode-toggle" role="tablist" aria-label="Define interval by">
         <ModeButton current={paceMode} value="pace" label="Pace" onSelect={setMode} />
-        <ModeButton current={paceMode} value="length" label="Lengde" onSelect={setMode} />
-        <ModeButton current={paceMode} value="time" label="Tid" onSelect={setMode} />
+        <ModeButton current={paceMode} value="length" label="Length" onSelect={setMode} />
+        <ModeButton current={paceMode} value="time" label="Time" onSelect={setMode} />
       </div>
 
       <SliderRow
-        label="Antall drag"
+        label="Number of reps"
         value={reps}
         min={REPS_MIN}
         max={REPS_MAX}
@@ -104,7 +104,7 @@ export default function IntervalSliders({ block, unit, activityTag, onPatch }) {
 
       {(paceMode === 'pace' || paceMode === 'length') && (
         <SliderRow
-          label="Drag lengde"
+          label="Rep length"
           value={dragKm}
           min={DRAG_MIN}
           max={DRAG_MAX}
@@ -116,7 +116,7 @@ export default function IntervalSliders({ block, unit, activityTag, onPatch }) {
 
       {(paceMode === 'pace' || paceMode === 'time') && (
         <SliderRow
-          label="Drag tid"
+          label="Rep time"
           value={Math.min(DRAG_TIME_MAX, Math.max(DRAG_TIME_MIN, dragSec || 60))}
           min={DRAG_TIME_MIN}
           max={DRAG_TIME_MAX}
@@ -129,7 +129,7 @@ export default function IntervalSliders({ block, unit, activityTag, onPatch }) {
       {paceMode === 'pace' && (
         unit === 'pace' ? (
           <SliderRow
-            label="Tempo"
+            label="Pace"
             value={clampPace(pace)}
             min={PACE_MIN}
             max={PACE_MAX}
@@ -140,7 +140,7 @@ export default function IntervalSliders({ block, unit, activityTag, onPatch }) {
           />
         ) : (
           <SliderRow
-            label="Fart"
+            label="Speed"
             value={speedKmh}
             min={SPEED_MIN}
             max={SPEED_MAX}
@@ -160,7 +160,7 @@ export default function IntervalSliders({ block, unit, activityTag, onPatch }) {
       )}
 
       <SliderRow
-        label="Pause mellom drag"
+        label="Rest between reps"
         value={block.pauseSec || 0}
         min={PAUSE_MIN}
         max={PAUSE_MAX}
@@ -171,11 +171,11 @@ export default function IntervalSliders({ block, unit, activityTag, onPatch }) {
 
       <div className="tp-block-totals">
         <span className="tp-block-total">
-          <span className="tp-block-total-label">Total tid</span>
+          <span className="tp-block-total-label">Total time</span>
           <span className="tp-block-total-value">{formatDuration(block.durationMin)}</span>
         </span>
         <span className="tp-block-total">
-          <span className="tp-block-total-label">Total distanse{paceMode === 'time' ? ' (est.)' : ''}</span>
+          <span className="tp-block-total-label">Total distance{paceMode === 'time' ? ' (est.)' : ''}</span>
           <span className="tp-block-total-value">{formatDistance(block.distanceKm)}</span>
         </span>
       </div>

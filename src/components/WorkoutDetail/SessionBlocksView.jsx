@@ -41,7 +41,7 @@ function SectionRow({ section, activityTag }) {
         <div className="session-block-row-head">
           <span className="session-block-row-label">{label}</span>
           <span className="session-block-row-main">
-            {section.exerciseName?.trim() || 'Øvelse'}
+            {section.exerciseName?.trim() || 'Exercise'}
           </span>
         </div>
         <div className="session-block-row-meta">

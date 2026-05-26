@@ -9,14 +9,14 @@ export default function AnalysisToolbar({
 
   return (
     <Toolbar>
-      <ToolbarGroup label="Periode">
+      <ToolbarGroup label="Period">
         {RANGE_OPTIONS.map(option => (
           <Chip key={option.value} active={range === option.value} onClick={() => setRange(option.value)}>
             {option.label}
           </Chip>
         ))}
       </ToolbarGroup>
-      <ToolbarGroup label="Metrikk">
+      <ToolbarGroup label="Metric">
         {METRIC_OPTIONS.map(option => (
           <Chip key={option.value} active={primaryMetric === option.value} onClick={() => setPrimaryMetric(option.value)}>
             {option.shortLabel}

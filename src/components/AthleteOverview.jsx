@@ -93,8 +93,8 @@ export default function AthleteOverview({
       <Page>
         {coachableAthletes.length === 0 ? (
           <EmptyState
-            title="Ingen utøvere"
-            description="Du har ingen utøvere koblet til deg ennå."
+            title="No athletes"
+            description="You have no athletes linked to you yet."
           />
         ) : (
           <div className="tp-athlete-list">
@@ -114,24 +114,24 @@ export default function AthleteOverview({
                     </div>
                     <div className="tp-athlete-row-info">
                       <span className="tp-athlete-row-name">
-                        {athlete.displayName || athlete.email || 'Uten navn'}
+                        {athlete.displayName || athlete.email || 'No name'}
                         {hasAlert && (
                           <span
                             className="tp-athlete-alert-dot"
-                            title="Ingen økter neste uke"
-                            aria-label="Ingen økter neste uke"
+                            title="No sessions next week"
+                            aria-label="No sessions next week"
                           />
                         )}
                       </span>
                       <span className="tp-athlete-row-meta">
                         {hasAlert
-                          ? 'Ingen økter neste uke'
-                          : `${count} økt${count === 1 ? '' : 'er'} neste uke`}
+                          ? 'No sessions next week'
+                          : `${count} session${count === 1 ? '' : 's'} next week`}
                       </span>
                     </div>
                   </div>
                   <div className="tp-athlete-row-side">
-                    {hasAlert && <Badge className="tp-athlete-alert-badge">Mangler plan</Badge>}
+                    {hasAlert && <Badge className="tp-athlete-alert-badge">Missing plan</Badge>}
                     <ChevronRight className="tp-athlete-row-chevron" aria-hidden="true" size={18} />
                   </div>
                 </button>

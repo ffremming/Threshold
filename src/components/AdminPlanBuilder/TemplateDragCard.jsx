@@ -28,8 +28,8 @@ export default function TemplateDragCard({ session, onDragStart, onDragEnd, onAd
               className="pb-card-action pb-card-action--add"
               onClick={event => { event.preventDefault(); event.stopPropagation(); onAdd(session) }}
               draggable={false}
-              title="Legg til i plan"
-              aria-label={`Legg ${session.title} til i plan`}
+              title="Add to plan"
+              aria-label={`Add ${session.title} to plan`}
             >
               <Plus className="pb-btn-icon" aria-hidden="true" strokeWidth={2.2} />
             </button>
@@ -40,8 +40,8 @@ export default function TemplateDragCard({ session, onDragStart, onDragEnd, onAd
               className="pb-card-action"
               onClick={event => { event.preventDefault(); event.stopPropagation(); onEdit(session) }}
               draggable={false}
-              title="Rediger mal"
-              aria-label={`Rediger malen ${session.title}`}
+              title="Edit template"
+              aria-label={`Edit template ${session.title}`}
             >
               <SystemIcon name="edit" className="system-icon" />
             </button>
@@ -52,13 +52,13 @@ export default function TemplateDragCard({ session, onDragStart, onDragEnd, onAd
               className="pb-card-action pb-card-action--danger"
               onClick={event => { event.preventDefault(); event.stopPropagation(); onDelete(session) }}
               draggable={false}
-              title="Slett mal"
-              aria-label={`Slett malen ${session.title}`}
+              title="Delete template"
+              aria-label={`Delete template ${session.title}`}
             >
               <SystemIcon name="delete" className="system-icon" />
             </button>
           ) : null}
-          <span className="pb-card-grip" title="Dra inn i kalender" aria-hidden="true">
+          <span className="pb-card-grip" title="Drag into calendar" aria-hidden="true">
             <GripVertical className="pb-btn-icon" strokeWidth={1.9} />
           </span>
         </div>

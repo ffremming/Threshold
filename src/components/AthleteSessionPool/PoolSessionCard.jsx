@@ -31,10 +31,10 @@ export default function PoolSessionCard({ session, onEdit, onDelete }) {
         </div>
       </div>
       <div className="tp-pool-card-actions">
-        <IconButton ariaLabel="Rediger" onClick={onEdit}>
+        <IconButton ariaLabel="Edit" onClick={onEdit}>
           <SystemIcon name="edit" className="system-icon" />
         </IconButton>
-        <IconButton ariaLabel="Slett" onClick={onDelete}>
+        <IconButton ariaLabel="Delete" onClick={onDelete}>
           <SystemIcon name="delete" className="system-icon" />
         </IconButton>
       </div>

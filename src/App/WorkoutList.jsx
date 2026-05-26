@@ -2,13 +2,13 @@ import { CalendarX } from 'lucide-react'
 import { Section, EmptyState, Stat, WorkoutCard } from '../components/ui'
 
 const TYPE_LABELS = {
-  rolig: 'rolig',
-  molle: 'mølle',
-  terskel: 'terskel',
-  interval: 'intervall',
-  continuous: 'kontinuerlig',
-  styrke: 'styrke',
-  annet: 'annet',
+  rolig: 'easy',
+  molle: 'treadmill',
+  terskel: 'threshold',
+  interval: 'interval',
+  continuous: 'continuous',
+  styrke: 'strength',
+  annet: 'other',
 }
 
 function formatDuration(totalMinutes) {
@@ -16,8 +16,8 @@ function formatDuration(totalMinutes) {
   const hours = Math.floor(totalMinutes / 60)
   const mins = totalMinutes % 60
   if (hours === 0) return `${mins} min`
-  if (mins === 0) return `${hours} t`
-  return `${hours} t ${mins} min`
+  if (mins === 0) return `${hours} h`
+  return `${hours} h ${mins} min`
 }
 
 function buildTypeBreakdown(workouts) {
@@ -42,14 +42,14 @@ function WeekSummary({ workouts, doneCount }) {
   return (
     <Section padded>
       <div className="ah-summary-stats">
-        <Stat label="Planlagt" value={formatDuration(totalMinutes)} />
-        <Stat label="Økter" value={workouts.length} />
-        <Stat label="Fullført" value={`${doneCount}/${workouts.length}`} />
+        <Stat label="Planned" value={formatDuration(totalMinutes)} />
+        <Stat label="Sessions" value={workouts.length} />
+        <Stat label="Completed" value={`${doneCount}/${workouts.length}`} />
       </div>
 
       <div className="ah-summary-progress">
         <div className="ah-summary-progress-meta">
-          <span><span className="tp-num">{progressPct}%</span> fullført</span>
+          <span><span className="tp-num">{progressPct}%</span> completed</span>
           {typeBreakdown && <span className="ah-summary-breakdown">{typeBreakdown}</span>}
         </div>
         <div
@@ -58,7 +58,7 @@ function WeekSummary({ workouts, doneCount }) {
           aria-valuenow={progressPct}
           aria-valuemin={0}
           aria-valuemax={100}
-          aria-label={`${doneCount} av ${workouts.length} økter fullført`}
+          aria-label={`${doneCount} of ${workouts.length} sessions completed`}
         >
           <div className="ah-progress-fill" style={{ width: `${progressPct}%` }} />
         </div>
@@ -78,17 +78,17 @@ export default function WorkoutList({
   setSelectedWorkout,
   handleToggleComplete,
 }) {
-  if (loading) return <EmptyState title="Laster økter…" />
+  if (loading) return <EmptyState title="Loading sessions…" />
 
   if (workouts.length === 0) {
     return (
       <EmptyState
         icon={<CalendarX size={28} aria-hidden="true" />}
-        title="Ingen økter denne uken"
+        title="No sessions this week"
         description={
           canManageWorkouts && activeHomeAthlete?.displayName
-            ? `Ingen økter for ${activeHomeAthlete.displayName}.`
-            : 'Sjekk en annen uke eller spør treneren din.'
+            ? `No sessions for ${activeHomeAthlete.displayName}.`
+            : 'Check another week or ask your coach.'
         }
       />
     )
@@ -106,8 +106,8 @@ export default function WorkoutList({
               title={day.label}
               subtitle={
                 day.workouts.length > 0
-                  ? `${day.workouts.length} økt${day.workouts.length > 1 ? 'er' : ''}`
-                  : 'Hvile'
+                  ? `${day.workouts.length} session${day.workouts.length > 1 ? 's' : ''}`
+                  : 'Rest'
               }
             >
               {day.workouts.length === 0 ? (

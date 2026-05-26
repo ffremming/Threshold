@@ -11,7 +11,7 @@ export default class ErrorBoundary extends Component {
   }
 
   componentDidCatch(error, info) {
-    console.error('Uventet feil i applikasjonen', error, info)
+    console.error('Unexpected error in application', error, info)
   }
 
   handleReload = () => {
@@ -32,9 +32,9 @@ export default class ErrorBoundary extends Component {
         textAlign: 'center',
         fontFamily: 'Inter Tight, system-ui, sans-serif',
       }}>
-        <h1 style={{ fontSize: '1.5rem', margin: 0 }}>Noe gikk galt</h1>
+        <h1 style={{ fontSize: '1.5rem', margin: 0 }}>Something went wrong</h1>
         <p style={{ maxWidth: '34rem', color: '#555' }}>
-          Appen møtte en uventet feil. Last siden på nytt for å fortsette.
+          The app encountered an unexpected error. Reload the page to continue.
         </p>
         <button
           type="button"
@@ -49,7 +49,7 @@ export default class ErrorBoundary extends Component {
             fontSize: '1rem',
           }}
         >
-          Last på nytt
+          Reload
         </button>
       </div>
     )

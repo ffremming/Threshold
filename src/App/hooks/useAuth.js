@@ -37,7 +37,7 @@ export function useAuth() {
         if (cancelled) return
 
         if (!existing) {
-          const fallbackName = user.email?.split('@')[0] || 'bruker'
+          const fallbackName = user.email?.split('@')[0] || 'user'
           await createUserProfile(user.uid, user.email || '', fallbackName, 'athlete')
         }
         if (cancelled) return
@@ -52,7 +52,7 @@ export function useAuth() {
         console.error('Failed to initialize user profile', error)
         if (!cancelled) {
           setUserProfile(null)
-          setProfileError('Kunne ikke laste brukerprofilen. Prøv å laste siden på nytt.')
+          setProfileError('Could not load the user profile. Please try reloading the page.')
           setProfileLoading(false)
         }
       }

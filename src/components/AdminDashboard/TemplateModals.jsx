@@ -8,7 +8,7 @@ function TemplateFormModal({ open, onClose, eyebrow, title, value, onChange, onS
       <form onSubmit={onSave}>
         <WorkoutForm value={value} onChange={onChange} />
         <div className="form-actions form-actions--spaced">
-          <Button variant="secondary" type="button" onClick={onClose}>Avbryt</Button>
+          <Button variant="secondary" type="button" onClick={onClose}>Cancel</Button>
           <Button type="submit">{saveLabel}</Button>
         </div>
       </form>
@@ -21,12 +21,12 @@ export function TemplateEditorModal({ editingTemplate, templateForm, setTemplate
     <TemplateFormModal
       open={editingTemplate !== null}
       onClose={onClose}
-      eyebrow="Øktbank"
-      title={editingTemplate === 'new' ? 'Ny mal' : 'Rediger mal'}
+      eyebrow="Session bank"
+      title={editingTemplate === 'new' ? 'New template' : 'Edit template'}
       value={templateForm}
       onChange={setTemplateForm}
       onSave={onSave}
-      saveLabel="Lagre mal"
+      saveLabel="Save template"
     />
   )
 }
@@ -36,12 +36,12 @@ export function GlobalTemplateEditorModal({ editingGlobalTemplate, globalTemplat
     <TemplateFormModal
       open={editingGlobalTemplate !== null}
       onClose={onClose}
-      eyebrow="Bibliotek"
-      title={editingGlobalTemplate === 'new' ? 'Ny økt i bibliotek' : 'Rediger bibliotekøkt'}
+      eyebrow="Library"
+      title={editingGlobalTemplate === 'new' ? 'New session in library' : 'Edit library session'}
       value={globalTemplateForm}
       onChange={setGlobalTemplateForm}
       onSave={onSave}
-      saveLabel="Lagre i bibliotek"
+      saveLabel="Save to library"
     />
   )
 }

@@ -7,7 +7,7 @@ export function formatPaceLabel(paceSecPerKm) {
 
 export function formatSpeedLabel(speedKmh) {
   if (!speedKmh || speedKmh <= 0) return '–'
-  return `${speedKmh.toFixed(1)} km/t`
+  return `${speedKmh.toFixed(1)} km/h`
 }
 
 export function formatDuration(minutes) {
@@ -15,7 +15,7 @@ export function formatDuration(minutes) {
   if (minutes >= 60) {
     const h = Math.floor(minutes / 60)
     const m = Math.round(minutes % 60)
-    return m > 0 ? `${h}t ${m}m` : `${h}t`
+    return m > 0 ? `${h}h ${m}m` : `${h}h`
   }
   return `${Math.round(minutes)} min`
 }
@@ -27,17 +27,17 @@ export function formatDistance(km) {
 }
 
 export function formatPauseLabel(seconds) {
-  if (!seconds || seconds <= 0) return 'ingen pause'
+  if (!seconds || seconds <= 0) return 'no rest'
   if (seconds >= 60) {
     const mins = Math.floor(seconds / 60)
     const secs = seconds % 60
-    return secs > 0 ? `${mins}m ${secs}s pause` : `${mins} min pause`
+    return secs > 0 ? `${mins}m ${secs}s rest` : `${mins} min rest`
   }
-  return `${seconds}s pause`
+  return `${seconds}s rest`
 }
 
 export function formatLoad(loadKg) {
-  if (!Number.isFinite(loadKg) || loadKg <= 0) return 'kroppsvekt'
+  if (!Number.isFinite(loadKg) || loadKg <= 0) return 'bodyweight'
   const rounded = Number.isInteger(loadKg) ? loadKg : Number(loadKg.toFixed(1))
   return `${rounded} kg`
 }
@@ -45,7 +45,7 @@ export function formatLoad(loadKg) {
 export function formatSetsReps(sets, reps) {
   const s = Math.max(1, Math.round(Number(sets) || 1))
   const r = Math.max(0, Math.round(Number(reps) || 0))
-  return r > 0 ? `${s} × ${r}` : `${s} sett`
+  return r > 0 ? `${s} × ${r}` : `${s} sets`
 }
 
 export function formatSeconds(totalSec) {

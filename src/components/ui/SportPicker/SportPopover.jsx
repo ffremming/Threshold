@@ -13,26 +13,26 @@ export default function SportPopover({
   onClear,
 }) {
   return (
-    <div className="tp-sport-pop" role="dialog" aria-label="Velg sport">
+    <div className="tp-sport-pop" role="dialog" aria-label="Select sport">
       <div className="tp-sport-search-row">
         <input
           ref={inputRef}
           type="search"
           className="tp-sport-search"
-          placeholder="Søk sport…"
+          placeholder="Search sport…"
           value={search}
           onChange={e => setSearch(e.target.value)}
         />
         {selectedTags.length > 0 && (
           <button type="button" className="tp-sport-clear-btn" onClick={onClear}>
-            Tøm ({selectedTags.length})
+            Clear ({selectedTags.length})
           </button>
         )}
       </div>
 
       <div className="tp-sport-list">
         {groupedTags.length === 0 ? (
-          <div className="tp-sport-empty">Ingen sporter matcher «{search}».</div>
+          <div className="tp-sport-empty">No sports match «{search}».</div>
         ) : (
           groupedTags.map(group => (
             <section key={group.value} className="tp-sport-group">

@@ -76,11 +76,11 @@ export default function AddWorkout({ onSave, onClose, initialDate }) {
     <div className="modal-backdrop" onClick={handleBackdrop}>
       <div className="modal add-modal">
         <button className="modal-close" onClick={onClose}><SystemIcon name="close" className="system-icon" /></button>
-        <h2 className="modal-title-h2">Legg til økt</h2>
+        <h2 className="modal-title-h2">Add session</h2>
 
         <form onSubmit={handleSubmit} className="add-form">
           <label>
-            Dato
+            Date
             <input
               type="date"
               value={form.date}
@@ -99,10 +99,10 @@ export default function AddWorkout({ onSave, onClose, initialDate }) {
           </label>
 
           <label>
-            Tittel
+            Title
             <input
               type="text"
-              placeholder="F.eks. Rolig jogg"
+              placeholder="E.g. Easy jog"
               value={form.title}
               onChange={e => set('title', e.target.value)}
               required
@@ -111,8 +111,8 @@ export default function AddWorkout({ onSave, onClose, initialDate }) {
 
           {showIntensityZone && (
             <label>
-              Intensitetssone
-              <div className="field-hint">Velg en eller flere soner</div>
+              Intensity zone
+              <div className="field-hint">Select one or more zones</div>
               <div className="zone-picker">
                 {allowedZones.map(z => (
                   <button
@@ -121,7 +121,7 @@ export default function AddWorkout({ onSave, onClose, initialDate }) {
                     className={`tp-zone-btn tp-zone-${z}${normalizeIntensityZones(form.type, form.intensityZone).includes(z) ? ' is-active' : ''}`}
                     onClick={() => toggleIntensityZone(z)}
                   >
-                    Sone {z}
+                    Zone {z}
                   </button>
                 ))}
               </div>
@@ -138,9 +138,9 @@ export default function AddWorkout({ onSave, onClose, initialDate }) {
           </label>
 
           <label>
-            Beskrivelse / Økt
+            Description / Session
             <textarea
-              placeholder="F.eks. 4 x 1km @ 11.5 km/t, 5:15 pace, 2 min pause"
+              placeholder="E.g. 4 x 1km @ 11.5 km/h, 5:15 pace, 2 min rest"
               value={form.description}
               onChange={e => set('description', e.target.value)}
               rows={3}
@@ -148,10 +148,10 @@ export default function AddWorkout({ onSave, onClose, initialDate }) {
           </label>
 
           <label>
-            Oppvarming
+            Warmup
             <input
               type="text"
-              placeholder="F.eks. 2 km rolig"
+              placeholder="E.g. 2 km easy"
               value={form.warmup}
               onChange={e => set('warmup', e.target.value)}
               required
@@ -159,10 +159,10 @@ export default function AddWorkout({ onSave, onClose, initialDate }) {
           </label>
 
           <label>
-            Nedkjøling
+            Cooldown
             <input
               type="text"
-              placeholder="F.eks. 1 km rolig"
+              placeholder="E.g. 1 km easy"
               value={form.cooldown}
               onChange={e => set('cooldown', e.target.value)}
               required
@@ -170,9 +170,9 @@ export default function AddWorkout({ onSave, onClose, initialDate }) {
           </label>
 
           <label>
-            Notater (valgfritt)
+            Notes (optional)
             <textarea
-              placeholder="Tips, fokuspunkter, utstyr..."
+              placeholder="Tips, focus points, equipment..."
               value={form.notes}
               onChange={e => set('notes', e.target.value)}
               rows={2}
@@ -180,8 +180,8 @@ export default function AddWorkout({ onSave, onClose, initialDate }) {
           </label>
 
           <div className="form-actions">
-            <button type="button" className="btn-cancel" onClick={onClose}>Avbryt</button>
-            <button type="submit" className="btn-save">Lagre økt</button>
+            <button type="button" className="btn-cancel" onClick={onClose}>Cancel</button>
+            <button type="submit" className="btn-save">Save session</button>
           </div>
         </form>
       </div>

@@ -100,9 +100,9 @@ export function blocksToSummary(blocks, activityTag) {
     ? (paceSec) => formatPaceLabel(paceSec)
     : (paceSec) => formatSpeedLabel(paceToSpeed(paceSec))
   return sections.map(s => {
-    const label = SECTION_LABELS[s.kind] || 'Del'
+    const label = SECTION_LABELS[s.kind] || 'Section'
     if (s.kind === 'exercise') {
-      const name = s.exerciseName?.trim() || 'Øvelse'
+      const name = s.exerciseName?.trim() || 'Exercise'
       const parts = [formatSetsReps(s.sets, s.reps)]
       if (s.loadKg > 0) parts.push(formatLoad(s.loadKg))
       if (s.restSec > 0) parts.push(formatPauseLabel(s.restSec))

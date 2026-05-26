@@ -12,8 +12,8 @@ export default function TabContent(p) {
     return (
       <Page>
         <EmptyState
-          title="Ingen utøver valgt"
-          description={tab === 'plan' ? 'Velg en utøver for å administrere treningsplanen.' : 'Velg en utøver for å bruke planverktøyet.'}
+          title="No athlete selected"
+          description={tab === 'plan' ? 'Select an athlete to manage the training plan.' : 'Select an athlete to use the plan builder.'}
         />
       </Page>
     )
@@ -25,10 +25,10 @@ export default function TabContent(p) {
 
   if (tab === 'analysis') {
     if (!selectedAthleteId) {
-      return <Page><EmptyState title="Ingen utøver valgt" description="Velg en utøver for å se analyse." /></Page>
+      return <Page><EmptyState title="No athlete selected" description="Select an athlete to view analysis." /></Page>
     }
     if (p.loadingAnalysis) {
-      return <Page><EmptyState title="Laster analyse…" /></Page>
+      return <Page><EmptyState title="Loading analysis…" /></Page>
     }
     return (
       <AnalysisDashboard
@@ -42,7 +42,7 @@ export default function TabContent(p) {
 
   if (tab === 'tests') {
     if (!selectedAthleteId) {
-      return <Page><EmptyState title="Ingen utøver valgt" description="Velg en utøver for å administrere tester." /></Page>
+      return <Page><EmptyState title="No athlete selected" description="Select an athlete to manage tests." /></Page>
     }
     return (
       <TestingDashboard

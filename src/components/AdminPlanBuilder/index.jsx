@@ -129,7 +129,7 @@ export default function AdminPlanBuilder({
               <button
                 type="button"
                 className="pb-resize-handle"
-                aria-label={`Juster bredde for panel: ${panelId}. Bruk piltastene venstre og høyre.`}
+                aria-label={`Adjust width for panel: ${panelId}. Use left and right arrow keys.`}
                 onPointerDown={event => layout.startResize(panelId, event)}
                 onKeyDown={event => {
                   if (event.key === 'ArrowLeft') {

@@ -24,28 +24,28 @@ export function StrengthSliders({ block, onPatch }) {
   return (
     <div className="tp-block-sliders">
       <label className="tp-block-text-field">
-        <span className="tp-block-text-label">Øvelse</span>
+        <span className="tp-block-text-label">Exercise</span>
         <input
           type="text"
           className="tp-block-text-input"
-          placeholder="F.eks. Knebøy"
+          placeholder="E.g. Squat"
           value={block.exerciseName || ''}
           onChange={(e) => onPatch({ exerciseName: e.target.value })}
         />
       </label>
 
       <SliderRow
-        label="Sett"
+        label="Sets"
         value={Math.max(SETS_MIN, Number(block.sets) || 1)}
         min={SETS_MIN}
         max={SETS_MAX}
         step={SETS_STEP}
-        display={`${Math.max(SETS_MIN, Number(block.sets) || 1)} sett`}
+        display={`${Math.max(SETS_MIN, Number(block.sets) || 1)} sets`}
         onChange={(v) => onPatch({ sets: Math.round(v) })}
       />
 
       <SliderRow
-        label="Repetisjoner"
+        label="Repetitions"
         value={Math.max(STRENGTH_REPS_MIN, Number(block.reps) || 1)}
         min={STRENGTH_REPS_MIN}
         max={STRENGTH_REPS_MAX}
@@ -55,7 +55,7 @@ export function StrengthSliders({ block, onPatch }) {
       />
 
       <SliderRow
-        label="Belastning"
+        label="Load"
         value={Math.min(LOAD_MAX, Math.max(LOAD_MIN, Number(block.loadKg) || 0))}
         min={LOAD_MIN}
         max={LOAD_MAX}
@@ -65,7 +65,7 @@ export function StrengthSliders({ block, onPatch }) {
       />
 
       <SliderRow
-        label="Pause mellom sett"
+        label="Rest between sets"
         value={Math.min(REST_MAX, Math.max(REST_MIN, Number(block.restSec) || 0))}
         min={REST_MIN}
         max={REST_MAX}
@@ -76,7 +76,7 @@ export function StrengthSliders({ block, onPatch }) {
 
       <div className="tp-block-totals">
         <span className="tp-block-total">
-          <span className="tp-block-total-label">Estimert tid</span>
+          <span className="tp-block-total-label">Estimated time</span>
           <span className="tp-block-total-value">{formatDuration(block.durationMin)}</span>
         </span>
       </div>
@@ -90,7 +90,7 @@ export function DurationSliders({ block, onPatch }) {
   return (
     <div className="tp-block-sliders">
       <SliderRow
-        label="Varighet"
+        label="Duration"
         value={Math.min(DURATION_MAX, Math.max(DURATION_MIN, Number(block.durationMin) || DURATION_MIN))}
         min={DURATION_MIN}
         max={DURATION_MAX}

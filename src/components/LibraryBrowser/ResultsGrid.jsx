@@ -15,19 +15,19 @@ export default function ResultsGrid({
   onDeleteGlobal,
 }) {
   if (loading) {
-    return <EmptyState title="Laster bibliotek…" description="Henter globale øktmaler." />
+    return <EmptyState title="Loading library…" description="Fetching global session templates." />
   }
 
   if (filtered.length === 0) {
     return (
       <EmptyState
-        title="Ingen økter matcher filteret"
+        title="No sessions match the filter"
         description={
           globalTemplates.length === 0
-            ? 'Bibliotek-collection er tom. Kjør seed-skriptet (npm run seed-global-templates).'
-            : 'Prøv å fjerne et filter eller endre søket.'
+            ? 'Library collection is empty. Run the seed script (npm run seed-global-templates).'
+            : 'Try removing a filter or changing the search.'
         }
-        action={filtersActive ? <Button variant="secondary" onClick={onClear}>Tøm filter</Button> : null}
+        action={filtersActive ? <Button variant="secondary" onClick={onClear}>Clear filter</Button> : null}
       />
     )
   }
@@ -35,7 +35,7 @@ export default function ResultsGrid({
   return (
     <>
       <div className="tp-results-count">
-        {filtered.length} av {globalTemplates.length} økter
+        {filtered.length} of {globalTemplates.length} sessions
       </div>
       <div className="tp-card-grid">
         {filtered.map(template => {
@@ -51,10 +51,10 @@ export default function ResultsGrid({
                     ? <Check size={16} aria-hidden="true" />
                     : <Plus size={16} aria-hidden="true" />}
                   {pending
-                    ? 'Legger til…'
+                    ? 'Adding…'
                     : inBank
-                      ? 'I øktbanken'
-                      : 'Legg til i øktbank'}
+                      ? 'In session bank'
+                      : 'Add to session bank'}
                 </>
               }
               primaryActive={inBank}

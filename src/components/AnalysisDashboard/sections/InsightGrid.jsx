@@ -12,20 +12,20 @@ export default function InsightGrid({
     <div className="an-insight-grid">
       <Card className="an-insight">
         <header className="an-insight-head">
-          <span className="an-eyebrow">Fokusuke</span>
-          <h3 className="an-insight-title">Uke {focusWeek?.week.week}</h3>
+          <span className="an-eyebrow">Focus week</span>
+          <h3 className="an-insight-title">Week {focusWeek?.week.week}</h3>
         </header>
         <dl className="an-stat-grid">
           <Stat label="Load" value={Math.round(focusWeek?.load || 0)} />
-          <Stat label="Tid" value={formatDurationLabel(Math.round(focusWeek?.duration || 0))} />
-          <Stat label="Distanse" value={formatKmValue(focusWeek?.distance || 0)} />
-          <Stat label="Harde økter" value={focusWeek?.hardSessions || 0} />
+          <Stat label="Time" value={formatDurationLabel(Math.round(focusWeek?.duration || 0))} />
+          <Stat label="Distance" value={formatKmValue(focusWeek?.distance || 0)} />
+          <Stat label="Hard sessions" value={focusWeek?.hardSessions || 0} />
         </dl>
         <div className="an-pill-row">
           <Pill>Strain {strain}</Pill>
-          <Pill>Mekanisk {Math.round(focusWeek?.mechanicalLoad || 0)}</Pill>
+          <Pill>Mechanical {Math.round(focusWeek?.mechanicalLoad || 0)}</Pill>
           {focusWeek?.longestSession ? (
-            <Pill>Lengste {formatDurationLabel(focusWeek.longestSession.duration)}</Pill>
+            <Pill>Longest {formatDurationLabel(focusWeek.longestSession.duration)}</Pill>
           ) : null}
         </div>
       </Card>
@@ -33,22 +33,22 @@ export default function InsightGrid({
       <Card className="an-insight">
         <header className="an-insight-head">
           <span className="an-eyebrow">Peak week</span>
-          <h3 className="an-insight-title">{peakWeek ? getWeekLabel(peakWeek.week) : 'Ingen data'}</h3>
+          <h3 className="an-insight-title">{peakWeek ? getWeekLabel(peakWeek.week) : 'No data'}</h3>
         </header>
         <p className="an-insight-copy">
-          Toppuke på valgt metrikk med {peakWeek ? formatMetricValue(primaryMetric, getWeekMetricValue(peakWeek, primaryMetric)) : '0'}.
+          Peak week on selected metric with {peakWeek ? formatMetricValue(primaryMetric, getWeekMetricValue(peakWeek, primaryMetric)) : '0'}.
         </p>
         <dl className="an-stat-grid">
           <Stat label="Load" value={Math.round(peakWeek?.load || 0)} />
-          <Stat label="Tid" value={formatDurationLabel(Math.round(peakWeek?.duration || 0))} />
-          <Stat label="Harde" value={peakWeek?.hardSessions || 0} />
+          <Stat label="Time" value={formatDurationLabel(Math.round(peakWeek?.duration || 0))} />
+          <Stat label="Hard" value={peakWeek?.hardSessions || 0} />
         </dl>
       </Card>
 
       <Card className="an-insight">
         <header className="an-insight-head">
-          <span className="an-eyebrow">Aktivitetssignatur</span>
-          <h3 className="an-insight-title">Hvor belastningen kommer fra</h3>
+          <span className="an-eyebrow">Activity signature</span>
+          <h3 className="an-insight-title">Where the load comes from</h3>
         </header>
         <div className="an-activity-list">
           {topActivityEntries.length > 0 ? topActivityEntries.map(([activityTag, stats]) => {
@@ -60,8 +60,8 @@ export default function InsightGrid({
                   <ActivityIcon name={activity?.icon || 'annet'} className="tag-icon-svg" />
                 </span>
                 <div className="an-activity-main">
-                  <strong>{activity?.label || 'Annet'}</strong>
-                  <span>{stats.count} økter · {formatDurationLabel(Math.round(stats.duration))}</span>
+                  <strong>{activity?.label || 'Other'}</strong>
+                  <span>{stats.count} sessions · {formatDurationLabel(Math.round(stats.duration))}</span>
                 </div>
                 <div className="an-activity-values">
                   <strong className="tp-num">{loadShare}%</strong>
@@ -69,7 +69,7 @@ export default function InsightGrid({
                 </div>
               </div>
             )
-          }) : <div className="an-empty-mini">Ingen aktivitetsdata</div>}
+          }) : <div className="an-empty-mini">No activity data</div>}
         </div>
       </Card>
     </div>

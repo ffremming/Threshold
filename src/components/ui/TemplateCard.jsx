@@ -12,9 +12,9 @@ import './template-card.css'
 
 /* ── TemplateCard
  * Single template tile used in:
- *   - Bibliotek (global)        — primaryAction = "+ Legg til min øktbank"
- *   - Øktbank (coach's bank)    — primaryAction = "Rediger" + delete
- *   - Bibliotek (admin)         — also shows edit/delete in library
+ *   - Library (global)          — primaryAction = "+ Add to my session bank"
+ *   - Session bank (coach's)    — primaryAction = "Edit" + delete
+ *   - Library (admin)           — also shows edit/delete in library
  * ─────────────────────────────────────────────────────────────────── */
 export function TemplateCard({
   template,
@@ -100,7 +100,7 @@ export function TemplateCard({
             </IconButton>
           )}
           {onDelete && (
-            <IconButton ariaLabel="Slett" onClick={onDelete} size="sm" variant="danger">
+            <IconButton ariaLabel="Delete" onClick={onDelete} size="sm" variant="danger">
               <SystemIcon name="delete" className="system-icon" />
             </IconButton>
           )}

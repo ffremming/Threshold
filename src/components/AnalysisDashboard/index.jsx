@@ -67,7 +67,7 @@ export default function AnalysisDashboard({ weeks, workoutsByWeekKey, currentWee
       />
 
       {!hasData ? (
-        <EmptyState title="Ingen økter i analyseperioden" description="Velg en lengre periode eller en annen utøver for å se data." />
+        <EmptyState title="No sessions in the analysis period" description="Choose a longer period or a different athlete to see data." />
       ) : (
         <>
           <SummaryRow

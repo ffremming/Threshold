@@ -41,7 +41,7 @@ export default function AdminWorkoutSlot({
       <div className="pb-slot-top">
         <span className="pb-card-icon"><ActivityIcon name={icon} className="tag-icon-svg" /></span>
         <div className="pb-slot-actions">
-          <span className="pb-card-grip" title="Dra for å flytte" aria-hidden="true">
+          <span className="pb-card-grip" title="Drag to move" aria-hidden="true">
             <GripVertical size={16} strokeWidth={1.9} />
           </span>
           <button
@@ -49,8 +49,8 @@ export default function AdminWorkoutSlot({
             className="pb-slot-reorder"
             onClick={onMoveUp}
             disabled={index === 0}
-            title="Flytt opp"
-            aria-label="Flytt økt opp"
+            title="Move up"
+            aria-label="Move session up"
           >
             <SystemIcon name="up" className="system-icon" />
           </button>
@@ -59,8 +59,8 @@ export default function AdminWorkoutSlot({
             className="pb-slot-reorder"
             onClick={onMoveDown}
             disabled={index === total - 1}
-            title="Flytt ned"
-            aria-label="Flytt økt ned"
+            title="Move down"
+            aria-label="Move session down"
           >
             <SystemIcon name="down" className="system-icon" />
           </button>
@@ -81,8 +81,8 @@ export default function AdminWorkoutSlot({
           type="button"
           className="pb-slot-reorder"
           onClick={() => onReplace(workout)}
-          title="Bytt ut fra øktbank"
-          aria-label="Bytt ut økt fra øktbank"
+          title="Swap from session bank"
+          aria-label="Swap session from session bank"
         >
           <SystemIcon name="replace" className="system-icon" />
         </button>
@@ -91,7 +91,7 @@ export default function AdminWorkoutSlot({
           className={`pb-slot-check${workout.completed ? ' is-checked' : ''}`}
           onClick={() => onToggleComplete(workout)}
           aria-pressed={workout.completed}
-          aria-label={workout.completed ? 'Marker ikke fullført' : 'Marker fullført'}
+          aria-label={workout.completed ? 'Mark as not completed' : 'Mark as completed'}
         >
           {workout.completed ? <SystemIcon name="check" className="system-icon" /> : null}
         </button>
@@ -99,8 +99,8 @@ export default function AdminWorkoutSlot({
           type="button"
           className="pb-slot-reorder pb-slot-reorder--danger"
           onClick={() => onDelete(workout)}
-          title="Slett"
-          aria-label="Slett økt"
+          title="Delete"
+          aria-label="Delete session"
         >
           <SystemIcon name="delete" className="system-icon" />
         </button>

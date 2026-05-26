@@ -1,9 +1,9 @@
 export const ZONE_COLORS = {
-  1: { bg: '#e8f4fd', border: '#90caf9', text: '#1565c0', label: 'Sone 1' },
-  2: { bg: '#e8f8e8', border: '#81c784', text: '#2e7d32', label: 'Sone 2' },
-  3: { bg: '#fffde7', border: '#fff176', text: '#f57f17', label: 'Sone 3' },
-  4: { bg: '#fff3e0', border: '#ffb74d', text: '#e65100', label: 'Sone 4' },
-  5: { bg: '#fce4ec', border: '#f48fb1', text: '#880e4f', label: 'Sone 5' },
+  1: { bg: '#e8f4fd', border: '#90caf9', text: '#1565c0', label: 'Zone 1' },
+  2: { bg: '#e8f8e8', border: '#81c784', text: '#2e7d32', label: 'Zone 2' },
+  3: { bg: '#fffde7', border: '#fff176', text: '#f57f17', label: 'Zone 3' },
+  4: { bg: '#fff3e0', border: '#ffb74d', text: '#e65100', label: 'Zone 4' },
+  5: { bg: '#fce4ec', border: '#f48fb1', text: '#880e4f', label: 'Zone 5' },
 }
 
 export const TYPE_COLORS = {
@@ -16,8 +16,8 @@ export const TYPE_COLORS = {
 }
 
 export const WORKOUT_TYPES = [
-  { value: 'interval', label: 'Intervall' },
-  { value: 'continuous', label: 'Kontinuerlig' },
+  { value: 'interval', label: 'Interval' },
+  { value: 'continuous', label: 'Continuous' },
 ]
 
 const LEGACY_TYPE_MAP = {
@@ -40,11 +40,11 @@ export const TYPE_ICONS = {
 }
 
 export const ZONE_INFO = {
-  1: { hr: '118–154', rpe: 'Veldig lett', breathing: 'Kan prate uanstrengt' },
-  2: { hr: '155–176', rpe: 'Nokså lett', breathing: 'Kan si lengre setninger relativt uanstrengt' },
-  3: { hr: '177–187', rpe: 'Behagelig anstrengende', breathing: 'Kan si korte setninger' },
-  4: { hr: '188–197', rpe: 'Anstrengende', breathing: 'Kan si noen ord eller svært korte setninger' },
-  5: { hr: '198–215', rpe: 'Veldig anstrengende', breathing: 'Kan kun si ett ord eller to, samtidig som man puster tungt' },
+  1: { hr: '118–154', rpe: 'Very easy', breathing: 'Can talk effortlessly' },
+  2: { hr: '155–176', rpe: 'Fairly easy', breathing: 'Can say longer sentences relatively effortlessly' },
+  3: { hr: '177–187', rpe: 'Comfortably hard', breathing: 'Can say short sentences' },
+  4: { hr: '188–197', rpe: 'Hard', breathing: 'Can say a few words or very short sentences' },
+  5: { hr: '198–215', rpe: 'Very hard', breathing: 'Can only say one or two words while breathing heavily' },
 }
 
 export function hasIntensityZone(_type) {
@@ -87,8 +87,8 @@ export function normalizeIntensityZone(type, intensityZone) {
 
 export function formatIntensityZoneLabel(zones) {
   if (!zones || zones.length === 0) return null
-  if (zones.length === 1) return `Sone ${zones[0]}`
+  if (zones.length === 1) return `Zone ${zones[0]}`
   const contiguous = zones.every((zone, index) => index === 0 || zone === zones[index - 1] + 1)
-  if (contiguous) return `Sone ${zones[0]}-${zones[zones.length - 1]}`
-  return `Sone ${zones.join(', ')}`
+  if (contiguous) return `Zone ${zones[0]}-${zones[zones.length - 1]}`
+  return `Zone ${zones.join(', ')}`
 }

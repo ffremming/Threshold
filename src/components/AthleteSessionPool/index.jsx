@@ -61,7 +61,7 @@ export default function AthleteSessionPool({ coachId, athleteId }) {
   }
 
   async function handleDelete(session) {
-    if (!window.confirm(`Slette økten «${session.title}»?`)) return
+    if (!window.confirm(`Delete the session «${session.title}»?`)) return
     await deleteAthleteSession(session.id)
   }
 
@@ -69,20 +69,20 @@ export default function AthleteSessionPool({ coachId, athleteId }) {
     <div className="tp-athlete-pool">
       <div className="tp-athlete-pool-head">
         <span className="tp-athlete-pool-count">
-          {sessions.length} økt{sessions.length === 1 ? '' : 'er'} i banken
+          {sessions.length} session{sessions.length === 1 ? '' : 's'} in the bank
         </span>
         <Button size="sm" onClick={() => setPickerOpen(true)}>
           <Plus size={15} aria-hidden="true" />
-          Legg til fra bank
+          Add from bank
         </Button>
       </div>
 
       {loading ? (
-        <EmptyState title="Laster økter…" description="Henter utøverens personlige bibliotek." />
+        <EmptyState title="Loading sessions…" description="Fetching the athlete's personal library." />
       ) : sessions.length === 0 ? (
         <EmptyState
-          title="Ingen økter ennå"
-          description="Hent inn økter fra trenerens øktbank for å bygge utøverens personlige bibliotek."
+          title="No sessions yet"
+          description="Pull in sessions from the coach's session bank to build the athlete's personal library."
         />
       ) : (
         <div className="tp-athlete-pool-list">

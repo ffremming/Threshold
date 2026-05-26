@@ -69,11 +69,11 @@ export default function AddFromTemplate({ template, initialDate, onSave, onClose
     <div className="modal-backdrop" onClick={handleBackdrop}>
       <div className="modal add-modal">
         <button className="modal-close" onClick={onClose}><SystemIcon name="close" className="system-icon" /></button>
-        <h2 className="modal-title-h2">Legg til fra øktbank</h2>
+        <h2 className="modal-title-h2">Add from session bank</h2>
 
         <form onSubmit={handleSubmit} className="add-form">
           <label>
-            Dato
+            Date
             <input
               type="date"
               value={form.date}
@@ -92,7 +92,7 @@ export default function AddFromTemplate({ template, initialDate, onSave, onClose
           </label>
 
           <label>
-            Tittel
+            Title
             <input
               type="text"
               value={form.title}
@@ -103,8 +103,8 @@ export default function AddFromTemplate({ template, initialDate, onSave, onClose
 
           {showIntensityZone && (
             <label>
-              Intensitetssone
-              <div className="field-hint">Velg en eller flere soner</div>
+              Intensity zone
+              <div className="field-hint">Select one or more zones</div>
               <div className="zone-picker">
                 {allowedZones.map(z => (
                   <button
@@ -113,7 +113,7 @@ export default function AddFromTemplate({ template, initialDate, onSave, onClose
                     className={`tp-zone-btn tp-zone-${z}${normalizeIntensityZones(form.type, form.intensityZone).includes(z) ? ' is-active' : ''}`}
                     onClick={() => toggleIntensityZone(z)}
                   >
-                    Sone {z}
+                    Zone {z}
                   </button>
                 ))}
               </div>
@@ -130,7 +130,7 @@ export default function AddFromTemplate({ template, initialDate, onSave, onClose
           </label>
 
           <label>
-            Beskrivelse / Økt
+            Description / Session
             <textarea
               value={form.description}
               onChange={e => set('description', e.target.value)}
@@ -140,7 +140,7 @@ export default function AddFromTemplate({ template, initialDate, onSave, onClose
 
           {(form.warmup !== undefined) && (
             <label>
-              Oppvarming
+              Warmup
               <input
                 type="text"
                 value={form.warmup}
@@ -152,7 +152,7 @@ export default function AddFromTemplate({ template, initialDate, onSave, onClose
 
           {(form.cooldown !== undefined) && (
             <label>
-              Nedkjøling
+              Cooldown
               <input
                 type="text"
                 value={form.cooldown}
@@ -163,7 +163,7 @@ export default function AddFromTemplate({ template, initialDate, onSave, onClose
           )}
 
           <label>
-            Notater
+            Notes
             <textarea
               value={form.notes}
               onChange={e => set('notes', e.target.value)}
@@ -172,8 +172,8 @@ export default function AddFromTemplate({ template, initialDate, onSave, onClose
           </label>
 
           <div className="form-actions">
-            <button type="button" className="btn-cancel" onClick={onClose}>Avbryt</button>
-            <button type="submit" className="btn-save">Legg til i plan</button>
+            <button type="button" className="btn-cancel" onClick={onClose}>Cancel</button>
+            <button type="submit" className="btn-save">Add to plan</button>
           </div>
         </form>
       </div>

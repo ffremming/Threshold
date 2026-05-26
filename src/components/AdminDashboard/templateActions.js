@@ -56,7 +56,7 @@ export function createTemplateActions(ctx) {
   }
 
   async function handleDeleteTemplate(template) {
-    if (!window.confirm(`Slett malen "${template.title}"?`)) return
+    if (!window.confirm(`Delete the template "${template.title}"?`)) return
     await deleteDoc(doc(db, 'templates', template.id))
   }
 
@@ -95,7 +95,7 @@ export function createGlobalTemplateActions(ctx) {
 
   async function handleDeleteGlobalTemplate(template) {
     if (!isSuperadmin) return
-    if (!window.confirm(`Slett "${template.title}" fra biblioteket? Coachers kopier beholdes.`)) return
+    if (!window.confirm(`Delete "${template.title}" from the library? Coach copies are kept.`)) return
     await deleteDoc(doc(db, 'globalTemplates', template.id))
   }
 

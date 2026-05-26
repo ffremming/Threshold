@@ -74,7 +74,7 @@ export function Modal({ open, onClose, title, eyebrow, size = 'md', children, fo
               {title && <h2 className="tp-modal-title">{title}</h2>}
             </div>
             {onClose && (
-              <IconButton ariaLabel="Lukk" variant="ghost" onClick={onClose}>
+              <IconButton ariaLabel="Close" variant="ghost" onClick={onClose}>
                 <SystemIcon name="close" className="system-icon" />
               </IconButton>
             )}

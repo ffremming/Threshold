@@ -56,7 +56,7 @@ export function PaceOrSpeedSlider({ unit, paceSecPerKm, speedKmh, onPatch }) {
   if (unit === 'pace') {
     return (
       <SliderRow
-        label="Tempo"
+        label="Pace"
         value={clampPace(paceSecPerKm)}
         min={PACE_MIN}
         max={PACE_MAX}
@@ -69,7 +69,7 @@ export function PaceOrSpeedSlider({ unit, paceSecPerKm, speedKmh, onPatch }) {
   }
   return (
     <SliderRow
-      label="Fart"
+      label="Speed"
       value={speedKmh}
       min={SPEED_MIN}
       max={SPEED_MAX}
@@ -87,7 +87,7 @@ export function EstimatedDistanceRow({ block, activityTag, onChange }) {
   return (
     <div className="tp-block-est-distance">
       <SliderRow
-        label="Estimert distanse per drag (kun statistikk)"
+        label="Estimated distance per rep (statistics only)"
         value={Math.min(EST_DISTANCE_MAX, Math.max(EST_DISTANCE_MIN, perRep))}
         min={EST_DISTANCE_MIN}
         max={EST_DISTANCE_MAX}
@@ -96,7 +96,7 @@ export function EstimatedDistanceRow({ block, activityTag, onChange }) {
         onChange={onChange}
       />
       <p className="tp-block-est-distance-hint">
-        Telles inn i ukentlig distanse for {activityTag || 'aktivitet'}. Påvirker ikke tid.
+        Counted toward weekly distance for {activityTag || 'activity'}. Does not affect time.
       </p>
     </div>
   )

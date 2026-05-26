@@ -20,7 +20,7 @@ export default function ResultsCard({ profile }) {
       setTime('')
       setNote('')
     } catch (err) {
-      window.alert(`Kunne ikke lagre resultatet: ${err.message}`)
+      window.alert(`Could not save the result: ${err.message}`)
     } finally {
       setAdding(false)
     }
@@ -28,11 +28,11 @@ export default function ResultsCard({ profile }) {
 
   async function handleRemove(entry) {
     if (!profile?.uid) return
-    if (!window.confirm('Slette dette resultatet?')) return
+    if (!window.confirm('Delete this result?')) return
     try {
       await removeAthleteResult(profile.uid, entry)
     } catch (err) {
-      window.alert(`Kunne ikke slette resultatet: ${err.message}`)
+      window.alert(`Could not delete the result: ${err.message}`)
     }
   }
 
@@ -41,27 +41,27 @@ export default function ResultsCard({ profile }) {
   return (
     <Card className="tp-athlete-results">
       <div className="tp-athlete-results-form">
-        <Field label="Dato">
+        <Field label="Date">
           <Input type="date" value={date} onChange={e => setDate(e.target.value)} />
         </Field>
-        <Field label="Distanse">
-          <Input value={distance} onChange={e => setDistance(e.target.value)} placeholder="f.eks. 10 km" />
+        <Field label="Distance">
+          <Input value={distance} onChange={e => setDistance(e.target.value)} placeholder="e.g. 10 km" />
         </Field>
-        <Field label="Tid">
-          <Input value={time} onChange={e => setTime(e.target.value)} placeholder="f.eks. 38:42" />
+        <Field label="Time">
+          <Input value={time} onChange={e => setTime(e.target.value)} placeholder="e.g. 38:42" />
         </Field>
-        <Field label="Notat">
-          <Input value={note} onChange={e => setNote(e.target.value)} placeholder="valgfritt" />
+        <Field label="Note">
+          <Input value={note} onChange={e => setNote(e.target.value)} placeholder="optional" />
         </Field>
         <div className="tp-athlete-results-form-actions">
           <Button onClick={handleAdd} disabled={adding || !distance.trim() || !time.trim()}>
-            {adding ? 'Legger til…' : 'Legg til'}
+            {adding ? 'Adding…' : 'Add'}
           </Button>
         </div>
       </div>
 
       {sorted.length === 0 ? (
-        <p className="tp-athlete-results-empty">Ingen resultater logget ennå.</p>
+        <p className="tp-athlete-results-empty">No results logged yet.</p>
       ) : (
         <ul className="tp-athlete-results-list">
           {sorted.map((entry, idx) => (
@@ -72,7 +72,7 @@ export default function ResultsCard({ profile }) {
                 <span className="tp-athlete-result-time">{entry.time}</span>
                 {entry.note && <span className="tp-athlete-result-note">{entry.note}</span>}
               </div>
-              <IconButton ariaLabel="Slett resultat" onClick={() => handleRemove(entry)}>
+              <IconButton ariaLabel="Delete result" onClick={() => handleRemove(entry)}>
                 <Trash2 size={16} aria-hidden="true" />
               </IconButton>
             </li>

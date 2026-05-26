@@ -20,24 +20,24 @@ export default function BankPanel({
   return (
     <aside className="pb-panel pb-panel--bank">
       <BuilderPanelHeader
-        title="Øktvelger"
+        title="Session picker"
         panelId="bank"
         visiblePanelIds={visiblePanelIds}
       >
         {onCreateTemplate && (
           <button type="button" className="pb-mini-btn" onClick={onCreateTemplate}>
             <Plus className="pb-btn-icon" aria-hidden="true" strokeWidth={2} />
-            Ny mal
+            New template
           </button>
         )}
         <button type="button" className="pb-mini-btn" onClick={handleAddBankWindow}>
           <Plus className="pb-btn-icon" aria-hidden="true" strokeWidth={2} />
-          Vindu
+          Window
         </button>
       </BuilderPanelHeader>
 
       {loadingTemplates ? (
-        <div className="pb-empty-state">Laster økter…</div>
+        <div className="pb-empty-state">Loading sessions…</div>
       ) : (
         <div className="pb-bank-grid">
           <BankPickerWindow

@@ -10,4 +10,4 @@ export const WORKOUT_TEMPLATES = [
   ...STYRKE_TEMPLATES,
 ]
 
-export const TEMPLATE_CATEGORIES = ['Alle', ...new Set(WORKOUT_TEMPLATES.map(t => t.category))]
+export const TEMPLATE_CATEGORIES = ['All', ...new Set(WORKOUT_TEMPLATES.map(t => t.category))]

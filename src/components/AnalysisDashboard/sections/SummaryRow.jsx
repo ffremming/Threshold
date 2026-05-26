@@ -15,26 +15,26 @@ export default function SummaryRow({
         highlight
       />
       <SummaryCell
-        label="Trend siste 3 uker"
+        label="Trend last 3 weeks"
         value={formatDelta(trendDelta)}
-        note="Sammenlignet med de tre foregående ukene."
+        note="Compared to the three preceding weeks."
         trend={trendDelta}
       />
       <SummaryCell
         label="Readiness ratio"
         value={focusWeek?.readinessRatio ? focusWeek.readinessRatio.toFixed(2) : '0.00'}
-        note="Akutt/kronisk load. Rundt 0.8–1.3 er ofte robust."
+        note="Acute/chronic load. Around 0.8–1.3 is often robust."
       />
-      <SummaryCell label="Tetthet" value={density} note="Load per time." />
+      <SummaryCell label="Density" value={density} note="Load per hour." />
       <SummaryCell
-        label="Monotoni"
+        label="Monotony"
         value={monotony ? monotony.toFixed(2) : '0.00'}
-        note="Lite variasjon dag til dag → høyere."
+        note="Little day-to-day variation → higher."
       />
       <SummaryCell
-        label="Konsistens"
+        label="Consistency"
         value={`${consistencyScore}%`}
-        note="Andel uker med minst tre økter."
+        note="Share of weeks with at least three sessions."
       />
     </div>
   )

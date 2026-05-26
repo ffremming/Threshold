@@ -20,7 +20,7 @@ export default function FilterBar({
 }) {
   return (
     <Toolbar>
-      <SearchBox value={search} onChange={onSearch} placeholder="Søk økter (tittel, beskrivelse, sport)…" />
+      <SearchBox value={search} onChange={onSearch} placeholder="Search sessions (title, description, sport)…" />
 
       <ToolbarGroup label="Sport">
         <SportPicker
@@ -31,26 +31,26 @@ export default function FilterBar({
         />
       </ToolbarGroup>
 
-      <ToolbarGroup label="Kategori">
-        <Chip active={category === 'Alle'} onClick={() => onCategoryChange('Alle')}>Alle</Chip>
-        {TEMPLATE_CATEGORIES.filter(cat => cat !== 'Alle').map(cat => (
+      <ToolbarGroup label="Category">
+        <Chip active={category === 'All'} onClick={() => onCategoryChange('All')}>All</Chip>
+        {TEMPLATE_CATEGORIES.filter(cat => cat !== 'All').map(cat => (
           <Chip key={cat} active={category === cat} onClick={() => onCategoryChange(cat)}>{cat}</Chip>
         ))}
       </ToolbarGroup>
 
-      <ToolbarGroup label="Sone">
+      <ToolbarGroup label="Zone">
         {INTENSITY_ZONES.map(zone => (
           <button
             key={zone}
             type="button"
             className={`tp-zone-btn tp-zone-${zone}${zoneSet.has(zone) ? ' is-active' : ''}`}
             onClick={() => onToggleZone(zone)}
-          >S{zone}</button>
+          >Z{zone}</button>
         ))}
       </ToolbarGroup>
 
       {filtersActive && (
-        <Button variant="ghost" size="sm" onClick={onClear}>Tøm filter</Button>
+        <Button variant="ghost" size="sm" onClick={onClear}>Clear filter</Button>
       )}
 
       {trailingAction && <div className="tp-toolbar-action">{trailingAction}</div>}

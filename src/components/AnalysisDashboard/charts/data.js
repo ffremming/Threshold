@@ -100,7 +100,7 @@ export function buildActivityStackChartData(labels, weeklyStats) {
 export function buildZoneDoughnutData(zoneTotals) {
   const filtered = Object.entries(zoneTotals).filter(([, value]) => value > 0)
   return {
-    labels: filtered.map(([zone]) => `Sone ${zone}`),
+    labels: filtered.map(([zone]) => `Zone ${zone}`),
     datasets: [{
       data: filtered.map(([, value]) => Math.round(value)),
       backgroundColor: filtered.map(([zone]) => ZONE_COLORS[zone]?.border || '#94a3b8'),

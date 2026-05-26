@@ -1,6 +1,6 @@
 export const TEST_CATEGORIES = [
-  { value: 'styrke',      label: 'Styrke',      description: '1RM, 3RM, hopp, repetisjoner eller tekniske tester.' },
-  { value: 'utholdenhet', label: 'Utholdenhet', description: 'Terskel, VO2, distanse, tid eller pulsbaserte tester.' },
+  { value: 'styrke',      label: 'Strength',  description: '1RM, 3RM, jumps, repetitions, or technical tests.' },
+  { value: 'utholdenhet', label: 'Endurance', description: 'Threshold, VO2, distance, time, or heart-rate based tests.' },
 ]
 
 export const EMPTY_FORM = {

@@ -40,11 +40,11 @@ const kbdStyle = {
 }
 
 const shortcuts = [
-  { id: 'prev', keys: <ArrowLeft size={14} aria-hidden="true" />, desc: 'Forrige uke' },
-  { id: 'next', keys: <ArrowRight size={14} aria-hidden="true" />, desc: 'Neste uke' },
-  { id: 'today', keys: 'T', desc: 'Gå til i dag' },
-  { id: 'help', keys: '?', desc: 'Vis denne hjelpen' },
-  { id: 'esc', keys: 'Esc', desc: 'Lukk denne hjelpen' },
+  { id: 'prev', keys: <ArrowLeft size={14} aria-hidden="true" />, desc: 'Previous week' },
+  { id: 'next', keys: <ArrowRight size={14} aria-hidden="true" />, desc: 'Next week' },
+  { id: 'today', keys: 'T', desc: 'Go to today' },
+  { id: 'help', keys: '?', desc: 'Show this help' },
+  { id: 'esc', keys: 'Esc', desc: 'Close this help' },
 ]
 
 export default function ShortcutsHelp({ onClose }) {
@@ -62,11 +62,11 @@ export default function ShortcutsHelp({ onClose }) {
         onClick={e => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
-        aria-label="Tastatursnarveier"
+        aria-label="Keyboard shortcuts"
         tabIndex={-1}
       >
         <div style={{ fontWeight: 600, marginBottom: 12, fontSize: 16 }}>
-          Tastatursnarveier
+          Keyboard shortcuts
         </div>
         {shortcuts.map(s => (
           <div key={s.id} style={rowStyle}>
@@ -75,7 +75,7 @@ export default function ShortcutsHelp({ onClose }) {
           </div>
         ))}
         <div style={{ marginTop: 12, fontSize: 12, color: '#666' }}>
-          Klikk hvor som helst eller trykk Esc for å lukke.
+          Click anywhere or press Esc to close.
         </div>
       </div>
     </div>

@@ -12,7 +12,7 @@ export default function WorkoutDetailHeader({
 }) {
   return (
     <>
-      <button className="modal-close" onClick={onClose} aria-label="Lukk"><SystemIcon name="close" className="system-icon" /></button>
+      <button className="modal-close" onClick={onClose} aria-label="Close"><SystemIcon name="close" className="system-icon" /></button>
 
       <div className="modal-header">
         <span className="modal-icon"><ActivityIcon name={icon} className="ui-icon" /></span>

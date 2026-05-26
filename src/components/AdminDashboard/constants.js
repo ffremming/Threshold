@@ -6,7 +6,7 @@ import {
 } from '../../utils'
 
 export const EMPTY_TEMPLATE = {
-  category: 'Intervall',
+  category: 'Interval',
   type: 'interval',
   title: '',
   description: '',
@@ -25,9 +25,9 @@ export const EMPTY_TEMPLATE = {
 }
 
 export const TAB_ITEMS = [
-  { value: 'plan',     label: 'Ukeplan' },
-  { value: 'oktbank',  label: 'Bibliotek' },
-  { value: 'builder',  label: 'Planverktøy' },
-  { value: 'analysis', label: 'Analyse' },
-  { value: 'tests',    label: 'Tester' },
+  { value: 'plan',     label: 'Week plan' },
+  { value: 'oktbank',  label: 'Library' },
+  { value: 'builder',  label: 'Plan builder' },
+  { value: 'analysis', label: 'Analysis' },
+  { value: 'tests',    label: 'Tests' },
 ]

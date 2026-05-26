@@ -33,7 +33,7 @@ export default function SportTrigger({ open, selectedTags, triggerLabel, onToggl
               onClear()
             }
           }}
-          aria-label="Tøm sport-filter"
+          aria-label="Clear sport filter"
         >
           ×
         </span>

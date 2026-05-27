@@ -2,7 +2,7 @@ import './tabs.css'
 
 export function Tabs({ value, onChange, items, ariaLabel = 'Navigasjon' }) {
   return (
-    <div role="tablist" aria-label={ariaLabel} className="tp-tablist">
+    <div role="tablist" aria-label={ariaLabel} className="th-tablist">
       {items.map(item => {
         const active = value === item.value
         return (
@@ -12,7 +12,7 @@ export function Tabs({ value, onChange, items, ariaLabel = 'Navigasjon' }) {
             role="tab"
             aria-selected={active}
             tabIndex={active ? 0 : -1}
-            className="tp-tab"
+            className="th-tab"
             onClick={() => onChange(item.value)}
           >
             {item.label}

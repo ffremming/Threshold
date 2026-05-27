@@ -24,8 +24,8 @@ export default function SessionEditModal({ session, onClose, onSave }) {
         </>
       }
     >
-      <div className="tp-pool-edit">
-        <div className="tp-pool-edit-grid">
+      <div className="th-pool-edit">
+        <div className="th-pool-edit-grid">
           <Field label="Title">
             <Input value={draft.title || ''} onChange={e => patch('title', e.target.value)} />
           </Field>

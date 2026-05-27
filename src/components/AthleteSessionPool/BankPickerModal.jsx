@@ -21,7 +21,7 @@ export default function BankPickerModal({ bankTemplates, onClose, onPick }) {
       title="Select session from the bank"
       size="lg"
     >
-      <div className="tp-pool-picker">
+      <div className="th-pool-picker">
         <Input
           type="search"
           placeholder="Search the bank…"
@@ -31,7 +31,7 @@ export default function BankPickerModal({ bankTemplates, onClose, onPick }) {
         {filtered.length === 0 ? (
           <EmptyState title="No matches" description="Try adjusting your search." />
         ) : (
-          <div className="tp-pool-picker-grid">
+          <div className="th-pool-picker-grid">
             {filtered.map(template => (
               <TemplateCard
                 key={template.id}

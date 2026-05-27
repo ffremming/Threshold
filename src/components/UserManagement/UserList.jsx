@@ -52,7 +52,7 @@ export default function UserList({ users, loading, onSelectUser }) {
         )}
 
         {loading ? (
-          <Card aria-busy="true" style={{ padding: 'var(--tp-space-5)', textAlign: 'center', color: 'var(--tp-ink-muted)' }}>
+          <Card aria-busy="true" style={{ padding: 'var(--th-space-5)', textAlign: 'center', color: 'var(--th-ink-muted)' }}>
             Loading users…
           </Card>
         ) : users.length === 0 ? (
@@ -68,20 +68,20 @@ export default function UserList({ users, loading, onSelectUser }) {
             description={`Found no users matching «${search}».`}
           />
         ) : (
-          <List className="tp-um-list">
+          <List className="th-um-list">
             {sorted.map(u => (
               <List.Row key={u.uid} onClick={() => onSelectUser(u)} columns="1fr auto auto">
-                <div className="tp-um-user">
-                  <span className="tp-um-avatar" aria-hidden="true">{initialOf(u)}</span>
-                  <span className="tp-um-user-meta">
-                    <span className="tp-um-name">{u.displayName || 'No name'}</span>
-                    <span className="tp-um-email">{u.email}</span>
+                <div className="th-um-user">
+                  <span className="th-um-avatar" aria-hidden="true">{initialOf(u)}</span>
+                  <span className="th-um-user-meta">
+                    <span className="th-um-name">{u.displayName || 'No name'}</span>
+                    <span className="th-um-email">{u.email}</span>
                   </span>
                 </div>
-                <span className="tp-um-roles">
+                <span className="th-um-roles">
                   {getUserRoles(u).map(role => <RoleChip key={role} role={role} />)}
                 </span>
-                <ChevronRight size={16} aria-hidden="true" style={{ color: 'var(--tp-ink-muted)' }} />
+                <ChevronRight size={16} aria-hidden="true" style={{ color: 'var(--th-ink-muted)' }} />
               </List.Row>
             ))}
           </List>

@@ -2,25 +2,25 @@ import { cx } from './index'
 import './toolbar.css'
 
 export function Toolbar({ children, className }) {
-  return <div className={cx('tp-toolbar', className)}>{children}</div>
+  return <div className={cx('th-toolbar', className)}>{children}</div>
 }
 
 export function ToolbarGroup({ label, children, className }) {
   return (
-    <div className={cx('tp-toolbar-group', className)}>
-      {label && <span className="tp-toolbar-label">{label}</span>}
-      <div className="tp-toolbar-items">{children}</div>
+    <div className={cx('th-toolbar-group', className)}>
+      {label && <span className="th-toolbar-label">{label}</span>}
+      <div className="th-toolbar-items">{children}</div>
     </div>
   )
 }
 
 export function SearchBox({ value, onChange, placeholder = 'Search…', className }) {
   return (
-    <div className={cx('tp-searchbox', className)}>
-      <span className="tp-searchbox-icon" aria-hidden="true">⌕</span>
+    <div className={cx('th-searchbox', className)}>
+      <span className="th-searchbox-icon" aria-hidden="true">⌕</span>
       <input
         type="search"
-        className="tp-searchbox-input"
+        className="th-searchbox-input"
         placeholder={placeholder}
         value={value}
         onChange={e => onChange(e.target.value)}
@@ -28,7 +28,7 @@ export function SearchBox({ value, onChange, placeholder = 'Search…', classNam
       {value && (
         <button
           type="button"
-          className="tp-searchbox-clear"
+          className="th-searchbox-clear"
           onClick={() => onChange('')}
           aria-label="Clear search"
         >×</button>

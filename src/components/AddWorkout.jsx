@@ -118,7 +118,7 @@ export default function AddWorkout({ onSave, onClose, initialDate }) {
                   <button
                     key={z}
                     type="button"
-                    className={`tp-zone-btn tp-zone-${z}${normalizeIntensityZones(form.type, form.intensityZone).includes(z) ? ' is-active' : ''}`}
+                    className={`th-zone-btn th-zone-${z}${normalizeIntensityZones(form.type, form.intensityZone).includes(z) ? ' is-active' : ''}`}
                     onClick={() => toggleIntensityZone(z)}
                   >
                     Zone {z}

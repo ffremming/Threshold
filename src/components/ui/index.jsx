@@ -14,10 +14,10 @@ export const Button = forwardRef(function Button(
       ref={ref}
       type={type}
       className={cx(
-        'tp-btn',
-        variant !== 'primary' && `tp-btn--${variant}`,
-        size !== 'md' && `tp-btn--${size}`,
-        block && 'tp-btn--block',
+        'th-btn',
+        variant !== 'primary' && `th-btn--${variant}`,
+        size !== 'md' && `th-btn--${size}`,
+        block && 'th-btn--block',
         className,
       )}
       {...rest}
@@ -36,9 +36,9 @@ export const IconButton = forwardRef(function IconButton(
       type={type}
       aria-label={ariaLabel}
       className={cx(
-        'tp-icon-btn',
-        variant && `tp-icon-btn--${variant}`,
-        size && `tp-icon-btn--${size}`,
+        'th-icon-btn',
+        variant && `th-icon-btn--${variant}`,
+        size && `th-icon-btn--${size}`,
         className,
       )}
       {...rest}
@@ -52,7 +52,7 @@ export const IconButton = forwardRef(function IconButton(
 export function Card({ as: Tag = 'div', flush, inset, className, ...rest }) {
   return (
     <Tag
-      className={cx('tp-card', flush && 'tp-card--flush', inset && 'tp-card--inset', className)}
+      className={cx('th-card', flush && 'th-card--flush', inset && 'th-card--inset', className)}
       {...rest}
     />
   )
@@ -61,26 +61,26 @@ export function Card({ as: Tag = 'div', flush, inset, className, ...rest }) {
 /* ── Field + controls ──────────────────────────────────────────── */
 export function Field({ label, hint, error, children, className }) {
   return (
-    <label className={cx('tp-field', className)}>
-      {label && <span className="tp-field-label">{label}</span>}
+    <label className={cx('th-field', className)}>
+      {label && <span className="th-field-label">{label}</span>}
       {children}
       {error
-        ? <span className="tp-field-error">{error}</span>
-        : hint && <span className="tp-field-hint">{hint}</span>}
+        ? <span className="th-field-error">{error}</span>
+        : hint && <span className="th-field-hint">{hint}</span>}
     </label>
   )
 }
 
 export const Input = forwardRef(function Input({ error, className, ...rest }, ref) {
-  return <input ref={ref} className={cx('tp-input', error && 'tp-input--error', className)} {...rest} />
+  return <input ref={ref} className={cx('th-input', error && 'th-input--error', className)} {...rest} />
 })
 
 export const Textarea = forwardRef(function Textarea({ error, className, ...rest }, ref) {
-  return <textarea ref={ref} className={cx('tp-textarea', error && 'tp-textarea--error', className)} {...rest} />
+  return <textarea ref={ref} className={cx('th-textarea', error && 'th-textarea--error', className)} {...rest} />
 })
 
 export const Select = forwardRef(function Select({ className, children, ...rest }, ref) {
-  return <select ref={ref} className={cx('tp-select', className)} {...rest}>{children}</select>
+  return <select ref={ref} className={cx('th-select', className)} {...rest}>{children}</select>
 })
 
 /* ── Chip / Pill / Badge ───────────────────────────────────────── */
@@ -88,7 +88,7 @@ export function Chip({ active, onClick, children, className, ...rest }) {
   return (
     <button
       type="button"
-      className={cx('tp-chip', active && 'is-active', className)}
+      className={cx('th-chip', active && 'is-active', className)}
       aria-pressed={active}
       onClick={onClick}
       {...rest}
@@ -101,7 +101,7 @@ export function Chip({ active, onClick, children, className, ...rest }) {
 export function Pill({ children, className, style, variant }) {
   return (
     <span
-      className={cx('tp-pill', variant && `tp-pill--${variant}`, className)}
+      className={cx('th-pill', variant && `th-pill--${variant}`, className)}
       style={style}
     >
       {children}
@@ -110,39 +110,39 @@ export function Pill({ children, className, style, variant }) {
 }
 
 export function Badge({ children, className }) {
-  return <span className={cx('tp-badge', className)}>{children}</span>
+  return <span className={cx('th-badge', className)}>{children}</span>
 }
 
 /* ── Status pill (semantic alias of Pill) ─────────────────────── */
 export function StatusPill({ status = 'neutral', children, className }) {
-  return <span className={cx('tp-pill', `tp-pill--${status}`, className)}>{children}</span>
+  return <span className={cx('th-pill', `th-pill--${status}`, className)}>{children}</span>
 }
 
 /* ── Label (standalone, no input attached) ────────────────────── */
 export function Label({ children, className, htmlFor }) {
-  return <label className={cx('tp-label', className)} htmlFor={htmlFor}>{children}</label>
+  return <label className={cx('th-label', className)} htmlFor={htmlFor}>{children}</label>
 }
 
 /* ── Stat (KPI block) ─────────────────────────────────────────── */
 export function Stat({ label, value, hint, className }) {
   return (
-    <div className={cx('tp-stat', className)}>
-      {label && <span className="tp-stat-label">{label}</span>}
-      {value !== undefined && <span className="tp-stat-value">{value}</span>}
-      {hint && <span className="tp-stat-hint">{hint}</span>}
+    <div className={cx('th-stat', className)}>
+      {label && <span className="th-stat-label">{label}</span>}
+      {value !== undefined && <span className="th-stat-value">{value}</span>}
+      {hint && <span className="th-stat-hint">{hint}</span>}
     </div>
   )
 }
 
 /* ── List + List.Row (clean tabular list) ────────────────────── */
 export function List({ columns, children, className }) {
-  const style = columns ? { '--tp-list-columns': columns } : undefined
-  return <div className={cx('tp-list', className)} style={style}>{children}</div>
+  const style = columns ? { '--th-list-columns': columns } : undefined
+  return <div className={cx('th-list', className)} style={style}>{children}</div>
 }
 
 List.Header = function ListHeader({ children, columns, className }) {
   const style = columns ? { gridTemplateColumns: columns } : undefined
-  return <div className={cx('tp-list-header', className)} style={style}>{children}</div>
+  return <div className={cx('th-list-header', className)} style={style}>{children}</div>
 }
 
 List.Row = function ListRow({ children, columns, onClick, selected, className }) {
@@ -153,7 +153,7 @@ List.Row = function ListRow({ children, columns, onClick, selected, className })
       tabIndex={onClick ? 0 : undefined}
       onClick={onClick}
       onKeyDown={onClick ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(e) } } : undefined}
-      className={cx('tp-list-row', onClick && 'is-clickable', selected && 'is-selected', className)}
+      className={cx('th-list-row', onClick && 'is-clickable', selected && 'is-selected', className)}
       style={style}
     >
       {children}
@@ -163,7 +163,7 @@ List.Row = function ListRow({ children, columns, onClick, selected, className })
 
 /* ── Divider ───────────────────────────────────────────────────── */
 export function Divider({ className }) {
-  return <hr className={cx('tp-divider', className)} aria-hidden="true" />
+  return <hr className={cx('th-divider', className)} aria-hidden="true" />
 }
 
 /* Re-exports for composites + patterns */

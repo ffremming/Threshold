@@ -13,31 +13,31 @@ export default function SportPopover({
   onClear,
 }) {
   return (
-    <div className="tp-sport-pop" role="dialog" aria-label="Select sport">
-      <div className="tp-sport-search-row">
+    <div className="th-sport-pop" role="dialog" aria-label="Select sport">
+      <div className="th-sport-search-row">
         <input
           ref={inputRef}
           type="search"
-          className="tp-sport-search"
+          className="th-sport-search"
           placeholder="Search sport…"
           value={search}
           onChange={e => setSearch(e.target.value)}
         />
         {selectedTags.length > 0 && (
-          <button type="button" className="tp-sport-clear-btn" onClick={onClear}>
+          <button type="button" className="th-sport-clear-btn" onClick={onClear}>
             Clear ({selectedTags.length})
           </button>
         )}
       </div>
 
-      <div className="tp-sport-list">
+      <div className="th-sport-list">
         {groupedTags.length === 0 ? (
-          <div className="tp-sport-empty">No sports match «{search}».</div>
+          <div className="th-sport-empty">No sports match «{search}».</div>
         ) : (
           groupedTags.map(group => (
-            <section key={group.value} className="tp-sport-group">
-              <header className="tp-sport-group-head">{group.label}</header>
-              <div className="tp-sport-group-items">
+            <section key={group.value} className="th-sport-group">
+              <header className="th-sport-group-head">{group.label}</header>
+              <div className="th-sport-group-items">
                 {group.tags.map(tag => {
                   const isSelected = selectedSet.has(tag.value)
                   const count = counts?.get(tag.value) ?? 0
@@ -47,17 +47,17 @@ export default function SportPopover({
                       type="button"
                       role="option"
                       aria-selected={isSelected}
-                      className={`tp-sport-item${isSelected ? ' is-selected' : ''}`}
+                      className={`th-sport-item${isSelected ? ' is-selected' : ''}`}
                       onClick={() => onToggle(tag.value)}
                     >
-                      <span className="tp-sport-item-icon">
+                      <span className="th-sport-item-icon">
                         <ActivityIcon name={tag.icon} className="tag-icon-svg" />
                       </span>
-                      <span className="tp-sport-item-label">{tag.label}</span>
+                      <span className="th-sport-item-label">{tag.label}</span>
                       {counts && (
-                        <span className="tp-sport-item-count">{count}</span>
+                        <span className="th-sport-item-count">{count}</span>
                       )}
-                      <span className="tp-sport-item-check" aria-hidden="true">
+                      <span className="th-sport-item-check" aria-hidden="true">
                         {isSelected && <Check size={16} />}
                       </span>
                     </button>

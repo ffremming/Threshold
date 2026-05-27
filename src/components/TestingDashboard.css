@@ -1,6 +1,6 @@
 /* TestingDashboard layout */
 
-.td-stats { display: flex; gap: var(--tp-space-6); flex-wrap: wrap; }
+.td-stats { display: flex; gap: var(--th-space-6); flex-wrap: wrap; }
 
 .td-stats--inline {
   justify-content: flex-end;
@@ -9,28 +9,28 @@
 .td-stat { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
 
 .td-stat-value {
-  font-family: var(--tp-font-display);
-  font-size: var(--tp-text-3xl);
+  font-family: var(--th-font-display);
+  font-size: var(--th-text-3xl);
   font-weight: 400;
-  color: var(--tp-ink);
-  line-height: var(--tp-leading-tight);
-  letter-spacing: var(--tp-tracking-tight);
+  color: var(--th-ink);
+  line-height: var(--th-leading-tight);
+  letter-spacing: var(--th-tracking-tight);
   font-variant-numeric: tabular-nums;
 }
 
 .td-stat-label {
-  font-family: var(--tp-font-mono);
-  font-size: var(--tp-text-2xs);
+  font-family: var(--th-font-mono);
+  font-size: var(--th-text-2xs);
   text-transform: uppercase;
-  letter-spacing: var(--tp-tracking-label);
+  letter-spacing: var(--th-tracking-label);
   font-weight: 500;
-  color: var(--tp-ink-muted);
+  color: var(--th-ink-muted);
 }
 
 .td-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 22rem);
-  gap: var(--tp-space-5);
+  gap: var(--th-space-5);
   align-items: flex-start;
 }
 
@@ -38,93 +38,93 @@
   .td-layout { grid-template-columns: 1fr; }
 }
 
-.td-library { display: flex; flex-direction: column; gap: var(--tp-space-4); min-width: 0; }
-.td-editor { position: sticky; top: calc(var(--tp-space-16) + var(--tp-space-4)); }
+.td-library { display: flex; flex-direction: column; gap: var(--th-space-4); min-width: 0; }
+.td-editor { position: sticky; top: calc(var(--th-space-16) + var(--th-space-4)); }
 
 @media (max-width: 960px) {
   .td-editor { position: static; }
 }
 
 .td-eyebrow {
-  font-family: var(--tp-font-mono);
-  font-size: var(--tp-text-2xs);
+  font-family: var(--th-font-mono);
+  font-size: var(--th-text-2xs);
   text-transform: uppercase;
-  letter-spacing: var(--tp-tracking-label);
+  letter-spacing: var(--th-tracking-label);
   font-weight: 500;
-  color: var(--tp-ink-muted);
+  color: var(--th-ink-muted);
 }
 
 .td-editor-head {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: var(--tp-space-3);
-  margin-bottom: var(--tp-space-4);
+  gap: var(--th-space-3);
+  margin-bottom: var(--th-space-4);
 }
 
 .td-editor-title {
-  font-family: var(--tp-font-display);
-  font-size: var(--tp-text-xl);
+  font-family: var(--th-font-display);
+  font-size: var(--th-text-xl);
   font-weight: 400;
-  letter-spacing: var(--tp-tracking-tight);
-  color: var(--tp-ink);
+  letter-spacing: var(--th-tracking-tight);
+  color: var(--th-ink);
   margin: 0;
-  line-height: var(--tp-leading-snug);
+  line-height: var(--th-leading-snug);
 }
 
-.td-form { display: flex; flex-direction: column; gap: var(--tp-space-3); }
+.td-form { display: flex; flex-direction: column; gap: var(--th-space-3); }
 
 .td-form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--tp-space-3);
+  gap: var(--th-space-3);
 }
 
 .td-form-actions {
   display: flex;
   justify-content: flex-end;
-  gap: var(--tp-space-2);
-  margin-top: var(--tp-space-3);
+  gap: var(--th-space-2);
+  margin-top: var(--th-space-3);
 }
 
 .td-group-empty {
-  padding: var(--tp-space-6);
-  font-size: var(--tp-text-sm);
-  color: var(--tp-ink-muted);
+  padding: var(--th-space-6);
+  font-size: var(--th-text-sm);
+  color: var(--th-ink-muted);
   text-align: center;
   background: transparent;
-  border: 1px dashed var(--tp-line-strong);
-  border-radius: var(--tp-radius-lg);
+  border: 1px dashed var(--th-line-strong);
+  border-radius: var(--th-radius-lg);
 }
 
-.td-test-list { display: flex; flex-direction: column; gap: var(--tp-space-3); }
+.td-test-list { display: flex; flex-direction: column; gap: var(--th-space-3); }
 
 .td-test {
   display: flex;
   flex-direction: column;
-  gap: var(--tp-space-3);
-  padding: var(--tp-space-5);
-  background: var(--tp-surface);
-  border: 1px solid var(--tp-line);
-  border-radius: var(--tp-radius-xl);
-  box-shadow: var(--tp-shadow-xs);
+  gap: var(--th-space-3);
+  padding: var(--th-space-5);
+  background: var(--th-surface);
+  border: 1px solid var(--th-line);
+  border-radius: var(--th-radius-xl);
+  box-shadow: var(--th-shadow-xs);
 }
 
 .td-test-head {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: var(--tp-space-3);
+  gap: var(--th-space-3);
 }
 
-.td-test-titles { display: flex; flex-direction: column; gap: var(--tp-space-2); min-width: 0; }
+.td-test-titles { display: flex; flex-direction: column; gap: var(--th-space-2); min-width: 0; }
 
 .td-test-title {
-  font-family: var(--tp-font-sans);
-  font-size: var(--tp-text-md);
+  font-family: var(--th-font-sans);
+  font-size: var(--th-text-md);
   font-weight: 600;
-  letter-spacing: var(--tp-tracking-snug);
-  color: var(--tp-ink);
+  letter-spacing: var(--th-tracking-snug);
+  color: var(--th-ink);
   margin: 0;
   line-height: 1.25;
   word-break: break-word;
@@ -133,31 +133,31 @@
 .td-test-actions {
   display: flex;
   align-items: center;
-  gap: var(--tp-space-2);
+  gap: var(--th-space-2);
   flex-shrink: 0;
 }
 
 .td-test-meta {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: var(--tp-space-3);
+  gap: var(--th-space-3);
   margin: 0;
 }
 
 .td-meta { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 
 .td-meta dt {
-  font-family: var(--tp-font-mono);
-  font-size: var(--tp-text-2xs);
+  font-family: var(--th-font-mono);
+  font-size: var(--th-text-2xs);
   text-transform: uppercase;
-  letter-spacing: var(--tp-tracking-label);
+  letter-spacing: var(--th-tracking-label);
   font-weight: 500;
-  color: var(--tp-ink-muted);
+  color: var(--th-ink-muted);
 }
 
 .td-meta dd {
-  font-size: var(--tp-text-sm);
-  color: var(--tp-ink);
+  font-size: var(--th-text-sm);
+  color: var(--th-ink);
   font-weight: 500;
   margin: 0;
   word-break: break-word;
@@ -165,10 +165,10 @@
 
 .td-test-notes {
   margin: 0;
-  font-size: var(--tp-text-sm);
-  color: var(--tp-ink-muted);
-  line-height: var(--tp-leading-body);
-  padding: var(--tp-space-3) var(--tp-space-4);
-  background: var(--tp-surface-2);
-  border-radius: var(--tp-radius-md);
+  font-size: var(--th-text-sm);
+  color: var(--th-ink-muted);
+  line-height: var(--th-leading-body);
+  padding: var(--th-space-3) var(--th-space-4);
+  background: var(--th-surface-2);
+  border-radius: var(--th-radius-md);
 }

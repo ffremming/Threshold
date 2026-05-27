@@ -14,9 +14,9 @@ export default function CustomFormView({ customForm, setCustomForm, onSubmit, on
       selectedAthlete={nav?.selectedAthlete}
     >
       <Page>
-        <form onSubmit={onSubmit} className="tp-form">
+        <form onSubmit={onSubmit} className="th-form">
           <WorkoutForm value={customForm} onChange={setCustomForm} showScheduleFields />
-          <div className="tp-form-actions">
+          <div className="th-form-actions">
             <Button variant="secondary" type="button" onClick={onCancel}>Cancel</Button>
             <Button type="submit">Add to week {currentWeek}</Button>
           </div>

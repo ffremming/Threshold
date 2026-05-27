@@ -38,7 +38,7 @@ export default function BlockSliders({ block, onChange, activityTag }) {
 function SteadySliders({ block, unit, onPatch }) {
   const speedKmh = paceToSpeed(block.paceSecPerKm)
   return (
-    <div className="tp-block-sliders">
+    <div className="th-block-sliders">
       <SliderRow
         label="Length"
         value={block.distanceKm}
@@ -49,14 +49,14 @@ function SteadySliders({ block, unit, onPatch }) {
         onChange={(v) => onPatch({ distanceKm: Number(v.toFixed(2)) })}
       />
       <PaceOrSpeedSlider unit={unit} paceSecPerKm={block.paceSecPerKm} speedKmh={speedKmh} onPatch={onPatch} />
-      <div className="tp-block-totals">
-        <span className="tp-block-total">
-          <span className="tp-block-total-label">Time</span>
-          <span className="tp-block-total-value">{formatDuration(block.durationMin)}</span>
+      <div className="th-block-totals">
+        <span className="th-block-total">
+          <span className="th-block-total-label">Time</span>
+          <span className="th-block-total-value">{formatDuration(block.durationMin)}</span>
         </span>
-        <span className="tp-block-total">
-          <span className="tp-block-total-label">Distance</span>
-          <span className="tp-block-total-value">{formatDistance(block.distanceKm)}</span>
+        <span className="th-block-total">
+          <span className="th-block-total-label">Distance</span>
+          <span className="th-block-total-value">{formatDistance(block.distanceKm)}</span>
         </span>
       </div>
     </div>

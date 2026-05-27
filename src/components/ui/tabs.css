@@ -1,61 +1,61 @@
 /* Tabs — flat top navbar style.
- * Inside .tp-shell-tabs they sit flush at the top with a bottom border
+ * Inside .th-shell-tabs they sit flush at the top with a bottom border
  * supplied by the wrapper; the active tab gets an inset underline bar. */
 
-.tp-tablist {
+.th-tablist {
   display: flex;
-  gap: var(--tp-space-1);
+  gap: var(--th-space-1);
   overflow-x: auto;
   scrollbar-width: none;
   max-width: 100%;
 }
 
-.tp-tablist::-webkit-scrollbar { display: none; }
+.th-tablist::-webkit-scrollbar { display: none; }
 
-.tp-tab {
+.th-tab {
   appearance: none;
   position: relative;
   border: none;
   background: transparent;
-  color: var(--tp-ink-muted);
-  font-family: var(--tp-font-sans);
-  font-size: var(--tp-text-sm);
+  color: var(--th-ink-muted);
+  font-family: var(--th-font-sans);
+  font-size: var(--th-text-sm);
   font-weight: 500;
-  letter-spacing: var(--tp-tracking-snug);
-  padding: 0 var(--tp-space-4);
+  letter-spacing: var(--th-tracking-snug);
+  padding: 0 var(--th-space-4);
   height: 3rem;
   cursor: pointer;
   white-space: nowrap;
-  transition: color var(--tp-dur-base) var(--tp-ease);
+  transition: color var(--th-dur-base) var(--th-ease);
 }
 
-.tp-tab::after {
+.th-tab::after {
   content: '';
   position: absolute;
-  left: var(--tp-space-3);
-  right: var(--tp-space-3);
+  left: var(--th-space-3);
+  right: var(--th-space-3);
   bottom: -1px;
   height: 2px;
-  background: var(--tp-accent);
+  background: var(--th-accent);
   border-radius: 2px 2px 0 0;
   transform: scaleX(0);
   transform-origin: center;
-  transition: transform var(--tp-dur-base) var(--tp-ease);
+  transition: transform var(--th-dur-base) var(--th-ease);
 }
 
-.tp-tab:hover { color: var(--tp-ink); }
+.th-tab:hover { color: var(--th-ink); }
 
-.tp-tab[aria-selected='true'] {
-  color: var(--tp-accent);
+.th-tab[aria-selected='true'] {
+  color: var(--th-accent);
   font-weight: 600;
 }
 
-.tp-tab[aria-selected='true']::after {
+.th-tab[aria-selected='true']::after {
   transform: scaleX(1);
 }
 
-.tp-tab:focus-visible {
+.th-tab:focus-visible {
   outline: none;
-  box-shadow: inset 0 0 0 2px var(--tp-accent-ring);
-  border-radius: var(--tp-radius-sm);
+  box-shadow: inset 0 0 0 2px var(--th-accent-ring);
+  border-radius: var(--th-radius-sm);
 }

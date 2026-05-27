@@ -5,140 +5,140 @@
  * Electric Blue accent + Inter-only modern type system.
  *
  * Five intensity zones preserved (semantic — encodes training data).
- * Old --tp-* names kept as source of truth so existing components
+ * Old --th-* names kept as source of truth so existing components
  * inherit the new aesthetic without code changes.
  * ──────────────────────────────────────────────────────────────────── */
 
 :root {
   /* ── Base palette ───────────────────────────────────────────────── */
-  --tp-bg:        #FAFAFA;   /* warmer off-white canvas */
-  --tp-surface:   #FFFFFF;   /* elevated card surface */
-  --tp-surface-2: #F1F5F9;   /* muted inset (slate-100) */
-  --tp-ink:       #0F172A;   /* deep slate, not pure black */
-  --tp-ink-muted: #64748B;   /* slate-500 — secondary text */
-  --tp-ink-soft:  #94A3B8;   /* slate-400 — placeholders */
+  --th-bg:        #FAFAFA;   /* warmer off-white canvas */
+  --th-surface:   #FFFFFF;   /* elevated card surface */
+  --th-surface-2: #F1F5F9;   /* muted inset (slate-100) */
+  --th-ink:       #0F172A;   /* deep slate, not pure black */
+  --th-ink-muted: #64748B;   /* slate-500 — secondary text */
+  --th-ink-soft:  #94A3B8;   /* slate-400 — placeholders */
 
   /* ── Accent (Electric Blue) — the heartbeat ─────────────────────── */
-  --tp-accent:           #0052FF;
-  --tp-accent-hover:     #003ECC;
-  --tp-accent-secondary: #4D7CFF;   /* gradient endpoint */
-  --tp-accent-soft:      color-mix(in srgb, var(--tp-accent) 8%, transparent);
-  --tp-accent-ring:      color-mix(in srgb, var(--tp-accent) 35%, transparent);
-  --tp-on-accent:        #FFFFFF;
+  --th-accent:           #0052FF;
+  --th-accent-hover:     #003ECC;
+  --th-accent-secondary: #4D7CFF;   /* gradient endpoint */
+  --th-accent-soft:      color-mix(in srgb, var(--th-accent) 8%, transparent);
+  --th-accent-ring:      color-mix(in srgb, var(--th-accent) 35%, transparent);
+  --th-on-accent:        #FFFFFF;
 
   /* The signature gradient — used everywhere accent has presence */
-  --tp-gradient: linear-gradient(135deg, var(--tp-accent), var(--tp-accent-secondary));
-  --tp-gradient-h: linear-gradient(to right, var(--tp-accent), var(--tp-accent-secondary));
+  --th-gradient: linear-gradient(135deg, var(--th-accent), var(--th-accent-secondary));
+  --th-gradient-h: linear-gradient(to right, var(--th-accent), var(--th-accent-secondary));
 
   /* ── Intensity zones (5) — semantic, preserved ──────────────────── */
-  --tp-zone-1:    #6cb4d8;
-  --tp-zone-2:    #6fbe83;
-  --tp-zone-3:    #ddb340;
-  --tp-zone-4:    #df7d3a;
-  --tp-zone-5:    #c4523f;
+  --th-zone-1:    #6cb4d8;
+  --th-zone-2:    #6fbe83;
+  --th-zone-3:    #ddb340;
+  --th-zone-4:    #df7d3a;
+  --th-zone-5:    #c4523f;
 
   /* ── Derived surfaces ───────────────────────────────────────────── */
-  --tp-line:        #E2E8F0;   /* slate-200 */
-  --tp-line-strong: #CBD5E1;   /* slate-300 */
-  --tp-hover:       color-mix(in srgb, var(--tp-ink) 4%, transparent);
-  --tp-pressed:     color-mix(in srgb, var(--tp-ink) 8%, transparent);
-  --tp-overlay:     color-mix(in srgb, var(--tp-ink) 55%, transparent);
-  --tp-focus:       var(--tp-accent-ring);
+  --th-line:        #E2E8F0;   /* slate-200 */
+  --th-line-strong: #CBD5E1;   /* slate-300 */
+  --th-hover:       color-mix(in srgb, var(--th-ink) 4%, transparent);
+  --th-pressed:     color-mix(in srgb, var(--th-ink) 8%, transparent);
+  --th-overlay:     color-mix(in srgb, var(--th-ink) 55%, transparent);
+  --th-focus:       var(--th-accent-ring);
 
   /* ── Status colors ──────────────────────────────────────────────── */
-  --tp-success:     #16a34a;
-  --tp-success-bg:  #ecfdf5;
-  --tp-warning:     #c2410c;
-  --tp-warning-bg:  #fff7ed;
-  --tp-danger:      #dc2626;
-  --tp-danger-bg:   #fef2f2;
-  --tp-info:        var(--tp-accent);
-  --tp-info-bg:     var(--tp-accent-soft);
+  --th-success:     #16a34a;
+  --th-success-bg:  #ecfdf5;
+  --th-warning:     #c2410c;
+  --th-warning-bg:  #fff7ed;
+  --th-danger:      #dc2626;
+  --th-danger-bg:   #fef2f2;
+  --th-info:        var(--th-accent);
+  --th-info-bg:     var(--th-accent-soft);
 
   /* ── Type — unified modern sans ─────────────────────────────────── */
-  --tp-font-sans:    'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-  --tp-font-display: var(--tp-font-sans);
-  --tp-font-mono:    'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --th-font-sans:    'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --th-font-display: var(--th-font-sans);
+  --th-font-mono:    'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 
-  --tp-text-2xs: 0.6875rem;
-  --tp-text-xs:  0.75rem;
-  --tp-text-sm:  0.8125rem;
-  --tp-text-md:  0.9375rem;
-  --tp-text-lg:  1.0625rem;
-  --tp-text-xl:  1.25rem;
-  --tp-text-2xl: 1.5rem;
-  --tp-text-3xl: 1.875rem;
-  --tp-text-4xl: 2.5rem;
-  --tp-text-5xl: 3.5rem;
-  --tp-text-display: clamp(2.75rem, 6vw, 5.25rem);
+  --th-text-2xs: 0.6875rem;
+  --th-text-xs:  0.75rem;
+  --th-text-sm:  0.8125rem;
+  --th-text-md:  0.9375rem;
+  --th-text-lg:  1.0625rem;
+  --th-text-xl:  1.25rem;
+  --th-text-2xl: 1.5rem;
+  --th-text-3xl: 1.875rem;
+  --th-text-4xl: 2.5rem;
+  --th-text-5xl: 3.5rem;
+  --th-text-display: clamp(2.75rem, 6vw, 5.25rem);
 
-  --tp-leading-tight: 1.05;
-  --tp-leading-snug:  1.15;
-  --tp-leading-body:  1.625;
+  --th-leading-tight: 1.05;
+  --th-leading-snug:  1.15;
+  --th-leading-body:  1.625;
 
-  --tp-tracking-tight: -0.02em;
-  --tp-tracking-snug:  -0.01em;
-  --tp-tracking-normal: 0;
-  --tp-tracking-wide:  0.04em;
-  --tp-tracking-label: 0.15em;   /* mono section labels */
+  --th-tracking-tight: -0.02em;
+  --th-tracking-snug:  -0.01em;
+  --th-tracking-normal: 0;
+  --th-tracking-wide:  0.04em;
+  --th-tracking-label: 0.15em;   /* mono section labels */
 
   /* ── Spacing ────────────────────────────────────────────────────── */
-  --tp-space-1:  0.25rem;
-  --tp-space-2:  0.5rem;
-  --tp-space-3:  0.75rem;
-  --tp-space-4:  1rem;
-  --tp-space-5:  1.25rem;
-  --tp-space-6:  1.5rem;
-  --tp-space-8:  2rem;
-  --tp-space-10: 2.5rem;
-  --tp-space-12: 3rem;
-  --tp-space-16: 4rem;
-  --tp-space-20: 5rem;
-  --tp-space-28: 7rem;
+  --th-space-1:  0.25rem;
+  --th-space-2:  0.5rem;
+  --th-space-3:  0.75rem;
+  --th-space-4:  1rem;
+  --th-space-5:  1.25rem;
+  --th-space-6:  1.5rem;
+  --th-space-8:  2rem;
+  --th-space-10: 2.5rem;
+  --th-space-12: 3rem;
+  --th-space-16: 4rem;
+  --th-space-20: 5rem;
+  --th-space-28: 7rem;
 
   /* ── Radii — more generous than before ──────────────────────────── */
-  --tp-radius-xs:   4px;
-  --tp-radius-sm:   6px;
-  --tp-radius-md:   8px;
-  --tp-radius-lg:   12px;
-  --tp-radius-xl:   16px;
-  --tp-radius-2xl:  20px;
-  --tp-radius-pill: 999px;
+  --th-radius-xs:   4px;
+  --th-radius-sm:   6px;
+  --th-radius-md:   8px;
+  --th-radius-lg:   12px;
+  --th-radius-xl:   16px;
+  --th-radius-2xl:  20px;
+  --th-radius-pill: 999px;
 
   /* ── Elevation — layered, accent-tinted on prominence ───────────── */
-  --tp-shadow-xs:  0 1px 2px rgba(15, 23, 42, 0.04);
-  --tp-shadow-sm:  0 1px 3px rgba(15, 23, 42, 0.06);
-  --tp-shadow-md:  0 4px 12px rgba(15, 23, 42, 0.08);
-  --tp-shadow-lg:  0 10px 25px rgba(15, 23, 42, 0.10);
-  --tp-shadow-xl:  0 20px 40px rgba(15, 23, 42, 0.12);
-  --tp-shadow-accent:    0 4px 14px rgba(0, 82, 255, 0.25);
-  --tp-shadow-accent-lg: 0 12px 32px rgba(0, 82, 255, 0.35);
+  --th-shadow-xs:  0 1px 2px rgba(15, 23, 42, 0.04);
+  --th-shadow-sm:  0 1px 3px rgba(15, 23, 42, 0.06);
+  --th-shadow-md:  0 4px 12px rgba(15, 23, 42, 0.08);
+  --th-shadow-lg:  0 10px 25px rgba(15, 23, 42, 0.10);
+  --th-shadow-xl:  0 20px 40px rgba(15, 23, 42, 0.12);
+  --th-shadow-accent:    0 4px 14px rgba(0, 82, 255, 0.25);
+  --th-shadow-accent-lg: 0 12px 32px rgba(0, 82, 255, 0.35);
 
   /* ── Motion ─────────────────────────────────────────────────────── */
-  --tp-ease:     cubic-bezier(0.16, 1, 0.3, 1);  /* design system spec */
-  --tp-ease-out: var(--tp-ease);
-  --tp-dur-fast: 150ms;
-  --tp-dur-base: 200ms;
-  --tp-dur-slow: 300ms;
-  --tp-dur-enter: 700ms;
+  --th-ease:     cubic-bezier(0.16, 1, 0.3, 1);  /* design system spec */
+  --th-ease-out: var(--th-ease);
+  --th-dur-fast: 150ms;
+  --th-dur-base: 200ms;
+  --th-dur-slow: 300ms;
+  --th-dur-enter: 700ms;
 
   /* ── Z-index ────────────────────────────────────────────────────── */
-  --tp-z-sticky:   20;
-  --tp-z-elevated: 30;
-  --tp-z-overlay:  50;
-  --tp-z-modal:    60;
+  --th-z-sticky:   20;
+  --th-z-elevated: 30;
+  --th-z-overlay:  50;
+  --th-z-modal:    60;
 
   /* ── Legacy aliases ─────────────────────────────────────────────── */
-  --tp-bg-elev:     var(--tp-surface);
-  --tp-bg-sunken:   var(--tp-surface-2);
-  --tp-ink-onbrand: var(--tp-on-accent);
-  --tp-brand-600:   var(--tp-accent);
+  --th-bg-elev:     var(--th-surface);
+  --th-bg-sunken:   var(--th-surface-2);
+  --th-ink-onbrand: var(--th-on-accent);
+  --th-brand-600:   var(--th-accent);
 }
 
 html, body {
-  font-family: var(--tp-font-sans);
-  background: var(--tp-bg);
-  color: var(--tp-ink);
+  font-family: var(--th-font-sans);
+  background: var(--th-bg);
+  color: var(--th-ink);
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -153,7 +153,7 @@ html, body {
 
 button { font: inherit; color: inherit; }
 
-::selection { background: var(--tp-accent); color: var(--tp-on-accent); }
+::selection { background: var(--th-accent); color: var(--th-on-accent); }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
@@ -164,17 +164,17 @@ button { font: inherit; color: inherit; }
 }
 
 /* Tabular / mono numeric utilities (kept from old system) */
-.tp-num {
-  font-family: var(--tp-font-mono);
+.th-num {
+  font-family: var(--th-font-mono);
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.02em;
 }
 
-.tp-tnum { font-variant-numeric: tabular-nums; }
+.th-tnum { font-variant-numeric: tabular-nums; }
 
 /* ── Gradient text — signature treatment for hero words ──────────── */
-.tp-gradient-text {
-  background: var(--tp-gradient-h);
+.th-gradient-text {
+  background: var(--th-gradient-h);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;

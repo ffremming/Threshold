@@ -88,7 +88,7 @@ export default function OktbankTab({
           <Button variant="ghost" size="sm" onClick={clearAll}>Clear filter</Button>
         )}
         {!pickingFromBank && (
-          <Button onClick={startNewTemplate} className="tp-toolbar-action">
+          <Button onClick={startNewTemplate} className="th-toolbar-action">
             <Plus size={16} strokeWidth={2} aria-hidden="true" />
             New template
           </Button>
@@ -118,8 +118,8 @@ export default function OktbankTab({
         />
       ) : (
         <>
-          <div className="tp-results-count">{filtered.length} of {templates.length} templates</div>
-          <div className="tp-card-grid">
+          <div className="th-results-count">{filtered.length} of {templates.length} templates</div>
+          <div className="th-card-grid">
             {filtered.map(template => {
               const canEdit = template.source === 'custom'
               return (

@@ -4,27 +4,27 @@ export default function SportTrigger({ open, selectedTags, triggerLabel, onToggl
   return (
     <button
       type="button"
-      className={`tp-sport-trigger${selectedTags.length ? ' is-active' : ''}`}
+      className={`th-sport-trigger${selectedTags.length ? ' is-active' : ''}`}
       onClick={onToggleOpen}
       aria-haspopup="listbox"
       aria-expanded={open}
     >
-      <span className="tp-sport-trigger-icons" aria-hidden="true">
+      <span className="th-sport-trigger-icons" aria-hidden="true">
         {selectedTags.length === 0 && (
-          <span className="tp-sport-trigger-glyph"><ActivityIcon name="annet" className="tag-icon-svg" /></span>
+          <span className="th-sport-trigger-glyph"><ActivityIcon name="annet" className="tag-icon-svg" /></span>
         )}
         {selectedTags.slice(0, 3).map(tag => (
-          <span key={tag.value} className="tp-sport-trigger-glyph">
+          <span key={tag.value} className="th-sport-trigger-glyph">
             <ActivityIcon name={tag.icon} className="tag-icon-svg" />
           </span>
         ))}
       </span>
-      <span className="tp-sport-trigger-label">{triggerLabel}</span>
+      <span className="th-sport-trigger-label">{triggerLabel}</span>
       {selectedTags.length > 0 && (
         <span
           role="button"
           tabIndex={0}
-          className="tp-sport-trigger-clear"
+          className="th-sport-trigger-clear"
           onClick={e => { e.stopPropagation(); onClear() }}
           onKeyDown={e => {
             if (e.key === 'Enter' || e.key === ' ') {
@@ -38,7 +38,7 @@ export default function SportTrigger({ open, selectedTags, triggerLabel, onToggl
           ×
         </span>
       )}
-      <span className="tp-sport-trigger-caret" aria-hidden="true">▾</span>
+      <span className="th-sport-trigger-caret" aria-hidden="true">▾</span>
     </button>
   )
 }

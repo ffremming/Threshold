@@ -5,120 +5,120 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--tp-space-6);
-  background: var(--tp-bg);
+  padding: var(--th-space-6);
+  background: var(--th-bg);
 }
 
 .ah-status-card {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--tp-space-4);
-  padding: var(--tp-space-10);
-  background: var(--tp-surface);
-  border: 1px solid var(--tp-line);
-  border-radius: var(--tp-radius-2xl);
-  box-shadow: var(--tp-shadow-md);
+  gap: var(--th-space-4);
+  padding: var(--th-space-10);
+  background: var(--th-surface);
+  border: 1px solid var(--th-line);
+  border-radius: var(--th-radius-2xl);
+  box-shadow: var(--th-shadow-md);
   max-width: 24rem;
   text-align: center;
 }
 
 .ah-status-title {
-  font-family: var(--tp-font-display);
-  font-size: var(--tp-text-2xl);
+  font-family: var(--th-font-display);
+  font-size: var(--th-text-2xl);
   font-weight: 400;
   margin: 0;
-  letter-spacing: var(--tp-tracking-tight);
-  color: var(--tp-ink);
+  letter-spacing: var(--th-tracking-tight);
+  color: var(--th-ink);
 }
 
 .ah-status-text {
-  font-size: var(--tp-text-md);
-  color: var(--tp-ink-muted);
+  font-size: var(--th-text-md);
+  color: var(--th-ink-muted);
   margin: 0;
-  line-height: var(--tp-leading-body);
+  line-height: var(--th-leading-body);
 }
 
 /* Weekly summary — three stats + progress bar, lives inside a Section card */
 .ah-summary-stats {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: var(--tp-space-6);
-  padding: var(--tp-space-2) 0 var(--tp-space-5);
-  border-bottom: 1px solid var(--tp-line);
-  margin-bottom: var(--tp-space-5);
+  gap: var(--th-space-6);
+  padding: var(--th-space-2) 0 var(--th-space-5);
+  border-bottom: 1px solid var(--th-line);
+  margin-bottom: var(--th-space-5);
 }
 
 @media (max-width: 600px) {
   .ah-summary-stats {
-    gap: var(--tp-space-4);
+    gap: var(--th-space-4);
   }
 }
 
 .ah-summary-progress {
   display: flex;
   flex-direction: column;
-  gap: var(--tp-space-3);
+  gap: var(--th-space-3);
 }
 
 .ah-summary-progress-meta {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: var(--tp-space-3);
-  font-size: var(--tp-text-sm);
-  color: var(--tp-ink-muted);
+  gap: var(--th-space-3);
+  font-size: var(--th-text-sm);
+  color: var(--th-ink-muted);
   flex-wrap: wrap;
 }
 
-.ah-summary-progress-meta .tp-num {
-  color: var(--tp-ink);
+.ah-summary-progress-meta .th-num {
+  color: var(--th-ink);
   font-weight: 600;
 }
 
 .ah-summary-breakdown {
-  font-size: var(--tp-text-xs);
-  color: var(--tp-ink-soft);
+  font-size: var(--th-text-xs);
+  color: var(--th-ink-soft);
 }
 
 .ah-progress {
   width: 100%;
   height: 8px;
-  background: var(--tp-surface-2);
-  border-radius: var(--tp-radius-pill);
+  background: var(--th-surface-2);
+  border-radius: var(--th-radius-pill);
   overflow: hidden;
 }
 
 .ah-progress-fill {
   height: 100%;
-  background: var(--tp-gradient-h);
-  border-radius: var(--tp-radius-pill);
-  transition: width var(--tp-dur-slow) var(--tp-ease);
+  background: var(--th-gradient-h);
+  border-radius: var(--th-radius-pill);
+  transition: width var(--th-dur-slow) var(--th-ease);
 }
 
 /* Day calendar list */
 .ah-day-list {
   display: flex;
   flex-direction: column;
-  gap: var(--tp-space-5);
+  gap: var(--th-space-5);
 }
 
 .ah-day-stack {
   display: flex;
   flex-direction: column;
-  gap: var(--tp-space-3);
+  gap: var(--th-space-3);
 }
 
 .ah-empty-slot {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--tp-space-5);
+  padding: var(--th-space-5);
   background: transparent;
-  border: 1px dashed var(--tp-line-strong);
-  border-radius: var(--tp-radius-lg);
-  color: var(--tp-ink-soft);
-  font-size: var(--tp-text-sm);
+  border: 1px dashed var(--th-line-strong);
+  border-radius: var(--th-radius-lg);
+  color: var(--th-ink-soft);
+  font-size: var(--th-text-sm);
   font-style: italic;
 }
 
@@ -139,14 +139,14 @@
 }
 
 .ah-loading {
-  padding: var(--tp-space-8);
+  padding: var(--th-space-8);
   text-align: center;
-  color: var(--tp-ink-muted);
+  color: var(--th-ink-muted);
 }
 
 /* Template picker grid (used in TemplatePickerModal) */
 .ah-template-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: var(--tp-space-4);
+  gap: var(--th-space-4);
 }

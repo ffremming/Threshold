@@ -22,12 +22,12 @@ import {
 // Distance and pace are intentionally absent — they make no sense here.
 export function StrengthSliders({ block, onPatch }) {
   return (
-    <div className="tp-block-sliders">
-      <label className="tp-block-text-field">
-        <span className="tp-block-text-label">Exercise</span>
+    <div className="th-block-sliders">
+      <label className="th-block-text-field">
+        <span className="th-block-text-label">Exercise</span>
         <input
           type="text"
-          className="tp-block-text-input"
+          className="th-block-text-input"
           placeholder="E.g. Squat"
           value={block.exerciseName || ''}
           onChange={(e) => onPatch({ exerciseName: e.target.value })}
@@ -74,10 +74,10 @@ export function StrengthSliders({ block, onPatch }) {
         onChange={(v) => onPatch({ restSec: Math.round(v) })}
       />
 
-      <div className="tp-block-totals">
-        <span className="tp-block-total">
-          <span className="tp-block-total-label">Estimated time</span>
-          <span className="tp-block-total-value">{formatDuration(block.durationMin)}</span>
+      <div className="th-block-totals">
+        <span className="th-block-total">
+          <span className="th-block-total-label">Estimated time</span>
+          <span className="th-block-total-value">{formatDuration(block.durationMin)}</span>
         </span>
       </div>
     </div>
@@ -88,7 +88,7 @@ export function StrengthSliders({ block, onPatch }) {
 // warmup & cooldown). Just a single duration slider.
 export function DurationSliders({ block, onPatch }) {
   return (
-    <div className="tp-block-sliders">
+    <div className="th-block-sliders">
       <SliderRow
         label="Duration"
         value={Math.min(DURATION_MAX, Math.max(DURATION_MIN, Number(block.durationMin) || DURATION_MIN))}

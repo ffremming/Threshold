@@ -15,7 +15,7 @@ export const GradientText = forwardRef(function GradientText(
   ref,
 ) {
   return (
-    <Tag ref={ref} className={cn('tp-gradient-text', className)} {...rest}>
+    <Tag ref={ref} className={cn('th-gradient-text', className)} {...rest}>
       {children}
     </Tag>
   )
@@ -24,12 +24,12 @@ export const GradientText = forwardRef(function GradientText(
 /* ── SectionLabel ────────────────────────────────────────────────
  * Pill with a (optionally pulsing) accent dot + uppercase mono caption.
  * Sits above every section headline to create vertical rhythm. */
-const sectionLabelStyles = cva('tp-section-label', {
+const sectionLabelStyles = cva('th-section-label', {
   variants: {
     tone: {
       accent: '',
       muted:
-        '!border-[color:var(--tp-line-strong)] !bg-[color:var(--tp-surface-2)] !text-[color:var(--tp-ink-muted)]',
+        '!border-[color:var(--th-line-strong)] !bg-[color:var(--th-surface-2)] !text-[color:var(--th-ink-muted)]',
     },
   },
   defaultVariants: { tone: 'accent' },
@@ -43,9 +43,9 @@ export const SectionLabel = forwardRef(function SectionLabel(
     <span ref={ref} className={cn(sectionLabelStyles({ tone }), className)} {...rest}>
       <span
         className={cn(
-          'tp-section-label-dot',
+          'th-section-label-dot',
           !pulse && '!animate-none',
-          tone === 'muted' && '!bg-[color:var(--tp-ink-muted)]',
+          tone === 'muted' && '!bg-[color:var(--th-ink-muted)]',
         )}
         aria-hidden="true"
       />
@@ -62,7 +62,7 @@ export const InvertedSection = forwardRef(function InvertedSection(
   ref,
 ) {
   return (
-    <Tag ref={ref} className={cn('tp-inverted', className)} {...rest}>
+    <Tag ref={ref} className={cn('th-inverted', className)} {...rest}>
       {children}
     </Tag>
   )

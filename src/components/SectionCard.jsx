@@ -20,13 +20,13 @@ export default function SectionCard({
     ? section.exerciseName.trim()
     : label
   return (
-    <div className={`tp-block-card tp-block-card--${section.kind}`}>
-      <div className="tp-block-card-head">
-        <span className="tp-block-card-title">{title}</span>
-        <div className="tp-block-card-actions">
+    <div className={`th-block-card th-block-card--${section.kind}`}>
+      <div className="th-block-card-head">
+        <span className="th-block-card-title">{title}</span>
+        <div className="th-block-card-actions">
           <button
             type="button"
-            className="tp-block-card-icon-btn"
+            className="th-block-card-icon-btn"
             onClick={onMoveUp}
             disabled={!canMoveUp}
             aria-label="Move up"
@@ -36,7 +36,7 @@ export default function SectionCard({
           </button>
           <button
             type="button"
-            className="tp-block-card-icon-btn"
+            className="th-block-card-icon-btn"
             onClick={onMoveDown}
             disabled={!canMoveDown}
             aria-label="Move down"
@@ -46,7 +46,7 @@ export default function SectionCard({
           </button>
           <button
             type="button"
-            className="tp-block-card-icon-btn tp-block-card-remove"
+            className="th-block-card-icon-btn th-block-card-remove"
             onClick={onRemove}
             aria-label={`Remove ${label.toLowerCase()}`}
             title="Remove section"

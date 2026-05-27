@@ -57,7 +57,7 @@ export default function UserDetail({
       selectedAthlete={nav?.selectedAthlete}
     >
       <Page>
-        <Card style={{ padding: 'var(--tp-space-4)', display: 'flex', flexWrap: 'wrap', gap: 'var(--tp-space-4)' }}>
+        <Card style={{ padding: 'var(--th-space-4)', display: 'flex', flexWrap: 'wrap', gap: 'var(--th-space-4)' }}>
           <Stat label="Name" value={selectedUser.displayName || 'No name'} />
           <Stat
             label="Email"

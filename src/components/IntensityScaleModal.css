@@ -1,62 +1,62 @@
 .intensity-modal-backdrop { z-index: 200; }
 
 .intensity-modal {
-  padding: var(--tp-space-5) var(--tp-space-4) var(--tp-space-6);
+  padding: var(--th-space-5) var(--th-space-4) var(--th-space-6);
   max-width: 520px;
 }
 
 .intensity-modal-title {
-  font-family: var(--tp-font-display);
-  font-size: var(--tp-text-2xl);
+  font-family: var(--th-font-display);
+  font-size: var(--th-text-2xl);
   font-weight: 400;
-  letter-spacing: var(--tp-tracking-tight);
-  margin: 0 0 var(--tp-space-5) 0;
-  color: var(--tp-ink);
-  line-height: var(--tp-leading-snug);
+  letter-spacing: var(--th-tracking-tight);
+  margin: 0 0 var(--th-space-5) 0;
+  color: var(--th-ink);
+  line-height: var(--th-leading-snug);
 }
 
 .intensity-zone-list {
   display: flex;
   flex-direction: column;
-  gap: var(--tp-space-3);
+  gap: var(--th-space-3);
 }
 
 .intensity-zone {
-  border-radius: var(--tp-radius-lg);
+  border-radius: var(--th-radius-lg);
   overflow: hidden;
-  border: 1px solid var(--tp-line);
-  background: var(--tp-surface);
+  border: 1px solid var(--th-line);
+  background: var(--th-surface);
 }
 
 .intensity-zone-header {
-  padding: var(--tp-space-2) var(--tp-space-3);
-  font-size: var(--tp-text-sm);
+  padding: var(--th-space-2) var(--th-space-3);
+  font-size: var(--th-text-sm);
   font-weight: 600;
-  color: var(--tp-on-accent);
-  background: var(--zone-color, var(--tp-ink));
+  color: var(--th-on-accent);
+  background: var(--zone-color, var(--th-ink));
 }
 
 .intensity-zone-body {
-  padding: var(--tp-space-3) var(--tp-space-3);
+  padding: var(--th-space-3) var(--th-space-3);
   display: flex;
   flex-direction: column;
-  gap: var(--tp-space-2);
-  background: color-mix(in srgb, var(--zone-color, var(--tp-ink)) 8%, var(--tp-surface));
+  gap: var(--th-space-2);
+  background: color-mix(in srgb, var(--zone-color, var(--th-ink)) 8%, var(--th-surface));
 }
 
 .intensity-zone-row {
-  font-size: var(--tp-text-xs);
-  color: var(--tp-ink);
-  line-height: var(--tp-leading-snug);
+  font-size: var(--th-text-xs);
+  color: var(--th-ink);
+  line-height: var(--th-leading-snug);
 }
 
 .intensity-zone-row .intensity-zone-label {
-  font-family: var(--tp-font-mono);
+  font-family: var(--th-font-mono);
   font-weight: 500;
-  color: var(--tp-ink-muted);
-  letter-spacing: var(--tp-tracking-label);
+  color: var(--th-ink-muted);
+  letter-spacing: var(--th-tracking-label);
   text-transform: uppercase;
-  font-size: var(--tp-text-2xs);
+  font-size: var(--th-text-2xs);
   display: block;
   margin-bottom: 2px;
 }

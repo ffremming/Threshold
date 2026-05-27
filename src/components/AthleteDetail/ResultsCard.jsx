@@ -39,8 +39,8 @@ export default function ResultsCard({ profile }) {
   const sorted = [...results].sort((a, b) => (b.date || '').localeCompare(a.date || ''))
 
   return (
-    <Card className="tp-athlete-results">
-      <div className="tp-athlete-results-form">
+    <Card className="th-athlete-results">
+      <div className="th-athlete-results-form">
         <Field label="Date">
           <Input type="date" value={date} onChange={e => setDate(e.target.value)} />
         </Field>
@@ -53,7 +53,7 @@ export default function ResultsCard({ profile }) {
         <Field label="Note">
           <Input value={note} onChange={e => setNote(e.target.value)} placeholder="optional" />
         </Field>
-        <div className="tp-athlete-results-form-actions">
+        <div className="th-athlete-results-form-actions">
           <Button onClick={handleAdd} disabled={adding || !distance.trim() || !time.trim()}>
             {adding ? 'Adding…' : 'Add'}
           </Button>
@@ -61,16 +61,16 @@ export default function ResultsCard({ profile }) {
       </div>
 
       {sorted.length === 0 ? (
-        <p className="tp-athlete-results-empty">No results logged yet.</p>
+        <p className="th-athlete-results-empty">No results logged yet.</p>
       ) : (
-        <ul className="tp-athlete-results-list">
+        <ul className="th-athlete-results-list">
           {sorted.map((entry, idx) => (
-            <li key={`${entry.date}-${entry.distance}-${entry.time}-${idx}`} className="tp-athlete-result-row">
-              <div className="tp-athlete-result-main">
+            <li key={`${entry.date}-${entry.distance}-${entry.time}-${idx}`} className="th-athlete-result-row">
+              <div className="th-athlete-result-main">
                 <Badge>{entry.date}</Badge>
-                <span className="tp-athlete-result-dist">{entry.distance}</span>
-                <span className="tp-athlete-result-time">{entry.time}</span>
-                {entry.note && <span className="tp-athlete-result-note">{entry.note}</span>}
+                <span className="th-athlete-result-dist">{entry.distance}</span>
+                <span className="th-athlete-result-time">{entry.time}</span>
+                {entry.note && <span className="th-athlete-result-note">{entry.note}</span>}
               </div>
               <IconButton ariaLabel="Delete result" onClick={() => handleRemove(entry)}>
                 <Trash2 size={16} aria-hidden="true" />

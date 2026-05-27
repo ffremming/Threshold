@@ -53,7 +53,7 @@ export default function Login({ onClose, fullScreen }) {
   function toggleMode() { setIsRegistering(p => !p); setError('') }
 
   const form = (
-    <form onSubmit={handleSubmit} className="tp-login-form">
+    <form onSubmit={handleSubmit} className="th-login-form">
       {isRegistering && (
         <Field label="Name">
           <Input
@@ -89,7 +89,7 @@ export default function Login({ onClose, fullScreen }) {
         />
       </Field>
 
-      {error && <div className="tp-login-error" role="alert">{error}</div>}
+      {error && <div className="th-login-error" role="alert">{error}</div>}
 
       <Button type="submit" variant="primary" size="lg" block disabled={loading}>
         {loading
@@ -97,9 +97,9 @@ export default function Login({ onClose, fullScreen }) {
           : (isRegistering ? 'Create account' : 'Sign in')}
       </Button>
 
-      <p className="tp-login-toggle">
+      <p className="th-login-toggle">
         <span>{isRegistering ? 'Already have an account?' : 'New here?'}</span>
-        <button type="button" className="tp-login-toggle-btn" onClick={toggleMode}>
+        <button type="button" className="th-login-toggle-btn" onClick={toggleMode}>
           {isRegistering ? 'Sign in' : 'Create an account'}
         </button>
       </p>
@@ -108,54 +108,54 @@ export default function Login({ onClose, fullScreen }) {
 
   if (fullScreen) {
     return (
-      <div className="tp-login-shell">
+      <div className="th-login-shell">
         {/* Ambient radial glows positioned at corners — atmosphere, not decoration */}
-        <div className="tp-login-glow tp-login-glow--tl" aria-hidden="true" />
-        <div className="tp-login-glow tp-login-glow--br" aria-hidden="true" />
+        <div className="th-login-glow th-login-glow--tl" aria-hidden="true" />
+        <div className="th-login-glow th-login-glow--br" aria-hidden="true" />
 
-        <main className="tp-login-stage">
+        <main className="th-login-stage">
           <m.section
-            className="tp-login-hero"
+            className="th-login-hero"
             initial="hidden"
             animate="visible"
             variants={stagger}
           >
-            <m.div variants={fadeInUp} className="tp-login-brand">
-              <span className="tp-login-mark" aria-hidden="true">TP</span>
-              <span className="tp-login-brand-text">Training Planner</span>
+            <m.div variants={fadeInUp} className="th-login-brand">
+              <span className="th-login-mark" aria-hidden="true">TH</span>
+              <span className="th-login-brand-text">Threshold</span>
             </m.div>
 
             <m.div variants={fadeInUp}>
               <SectionLabel>Build form toward the goal</SectionLabel>
             </m.div>
 
-            <m.h1 variants={fadeInUp} className="tp-login-headline">
+            <m.h1 variants={fadeInUp} className="th-login-headline">
               Build the week.<br />
               Win the <GradientText>race</GradientText>
-              <span className="tp-login-headline-bar" aria-hidden="true" />
+              <span className="th-login-headline-bar" aria-hidden="true" />
             </m.h1>
 
-            <m.p variants={fadeInUp} className="tp-login-tagline">
+            <m.p variants={fadeInUp} className="th-login-tagline">
               A professional tool for coaches and athletes — plan sessions,
               track load, and build form toward the goal.
             </m.p>
 
-            <m.div variants={fadeInUp} className="tp-login-marks" aria-hidden="true">
+            <m.div variants={fadeInUp} className="th-login-marks" aria-hidden="true">
               <HeroGraphic />
             </m.div>
           </m.section>
 
           <m.section
-            className="tp-login-card"
+            className="th-login-card"
             initial={{ opacity: 0, y: 28 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
           >
-            <header className="tp-login-card-head">
-              <span className="tp-login-eyebrow">
+            <header className="th-login-card-head">
+              <span className="th-login-eyebrow">
                 {isRegistering ? 'New user' : 'Welcome back'}
               </span>
-              <h2 className="tp-login-card-title">
+              <h2 className="th-login-card-title">
                 {isRegistering ? 'Create account' : 'Sign in'}
               </h2>
             </header>
@@ -163,13 +163,13 @@ export default function Login({ onClose, fullScreen }) {
           </m.section>
         </main>
 
-        <InvertedSection as="footer" className="tp-login-foot">
-          <div className="tp-login-foot-inner">
-            <span className="tp-login-foot-brand">
-              <span className="tp-login-mark tp-login-mark--invert" aria-hidden="true">TP</span>
-              Training Planner
+        <InvertedSection as="footer" className="th-login-foot">
+          <div className="th-login-foot-inner">
+            <span className="th-login-foot-brand">
+              <span className="th-login-mark th-login-mark--invert" aria-hidden="true">TH</span>
+              Threshold
             </span>
-            <span className="tp-num tp-login-foot-version">v1 · 2026</span>
+            <span className="th-num th-login-foot-version">v1 · 2026</span>
           </div>
         </InvertedSection>
       </div>
@@ -192,37 +192,37 @@ export default function Login({ onClose, fullScreen }) {
  * Hidden on small screens — geometric density only reads at scale. */
 function HeroGraphic() {
   return (
-    <div className="tp-hero-graphic">
+    <div className="th-hero-graphic">
       <m.div
-        className="tp-hero-ring"
+        className="th-hero-ring"
         animate={{ rotate: 360 }}
         transition={{ duration: 60, repeat: Infinity, ease: 'linear' }}
         aria-hidden="true"
       />
       <m.div
-        className="tp-hero-ring tp-hero-ring--inner"
+        className="th-hero-ring th-hero-ring--inner"
         animate={{ rotate: -360 }}
         transition={{ duration: 90, repeat: Infinity, ease: 'linear' }}
         aria-hidden="true"
       />
 
-      <div className="tp-hero-dots" aria-hidden="true">
+      <div className="th-hero-dots" aria-hidden="true">
         {Array.from({ length: 9 }).map((_, i) => <span key={i} />)}
       </div>
 
-      <m.div className="tp-hero-card tp-hero-card--a" animate={floatY}>
-        <span className="tp-hero-card-eyebrow">Monday · Z3</span>
-        <span className="tp-hero-card-num">8 km</span>
-        <span className="tp-hero-card-bar"><span style={{ width: '64%' }} /></span>
+      <m.div className="th-hero-card th-hero-card--a" animate={floatY}>
+        <span className="th-hero-card-eyebrow">Monday · Z3</span>
+        <span className="th-hero-card-num">8 km</span>
+        <span className="th-hero-card-bar"><span style={{ width: '64%' }} /></span>
       </m.div>
 
-      <m.div className="tp-hero-card tp-hero-card--b" animate={floatYAlt}>
-        <span className="tp-hero-card-eyebrow">Week 18</span>
-        <span className="tp-hero-card-num">42 km</span>
-        <span className="tp-hero-card-meta">+12 % vs previous</span>
+      <m.div className="th-hero-card th-hero-card--b" animate={floatYAlt}>
+        <span className="th-hero-card-eyebrow">Week 18</span>
+        <span className="th-hero-card-num">42 km</span>
+        <span className="th-hero-card-meta">+12 % vs previous</span>
       </m.div>
 
-      <span className="tp-hero-block" aria-hidden="true" />
+      <span className="th-hero-block" aria-hidden="true" />
     </div>
   )
 }

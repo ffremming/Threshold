@@ -34,10 +34,10 @@ export default function ResultsGrid({
 
   return (
     <>
-      <div className="tp-results-count">
+      <div className="th-results-count">
         {filtered.length} of {globalTemplates.length} sessions
       </div>
-      <div className="tp-card-grid">
+      <div className="th-card-grid">
         {filtered.map(template => {
           const inBank = isAlreadyInBank(template)
           const pending = pendingAddIds.has(template.id)

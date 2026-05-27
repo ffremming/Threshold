@@ -2,7 +2,7 @@
    Modal shell + form-actions etc. live in legacy.css. */
 
 .workout-detail-form-actions {
-  margin-top: var(--tp-space-4);
+  margin-top: var(--th-space-4);
 }
 
 .workout-pretext,
@@ -15,34 +15,34 @@
   text-align: left;
   font: inherit;
   color: inherit;
-  background: color-mix(in srgb, var(--zone-color, var(--tp-ink)) 7%, var(--tp-surface));
-  border: 1px solid color-mix(in srgb, var(--zone-color, var(--tp-ink)) 22%, transparent);
-  border-radius: var(--tp-radius-lg);
-  padding: var(--tp-space-4);
+  background: color-mix(in srgb, var(--zone-color, var(--th-ink)) 7%, var(--th-surface));
+  border: 1px solid color-mix(in srgb, var(--zone-color, var(--th-ink)) 22%, transparent);
+  border-radius: var(--th-radius-lg);
+  padding: var(--th-space-4);
   cursor: pointer;
-  transition: background-color var(--tp-dur-base) var(--tp-ease),
-              border-color var(--tp-dur-base) var(--tp-ease);
+  transition: background-color var(--th-dur-base) var(--th-ease),
+              border-color var(--th-dur-base) var(--th-ease);
 }
 
 .zone-summary:hover {
-  background: color-mix(in srgb, var(--zone-color, var(--tp-ink)) 12%, var(--tp-surface));
-  border-color: color-mix(in srgb, var(--zone-color, var(--tp-ink)) 40%, transparent);
+  background: color-mix(in srgb, var(--zone-color, var(--th-ink)) 12%, var(--th-surface));
+  border-color: color-mix(in srgb, var(--zone-color, var(--th-ink)) 40%, transparent);
 }
 
 .zone-summary .section-label {
-  color: color-mix(in srgb, var(--zone-color, var(--tp-ink)) 72%, var(--tp-ink));
-  margin-bottom: var(--tp-space-2);
+  color: color-mix(in srgb, var(--zone-color, var(--th-ink)) 72%, var(--th-ink));
+  margin-bottom: var(--th-space-2);
 }
 
 .zone-summary-hint {
-  font-size: var(--tp-text-2xs);
-  color: var(--tp-ink-muted);
-  margin-top: var(--tp-space-2);
+  font-size: var(--th-text-2xs);
+  color: var(--th-ink-muted);
+  margin-top: var(--th-space-2);
 }
 
 /* Border-top accent on the detail modal driven by --zone-color */
 .workout-detail-modal {
-  border-top: 3px solid var(--zone-color, var(--tp-accent));
+  border-top: 3px solid var(--zone-color, var(--th-accent));
 }
 
 /* Mark complete button */
@@ -50,28 +50,28 @@
   appearance: none;
   display: inline-flex;
   align-items: center;
-  gap: var(--tp-space-2);
+  gap: var(--th-space-2);
   height: 2.25rem;
-  padding: 0 var(--tp-space-4);
-  border-radius: var(--tp-radius-md);
-  border: 1px solid var(--tp-line-strong);
-  background: var(--tp-surface);
-  color: var(--tp-ink);
-  font-family: var(--tp-font-sans);
-  font-size: var(--tp-text-xs);
+  padding: 0 var(--th-space-4);
+  border-radius: var(--th-radius-md);
+  border: 1px solid var(--th-line-strong);
+  background: var(--th-surface);
+  color: var(--th-ink);
+  font-family: var(--th-font-sans);
+  font-size: var(--th-text-xs);
   font-weight: 500;
   cursor: pointer;
-  transition: background-color var(--tp-dur-base) var(--tp-ease),
-              border-color var(--tp-dur-base) var(--tp-ease),
-              color var(--tp-dur-base) var(--tp-ease);
+  transition: background-color var(--th-dur-base) var(--th-ease),
+              border-color var(--th-dur-base) var(--th-ease),
+              color var(--th-dur-base) var(--th-ease);
 }
 
-.btn-complete:hover { border-color: var(--tp-success); color: var(--tp-success); }
+.btn-complete:hover { border-color: var(--th-success); color: var(--th-success); }
 
 .btn-complete.done {
-  background: var(--tp-success-bg);
-  border-color: color-mix(in srgb, var(--tp-success) 35%, transparent);
-  color: var(--tp-success);
+  background: var(--th-success-bg);
+  border-color: color-mix(in srgb, var(--th-success) 35%, transparent);
+  color: var(--th-success);
 }
 
 
@@ -82,48 +82,48 @@
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--tp-space-2);
+  gap: var(--th-space-2);
 }
 
 .session-block-row {
-  border: 1px solid var(--tp-line);
-  border-radius: var(--tp-radius-md);
-  padding: var(--tp-space-3) var(--tp-space-4);
-  background: var(--tp-surface);
+  border: 1px solid var(--th-line);
+  border-radius: var(--th-radius-md);
+  padding: var(--th-space-3) var(--th-space-4);
+  background: var(--th-surface);
 }
 
 .session-block-row-head {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  gap: var(--tp-space-3);
+  gap: var(--th-space-3);
   flex-wrap: wrap;
 }
 
 .session-block-row-label {
   font-weight: 600;
-  color: var(--tp-ink);
+  color: var(--th-ink);
 }
 
 .session-block-row-main {
-  color: var(--tp-ink);
+  color: var(--th-ink);
   font-variant-numeric: tabular-nums;
 }
 
 .session-block-row-meta {
-  margin-top: var(--tp-space-1);
-  font-size: var(--tp-text-2xs);
-  color: var(--tp-ink-muted);
+  margin-top: var(--th-space-1);
+  font-size: var(--th-text-2xs);
+  color: var(--th-ink-muted);
   display: flex;
-  gap: var(--tp-space-3);
+  gap: var(--th-space-3);
   flex-wrap: wrap;
 }
 
 .session-blocks-totals {
-  margin-top: var(--tp-space-2);
+  margin-top: var(--th-space-2);
   display: flex;
-  gap: var(--tp-space-3);
-  font-size: var(--tp-text-2xs);
-  color: var(--tp-ink-muted);
+  gap: var(--th-space-3);
+  font-size: var(--th-text-2xs);
+  color: var(--th-ink-muted);
   font-variant-numeric: tabular-nums;
 }

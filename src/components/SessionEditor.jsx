@@ -71,9 +71,9 @@ export default function SessionEditor({ value, onChange, activityTag, workoutTyp
   const showDistanceTotal = domain === 'distance'
 
   return (
-    <div className="tp-session-editor">
+    <div className="th-session-editor">
       {sections.length === 0 ? (
-        <div className="tp-session-empty">Add a section to start.</div>
+        <div className="th-session-empty">Add a section to start.</div>
       ) : (
         sections.map((section, index) => (
           <SectionCard
@@ -90,15 +90,15 @@ export default function SessionEditor({ value, onChange, activityTag, workoutTyp
         ))
       )}
 
-      <div className="tp-session-add-row">
+      <div className="th-session-add-row">
         {addableKinds.map(kind => (
           <button
             key={kind}
             type="button"
-            className={`tp-session-add-btn tp-session-add-btn--${kind}`}
+            className={`th-session-add-btn th-session-add-btn--${kind}`}
             onClick={() => addSection(kind)}
           >
-            <span className="tp-session-add-icon" aria-hidden="true">
+            <span className="th-session-add-icon" aria-hidden="true">
               <Plus size={14} strokeWidth={2.5} />
             </span>
             {SECTION_LABELS[kind]}
@@ -106,15 +106,15 @@ export default function SessionEditor({ value, onChange, activityTag, workoutTyp
         ))}
       </div>
 
-      <div className="tp-session-totals">
-        <div className="tp-session-total">
-          <span className="tp-session-total-label">Total time</span>
-          <span className="tp-session-total-value">{formatDuration(totals.totalDuration)}</span>
+      <div className="th-session-totals">
+        <div className="th-session-total">
+          <span className="th-session-total-label">Total time</span>
+          <span className="th-session-total-value">{formatDuration(totals.totalDuration)}</span>
         </div>
         {showDistanceTotal && (
-          <div className="tp-session-total">
-            <span className="tp-session-total-label">Total distance</span>
-            <span className="tp-session-total-value">{formatDistance(totals.totalDistance)}</span>
+          <div className="th-session-total">
+            <span className="th-session-total-label">Total distance</span>
+            <span className="th-session-total-value">{formatDistance(totals.totalDistance)}</span>
           </div>
         )}
       </div>

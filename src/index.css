@@ -1,55 +1,55 @@
 @import "tailwindcss";
 
 /* ────────────────────────────────────────────────────────────────────
- * Tailwind v4 theme — bridges utility classes onto --tp-* tokens.
+ * Tailwind v4 theme — bridges utility classes onto --th-* tokens.
  *
  * Authoring rule:
  *   • New components → Tailwind utilities (bg-accent, font-display).
- *   • Existing .tp-* components keep working — they read the same vars.
+ *   • Existing .th-* components keep working — they read the same vars.
  *   • Never hard-code a color, font, or shadow here. Always reference
- *     a --tp-* variable defined in styles/tokens.css.
+ *     a --th-* variable defined in styles/tokens.css.
  * ──────────────────────────────────────────────────────────────────── */
 
 @theme {
   /* ── Color palette (tokens.css is the source of truth) ───────── */
-  --color-background:        var(--tp-bg);
-  --color-surface:           var(--tp-surface);
-  --color-surface-muted:     var(--tp-surface-2);
-  --color-foreground:        var(--tp-ink);
-  --color-muted:             var(--tp-surface-2);
-  --color-muted-foreground:  var(--tp-ink-muted);
-  --color-soft-foreground:   var(--tp-ink-soft);
-  --color-accent:            var(--tp-accent);
-  --color-accent-hover:      var(--tp-accent-hover);
-  --color-accent-secondary:  var(--tp-accent-secondary);
-  --color-accent-foreground: var(--tp-on-accent);
-  --color-border:            var(--tp-line);
-  --color-border-strong:     var(--tp-line-strong);
-  --color-card:              var(--tp-surface);
-  --color-ring:              var(--tp-accent);
+  --color-background:        var(--th-bg);
+  --color-surface:           var(--th-surface);
+  --color-surface-muted:     var(--th-surface-2);
+  --color-foreground:        var(--th-ink);
+  --color-muted:             var(--th-surface-2);
+  --color-muted-foreground:  var(--th-ink-muted);
+  --color-soft-foreground:   var(--th-ink-soft);
+  --color-accent:            var(--th-accent);
+  --color-accent-hover:      var(--th-accent-hover);
+  --color-accent-secondary:  var(--th-accent-secondary);
+  --color-accent-foreground: var(--th-on-accent);
+  --color-border:            var(--th-line);
+  --color-border-strong:     var(--th-line-strong);
+  --color-card:              var(--th-surface);
+  --color-ring:              var(--th-accent);
 
-  --color-success:           var(--tp-success);
-  --color-warning:           var(--tp-warning);
-  --color-danger:            var(--tp-danger);
+  --color-success:           var(--th-success);
+  --color-warning:           var(--th-warning);
+  --color-danger:            var(--th-danger);
 
-  --color-zone-1: var(--tp-zone-1);
-  --color-zone-2: var(--tp-zone-2);
-  --color-zone-3: var(--tp-zone-3);
-  --color-zone-4: var(--tp-zone-4);
-  --color-zone-5: var(--tp-zone-5);
+  --color-zone-1: var(--th-zone-1);
+  --color-zone-2: var(--th-zone-2);
+  --color-zone-3: var(--th-zone-3);
+  --color-zone-4: var(--th-zone-4);
+  --color-zone-5: var(--th-zone-5);
 
   /* ── Fonts ───────────────────────────────────────────────────── */
-  --font-display: var(--tp-font-display);
-  --font-sans:    var(--tp-font-sans);
-  --font-mono:    var(--tp-font-mono);
+  --font-display: var(--th-font-display);
+  --font-sans:    var(--th-font-sans);
+  --font-mono:    var(--th-font-mono);
 
   /* ── Shadows — including accent-tinted lift ──────────────────── */
-  --shadow-accent:    var(--tp-shadow-accent);
-  --shadow-accent-lg: var(--tp-shadow-accent-lg);
+  --shadow-accent:    var(--th-shadow-accent);
+  --shadow-accent-lg: var(--th-shadow-accent-lg);
 
   /* ── Radii ───────────────────────────────────────────────────── */
-  --radius-xl: var(--tp-radius-xl);
-  --radius-2xl: var(--tp-radius-2xl);
+  --radius-xl: var(--th-radius-xl);
+  --radius-2xl: var(--th-radius-2xl);
 
   /* ── Animations ──────────────────────────────────────────────── */
   --animate-pulse-dot: pulse-dot 2s cubic-bezier(0.16, 1, 0.3, 1) infinite;
@@ -74,31 +74,31 @@
 
 /* The dot pattern texture for inverted sections.
    Used as a className utility on inverted backgrounds. */
-.tp-dot-pattern {
+.th-dot-pattern {
   background-image: radial-gradient(circle, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
   background-size: 32px 32px;
 }
 
 /* Generic radial-glow accent at section corners */
-.tp-glow-accent {
+.th-glow-accent {
   background: radial-gradient(
     circle at center,
-    color-mix(in srgb, var(--tp-accent) 35%, transparent) 0%,
+    color-mix(in srgb, var(--th-accent) 35%, transparent) 0%,
     transparent 70%
   );
   filter: blur(120px);
 }
 
 /* Gradient text utility (mirrors design system .gradient-text) */
-.tp-gradient-text {
-  background: var(--tp-gradient-h);
+.th-gradient-text {
+  background: var(--th-gradient-h);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
 
 /* Focus-visible ring helper for any element */
-.tp-focus-ring:focus-visible {
+.th-focus-ring:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px var(--tp-bg), 0 0 0 4px var(--tp-accent);
+  box-shadow: 0 0 0 2px var(--th-bg), 0 0 0 4px var(--th-accent);
 }

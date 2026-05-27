@@ -49,7 +49,7 @@ function WeekSummary({ workouts, doneCount }) {
 
       <div className="ah-summary-progress">
         <div className="ah-summary-progress-meta">
-          <span><span className="tp-num">{progressPct}%</span> completed</span>
+          <span><span className="th-num">{progressPct}%</span> completed</span>
           {typeBreakdown && <span className="ah-summary-breakdown">{typeBreakdown}</span>}
         </div>
         <div

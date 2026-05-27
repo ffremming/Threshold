@@ -10,8 +10,8 @@ export function ActivityPill({ tag, label, icon, size = 'md', className }) {
   if (!text && !iconName) return null
 
   return (
-    <span className={cx('tp-activity-pill', size && `tp-activity-pill--${size}`, className)}>
-      <span className="tp-activity-pill-icon" aria-hidden="true">
+    <span className={cx('th-activity-pill', size && `th-activity-pill--${size}`, className)}>
+      <span className="th-activity-pill-icon" aria-hidden="true">
         <ActivityIcon name={iconName} className="tag-icon-svg" />
       </span>
       {text && <span>{text}</span>}

@@ -38,7 +38,7 @@ export function WorkoutCard({
 
   return (
     <article
-      className={cx('tp-workout-card', workout.completed && 'is-completed', interactive && 'is-interactive', className)}
+      className={cx('th-workout-card', workout.completed && 'is-completed', interactive && 'is-interactive', className)}
       onClick={onClick}
       draggable={draggable}
       onDragStart={onDragStart}
@@ -47,36 +47,36 @@ export function WorkoutCard({
       tabIndex={interactive ? 0 : undefined}
       onKeyDown={interactive ? (e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick?.() } }) : undefined}
     >
-      <div className="tp-workout-card-side">
+      <div className="th-workout-card-side">
         <ZoneDot zone={zone} />
       </div>
 
-      <div className="tp-workout-card-body">
-        <div className="tp-workout-card-head">
-          <div className="tp-workout-card-titles">
+      <div className="th-workout-card-body">
+        <div className="th-workout-card-head">
+          <div className="th-workout-card-titles">
             {showSchedule && scheduleLabel && (
-              <span className="tp-workout-card-time">{scheduleLabel}</span>
+              <span className="th-workout-card-time">{scheduleLabel}</span>
             )}
-            <h4 className="tp-workout-card-title">{workout.title}</h4>
+            <h4 className="th-workout-card-title">{workout.title}</h4>
           </div>
-          <div className="tp-workout-card-meta">
+          <div className="th-workout-card-meta">
             {tag && <ActivityPill tag={tag} />}
             {zone && zoneLabel && <ZoneBadge zone={zone} label={zoneLabel} />}
           </div>
         </div>
 
         {showDescription && workout.description && (
-          <p className="tp-workout-card-desc">{workout.description}</p>
+          <p className="th-workout-card-desc">{workout.description}</p>
         )}
       </div>
 
       {(onToggleComplete || trailing) && (
-        <div className="tp-workout-card-trailing">
+        <div className="th-workout-card-trailing">
           {trailing}
           {onToggleComplete && (
             <button
               type="button"
-              className={cx('tp-workout-check', workout.completed && 'is-checked')}
+              className={cx('th-workout-check', workout.completed && 'is-checked')}
               onClick={e => { e.stopPropagation(); onToggleComplete() }}
               aria-label={workout.completed ? 'Mark as not completed' : 'Mark as completed'}
             >

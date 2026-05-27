@@ -29,7 +29,7 @@ export default function IntensityScaleModal({ onClose }) {
               <div
                 key={zone}
                 className="intensity-zone"
-                style={{ '--zone-color': `var(--tp-zone-${zone})` }}
+                style={{ '--zone-color': `var(--th-zone-${zone})` }}
               >
                 <div className="intensity-zone-header">{ZONE_LABELS[zone]}</div>
                 <div className="intensity-zone-body">

@@ -1,7 +1,7 @@
 import { ACTIVITY_TAG_MAP } from '../../utils'
 
-const BUILDER_LAYOUT_BASE_KEY = 'training-planner:builder-layout:v1'
-const VISIBLE_ACTIVITIES_BASE_KEY = 'training-planner:builder-visible-activities:v1'
+const BUILDER_LAYOUT_BASE_KEY = 'threshold:builder-layout:v1'
+const VISIBLE_ACTIVITIES_BASE_KEY = 'threshold:builder-visible-activities:v1'
 
 // Per-user keys avoid leaking layout/filter preferences between accounts on
 // shared devices.

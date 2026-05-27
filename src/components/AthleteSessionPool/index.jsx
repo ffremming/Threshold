@@ -66,9 +66,9 @@ export default function AthleteSessionPool({ coachId, athleteId }) {
   }
 
   return (
-    <div className="tp-athlete-pool">
-      <div className="tp-athlete-pool-head">
-        <span className="tp-athlete-pool-count">
+    <div className="th-athlete-pool">
+      <div className="th-athlete-pool-head">
+        <span className="th-athlete-pool-count">
           {sessions.length} session{sessions.length === 1 ? '' : 's'} in the bank
         </span>
         <Button size="sm" onClick={() => setPickerOpen(true)}>
@@ -85,7 +85,7 @@ export default function AthleteSessionPool({ coachId, athleteId }) {
           description="Pull in sessions from the coach's session bank to build the athlete's personal library."
         />
       ) : (
-        <div className="tp-athlete-pool-list">
+        <div className="th-athlete-pool-list">
           {sessions.map(session => (
             <PoolSessionCard
               key={session.id}

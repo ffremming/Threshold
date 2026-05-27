@@ -40,35 +40,35 @@ export function TemplateCard({
 
   return (
     <article
-      className={cx('tp-template-card', className)}
+      className={cx('th-template-card', className)}
       draggable={draggable}
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
     >
-      <header className="tp-template-card-head">
-        <div className="tp-template-card-titles">
-          <h3 className="tp-template-card-title">{template.title}</h3>
-          <div className="tp-template-card-meta">
+      <header className="th-template-card-head">
+        <div className="th-template-card-titles">
+          <h3 className="th-template-card-title">{template.title}</h3>
+          <div className="th-template-card-meta">
             {template.category && <Pill>{template.category}</Pill>}
             {tag && <ActivityPill tag={tag} />}
           </div>
         </div>
-        {pinned && <span className="tp-template-card-pinned" aria-hidden="true">●</span>}
+        {pinned && <span className="th-template-card-pinned" aria-hidden="true">●</span>}
       </header>
 
       {template.description && (
-        <p className="tp-template-card-desc">{template.description}</p>
+        <p className="th-template-card-desc">{template.description}</p>
       )}
 
       {(zone || template.distance || template.warmup) && (
-        <div className="tp-template-card-tags">
+        <div className="th-template-card-tags">
           {zone && <ZoneBadge zone={zone} label={intensityLabel} />}
           {template.distance && <Pill>{template.distance}</Pill>}
           {template.warmup && <Pill>Oppv: {template.warmup}</Pill>}
         </div>
       )}
 
-      <footer className="tp-template-card-foot">
+      <footer className="th-template-card-foot">
         {onPrimary && (
           <Button
             block
@@ -88,12 +88,12 @@ export function TemplateCard({
             variant="secondary"
             onClick={onSecondary}
             disabled={secondaryDisabled}
-            className="tp-template-card-secondary"
+            className="th-template-card-secondary"
           >
             {secondaryLabel}
           </Button>
         )}
-        <div className="tp-template-card-icon-actions">
+        <div className="th-template-card-icon-actions">
           {onEdit && (
             <IconButton ariaLabel="Rediger" onClick={onEdit} size="sm">
               <SystemIcon name="edit" className="system-icon" />

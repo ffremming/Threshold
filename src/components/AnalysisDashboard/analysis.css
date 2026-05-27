@@ -1,17 +1,17 @@
 /* AnalysisDashboard — shared primitives */
 
 .an-eyebrow {
-  font-family: var(--tp-font-mono);
-  font-size: var(--tp-text-2xs);
+  font-family: var(--th-font-mono);
+  font-size: var(--th-text-2xs);
   text-transform: uppercase;
-  letter-spacing: var(--tp-tracking-label);
+  letter-spacing: var(--th-tracking-label);
   font-weight: 500;
-  color: var(--tp-ink-muted);
+  color: var(--th-ink-muted);
 }
 
 .an-empty-mini {
-  font-size: var(--tp-text-sm);
-  color: var(--tp-ink-muted);
+  font-size: var(--th-text-sm);
+  color: var(--th-ink-muted);
   text-align: center;
-  padding: var(--tp-space-5);
+  padding: var(--th-space-5);
 }

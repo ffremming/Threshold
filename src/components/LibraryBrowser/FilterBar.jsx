@@ -43,7 +43,7 @@ export default function FilterBar({
           <button
             key={zone}
             type="button"
-            className={`tp-zone-btn tp-zone-${zone}${zoneSet.has(zone) ? ' is-active' : ''}`}
+            className={`th-zone-btn th-zone-${zone}${zoneSet.has(zone) ? ' is-active' : ''}`}
             onClick={() => onToggleZone(zone)}
           >Z{zone}</button>
         ))}
@@ -53,7 +53,7 @@ export default function FilterBar({
         <Button variant="ghost" size="sm" onClick={onClear}>Clear filter</Button>
       )}
 
-      {trailingAction && <div className="tp-toolbar-action">{trailingAction}</div>}
+      {trailingAction && <div className="th-toolbar-action">{trailingAction}</div>}
     </Toolbar>
   )
 }

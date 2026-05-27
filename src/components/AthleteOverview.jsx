@@ -97,7 +97,7 @@ export default function AthleteOverview({
             description="You have no athletes linked to you yet."
           />
         ) : (
-          <div className="tp-athlete-list">
+          <div className="th-athlete-list">
             {coachableAthletes.map(athlete => {
               const count = workoutCountByAthlete[athlete.uid] ?? 0
               const hasAlert = count === 0
@@ -105,34 +105,34 @@ export default function AthleteOverview({
                 <button
                   type="button"
                   key={athlete.uid}
-                  className={`tp-athlete-row${hasAlert ? ' tp-athlete-row--alert' : ''}`}
+                  className={`th-athlete-row${hasAlert ? ' th-athlete-row--alert' : ''}`}
                   onClick={() => setSelectedAthleteId(athlete.uid)}
                 >
-                  <div className="tp-athlete-row-main">
-                    <div className="tp-athlete-row-avatar" aria-hidden="true">
+                  <div className="th-athlete-row-main">
+                    <div className="th-athlete-row-avatar" aria-hidden="true">
                       {(athlete.displayName || '?').slice(0, 1).toUpperCase()}
                     </div>
-                    <div className="tp-athlete-row-info">
-                      <span className="tp-athlete-row-name">
+                    <div className="th-athlete-row-info">
+                      <span className="th-athlete-row-name">
                         {athlete.displayName || athlete.email || 'No name'}
                         {hasAlert && (
                           <span
-                            className="tp-athlete-alert-dot"
+                            className="th-athlete-alert-dot"
                             title="No sessions next week"
                             aria-label="No sessions next week"
                           />
                         )}
                       </span>
-                      <span className="tp-athlete-row-meta">
+                      <span className="th-athlete-row-meta">
                         {hasAlert
                           ? 'No sessions next week'
                           : `${count} session${count === 1 ? '' : 's'} next week`}
                       </span>
                     </div>
                   </div>
-                  <div className="tp-athlete-row-side">
-                    {hasAlert && <Badge className="tp-athlete-alert-badge">Missing plan</Badge>}
-                    <ChevronRight className="tp-athlete-row-chevron" aria-hidden="true" size={18} />
+                  <div className="th-athlete-row-side">
+                    {hasAlert && <Badge className="th-athlete-alert-badge">Missing plan</Badge>}
+                    <ChevronRight className="th-athlete-row-chevron" aria-hidden="true" size={18} />
                   </div>
                 </button>
               )

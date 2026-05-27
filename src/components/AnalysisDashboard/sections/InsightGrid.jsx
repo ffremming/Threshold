@@ -64,8 +64,8 @@ export default function InsightGrid({
                   <span>{stats.count} sessions · {formatDurationLabel(Math.round(stats.duration))}</span>
                 </div>
                 <div className="an-activity-values">
-                  <strong className="tp-num">{loadShare}%</strong>
-                  <span className="tp-num">{Math.round(stats.load)} load</span>
+                  <strong className="th-num">{loadShare}%</strong>
+                  <span className="th-num">{Math.round(stats.load)} load</span>
                 </div>
               </div>
             )

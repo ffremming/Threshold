@@ -19,14 +19,14 @@ export default function SliderRow({ label, value, min, max, step, display, onCha
     onChange(inverted ? (max + min - raw) : raw)
   }
   return (
-    <div className="tp-slider-row">
-      <div className="tp-slider-row-head">
-        <span className="tp-slider-row-label">{label}</span>
-        <span className="tp-slider-row-display">{display}</span>
+    <div className="th-slider-row">
+      <div className="th-slider-row-head">
+        <span className="th-slider-row-label">{label}</span>
+        <span className="th-slider-row-display">{display}</span>
       </div>
       <input
         type="range"
-        className="tp-slider"
+        className="th-slider"
         min={min}
         max={max}
         step={step}
@@ -44,7 +44,7 @@ export function ModeButton({ current, value, label, onSelect }) {
       type="button"
       role="tab"
       aria-selected={active}
-      className={`tp-block-mode-btn${active ? ' is-active' : ''}`}
+      className={`th-block-mode-btn${active ? ' is-active' : ''}`}
       onClick={() => onSelect(value)}
     >
       {label}
@@ -85,7 +85,7 @@ export function EstimatedDistanceRow({ block, activityTag, onChange }) {
   const currentTotal = Number(block.distanceKm) || 0
   const perRep = currentTotal / reps
   return (
-    <div className="tp-block-est-distance">
+    <div className="th-block-est-distance">
       <SliderRow
         label="Estimated distance per rep (statistics only)"
         value={Math.min(EST_DISTANCE_MAX, Math.max(EST_DISTANCE_MIN, perRep))}
@@ -95,7 +95,7 @@ export function EstimatedDistanceRow({ block, activityTag, onChange }) {
         display={`${formatDistance(perRep)} (${formatDistance(currentTotal)} total)`}
         onChange={onChange}
       />
-      <p className="tp-block-est-distance-hint">
+      <p className="th-block-est-distance-hint">
         Counted toward weekly distance for {activityTag || 'activity'}. Does not affect time.
       </p>
     </div>

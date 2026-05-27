@@ -61,36 +61,36 @@ function SidebarAthlete({
     : 'Select athlete'
 
   return (
-    <div className="tp-sb-athlete" ref={ref}>
+    <div className="th-sb-athlete" ref={ref}>
       <button
         type="button"
-        className={`tp-sb-athlete-trigger${open ? ' is-open' : ''}`}
+        className={`th-sb-athlete-trigger${open ? ' is-open' : ''}`}
         onClick={() => setOpen(v => !v)}
         aria-haspopup="listbox"
         aria-expanded={open}
       >
-        <span className="tp-sb-athlete-avatar" aria-hidden="true">
+        <span className="th-sb-athlete-avatar" aria-hidden="true">
           {initialOf(selected)}
         </span>
-        <span className="tp-sb-athlete-meta">
-          <span className="tp-sb-athlete-eyebrow">Selected athlete</span>
-          <span className="tp-sb-athlete-name">{displayName}</span>
+        <span className="th-sb-athlete-meta">
+          <span className="th-sb-athlete-eyebrow">Selected athlete</span>
+          <span className="th-sb-athlete-name">{displayName}</span>
         </span>
         <ChevronRight
-          className={`tp-sb-athlete-chevron${open ? ' is-open' : ''}`}
+          className={`th-sb-athlete-chevron${open ? ' is-open' : ''}`}
           size={16}
           aria-hidden="true"
         />
       </button>
 
       {open && (
-        <div className="tp-sb-athlete-popover" role="listbox" aria-label="Switch athlete">
-          <div className="tp-sb-athlete-popover-head">
-            <span className="tp-sb-athlete-eyebrow">Athletes</span>
+        <div className="th-sb-athlete-popover" role="listbox" aria-label="Switch athlete">
+          <div className="th-sb-athlete-popover-head">
+            <span className="th-sb-athlete-eyebrow">Athletes</span>
           </div>
-          <ul className="tp-sb-athlete-popover-list">
+          <ul className="th-sb-athlete-popover-list">
             {visibleAthletes.length === 0 && (
-              <li className="tp-sb-athlete-popover-empty">No athletes</li>
+              <li className="th-sb-athlete-popover-empty">No athletes</li>
             )}
             {visibleAthletes.map(a => {
               const isActive = a.uid === selectedAthleteId
@@ -101,19 +101,19 @@ function SidebarAthlete({
                     type="button"
                     role="option"
                     aria-selected={isActive}
-                    className={`tp-sb-athlete-option${isActive ? ' is-active' : ''}`}
+                    className={`th-sb-athlete-option${isActive ? ' is-active' : ''}`}
                     onClick={() => {
                       setSelectedAthleteId(a.uid)
                       setOpen(false)
                     }}
                   >
-                    <span className="tp-sb-athlete-option-avatar" aria-hidden="true">
+                    <span className="th-sb-athlete-option-avatar" aria-hidden="true">
                       {initialOf(a)}
                     </span>
-                    <span className="tp-sb-athlete-option-name">
+                    <span className="th-sb-athlete-option-name">
                       {isSelf ? `${a.displayName} (me)` : (a.displayName || a.email || 'No name')}
                     </span>
-                    {isActive && <span className="tp-sb-athlete-option-dot" aria-hidden="true" />}
+                    {isActive && <span className="th-sb-athlete-option-dot" aria-hidden="true" />}
                   </button>
                 </li>
               )
@@ -178,15 +178,15 @@ export function NavProvider({
 
     const initials = (userProfile?.displayName || userProfile?.email || '?').slice(0, 1).toUpperCase()
     const account = (
-      <div className="tp-account">
-        <div className="tp-account-meta">
-          <span className="tp-account-avatar" aria-hidden="true">{initials}</span>
-          <div className="tp-account-info">
-            <span className="tp-account-name">
+      <div className="th-account">
+        <div className="th-account-meta">
+          <span className="th-account-avatar" aria-hidden="true">{initials}</span>
+          <div className="th-account-info">
+            <span className="th-account-name">
               {userProfile?.displayName || userProfile?.email || 'User'}
             </span>
             {userProfile?.email && userProfile?.displayName && (
-              <span className="tp-account-email">{userProfile.email}</span>
+              <span className="th-account-email">{userProfile.email}</span>
             )}
           </div>
         </div>
@@ -195,7 +195,7 @@ export function NavProvider({
           size="sm"
           block
           onClick={handleLogout}
-          className="tp-account-logout"
+          className="th-account-logout"
         >
           <SystemIcon name="logout" className="button-icon" />
           Sign out

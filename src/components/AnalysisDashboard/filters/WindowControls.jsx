@@ -37,7 +37,7 @@ export default function WindowControls({
       <div className="an-window-slider">
         <div className="an-window-slider-head">
           <span>History</span>
-          <span className="tp-num">{timelineProgress}%</span>
+          <span className="th-num">{timelineProgress}%</span>
           <span>Future</span>
         </div>
         <input

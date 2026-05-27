@@ -1,137 +1,137 @@
-.tp-athlete-list {
+.th-athlete-list {
   display: flex;
   flex-direction: column;
-  gap: var(--tp-space-3);
+  gap: var(--th-space-3);
 }
 
-.tp-athlete-row {
+.th-athlete-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--tp-space-3);
+  gap: var(--th-space-3);
   width: 100%;
   text-align: left;
   appearance: none;
   cursor: pointer;
-  padding: var(--tp-space-4) var(--tp-space-5);
-  background: var(--tp-surface);
-  border: 1px solid var(--tp-line);
-  border-radius: var(--tp-radius-xl);
-  box-shadow: var(--tp-shadow-xs);
+  padding: var(--th-space-4) var(--th-space-5);
+  background: var(--th-surface);
+  border: 1px solid var(--th-line);
+  border-radius: var(--th-radius-xl);
+  box-shadow: var(--th-shadow-xs);
   font: inherit;
-  color: var(--tp-ink);
-  transition: background var(--tp-dur-base) var(--tp-ease),
-              border-color var(--tp-dur-base) var(--tp-ease),
-              box-shadow var(--tp-dur-base) var(--tp-ease),
-              transform var(--tp-dur-base) var(--tp-ease);
+  color: var(--th-ink);
+  transition: background var(--th-dur-base) var(--th-ease),
+              border-color var(--th-dur-base) var(--th-ease),
+              box-shadow var(--th-dur-base) var(--th-ease),
+              transform var(--th-dur-base) var(--th-ease);
 }
 
-.tp-athlete-row:hover {
-  border-color: color-mix(in srgb, var(--tp-accent) 25%, var(--tp-line));
-  box-shadow: var(--tp-shadow-md);
+.th-athlete-row:hover {
+  border-color: color-mix(in srgb, var(--th-accent) 25%, var(--th-line));
+  box-shadow: var(--th-shadow-md);
   transform: translateY(-1px);
 }
 
-.tp-athlete-row:focus-visible {
+.th-athlete-row:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px var(--tp-bg), 0 0 0 4px var(--tp-accent);
+  box-shadow: 0 0 0 2px var(--th-bg), 0 0 0 4px var(--th-accent);
 }
 
-.tp-athlete-row:active { transform: translateY(0) scale(0.99); }
+.th-athlete-row:active { transform: translateY(0) scale(0.99); }
 
-.tp-athlete-row--alert {
-  border-color: color-mix(in srgb, var(--tp-danger) 25%, transparent);
-  background: color-mix(in srgb, var(--tp-danger) 4%, var(--tp-surface));
+.th-athlete-row--alert {
+  border-color: color-mix(in srgb, var(--th-danger) 25%, transparent);
+  background: color-mix(in srgb, var(--th-danger) 4%, var(--th-surface));
 }
 
-.tp-athlete-row--alert:hover {
-  border-color: var(--tp-danger);
-  box-shadow: 0 4px 14px color-mix(in srgb, var(--tp-danger) 22%, transparent);
+.th-athlete-row--alert:hover {
+  border-color: var(--th-danger);
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--th-danger) 22%, transparent);
 }
 
-.tp-athlete-row-main {
+.th-athlete-row-main {
   display: flex;
   align-items: center;
-  gap: var(--tp-space-4);
+  gap: var(--th-space-4);
   flex: 1;
   min-width: 0;
 }
 
-.tp-athlete-row-avatar {
+.th-athlete-row-avatar {
   width: 2.5rem;
   height: 2.5rem;
   border-radius: 50%;
-  background: var(--tp-gradient);
-  color: var(--tp-on-accent);
+  background: var(--th-gradient);
+  color: var(--th-on-accent);
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 600;
-  font-size: var(--tp-text-md);
+  font-size: var(--th-text-md);
   flex-shrink: 0;
-  box-shadow: var(--tp-shadow-accent);
+  box-shadow: var(--th-shadow-accent);
 }
 
-.tp-athlete-row--alert .tp-athlete-row-avatar {
-  background: color-mix(in srgb, var(--tp-danger) 20%, var(--tp-surface-2));
-  color: var(--tp-danger);
+.th-athlete-row--alert .th-athlete-row-avatar {
+  background: color-mix(in srgb, var(--th-danger) 20%, var(--th-surface-2));
+  color: var(--th-danger);
   box-shadow: none;
 }
 
-.tp-athlete-row-info {
+.th-athlete-row-info {
   display: flex;
   flex-direction: column;
   gap: 2px;
   min-width: 0;
 }
 
-.tp-athlete-row-name {
-  font-size: var(--tp-text-md);
+.th-athlete-row-name {
+  font-size: var(--th-text-md);
   font-weight: 600;
-  letter-spacing: var(--tp-tracking-snug);
-  color: var(--tp-ink);
+  letter-spacing: var(--th-tracking-snug);
+  color: var(--th-ink);
   display: inline-flex;
   align-items: center;
-  gap: var(--tp-space-2);
+  gap: var(--th-space-2);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.tp-athlete-row-meta {
-  color: var(--tp-ink-muted);
-  font-size: var(--tp-text-sm);
+.th-athlete-row-meta {
+  color: var(--th-ink-muted);
+  font-size: var(--th-text-sm);
 }
 
-.tp-athlete-alert-dot {
+.th-athlete-alert-dot {
   display: inline-block;
   width: 0.5rem;
   height: 0.5rem;
   border-radius: 50%;
-  background: var(--tp-danger);
-  animation: tp-pulse-dot 2s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+  background: var(--th-danger);
+  animation: th-pulse-dot 2s cubic-bezier(0.16, 1, 0.3, 1) infinite;
 }
 
-.tp-athlete-alert-badge {
-  background: var(--tp-danger-bg);
-  color: var(--tp-danger);
-  border-color: color-mix(in srgb, var(--tp-danger) 30%, transparent);
+.th-athlete-alert-badge {
+  background: var(--th-danger-bg);
+  color: var(--th-danger);
+  border-color: color-mix(in srgb, var(--th-danger) 30%, transparent);
 }
 
-.tp-athlete-row-side {
+.th-athlete-row-side {
   display: flex;
   align-items: center;
-  gap: var(--tp-space-2);
+  gap: var(--th-space-2);
 }
 
-.tp-athlete-row-chevron {
-  color: var(--tp-ink-soft);
+.th-athlete-row-chevron {
+  color: var(--th-ink-soft);
   flex-shrink: 0;
-  transition: color var(--tp-dur-base) var(--tp-ease),
-              transform var(--tp-dur-base) var(--tp-ease);
+  transition: color var(--th-dur-base) var(--th-ease),
+              transform var(--th-dur-base) var(--th-ease);
 }
 
-.tp-athlete-row:hover .tp-athlete-row-chevron {
-  color: var(--tp-accent);
+.th-athlete-row:hover .th-athlete-row-chevron {
+  color: var(--th-accent);
   transform: translateX(2px);
 }

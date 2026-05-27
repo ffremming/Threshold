@@ -147,7 +147,7 @@ export default function TestingDashboard({ selectedAthleteId, userProfile }) {
 function Stat({ label, value }) {
   return (
     <div className="td-stat">
-      <span className="td-stat-value tp-num">{value}</span>
+      <span className="td-stat-value th-num">{value}</span>
       <span className="td-stat-label">{label}</span>
     </div>
   )

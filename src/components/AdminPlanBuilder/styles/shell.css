@@ -6,39 +6,39 @@
 .pb-shell {
   display: flex;
   flex-direction: column;
-  gap: var(--tp-space-3);
-  padding: var(--tp-space-4);
+  gap: var(--th-space-3);
+  padding: var(--th-space-4);
   width: 100%;
   max-width: 100%;
 }
 
 @media (max-width: 640px) {
-  .pb-shell { padding: var(--tp-space-3); gap: var(--tp-space-2); }
+  .pb-shell { padding: var(--th-space-3); gap: var(--th-space-2); }
 }
 
 .pb-athlete-banner {
-  font-size: var(--tp-text-sm);
-  color: var(--tp-ink-muted);
-  background: var(--tp-surface);
-  border: 1px solid var(--tp-line);
-  border-radius: var(--tp-radius-md);
-  padding: var(--tp-space-3) var(--tp-space-4);
+  font-size: var(--th-text-sm);
+  color: var(--th-ink-muted);
+  background: var(--th-surface);
+  border: 1px solid var(--th-line);
+  border-radius: var(--th-radius-md);
+  padding: var(--th-space-3) var(--th-space-4);
 }
 
 .pb-athlete-banner strong {
-  color: var(--tp-ink);
+  color: var(--th-ink);
   font-weight: 700;
-  letter-spacing: var(--tp-tracking-snug);
+  letter-spacing: var(--th-tracking-snug);
 }
 
 .pb-overview-loading {
-  padding: var(--tp-space-5);
+  padding: var(--th-space-5);
   text-align: center;
-  color: var(--tp-ink-muted);
-  background: var(--tp-surface);
-  border: 1px solid var(--tp-line);
-  border-radius: var(--tp-radius-lg);
-  font-size: var(--tp-text-sm);
+  color: var(--th-ink-muted);
+  background: var(--th-surface);
+  border: 1px solid var(--th-line);
+  border-radius: var(--th-radius-lg);
+  font-size: var(--th-text-sm);
 }
 
 .pb-overview-wrap { width: 100%; }
@@ -47,7 +47,7 @@
 .pb-layout {
   display: flex;
   flex-direction: column;
-  gap: var(--tp-space-4);
+  gap: var(--th-space-4);
   width: 100%;
 }
 
@@ -88,13 +88,13 @@
   transform: translateX(-50%);
   width: 2px;
   border-radius: 999px;
-  background: var(--tp-line);
+  background: var(--th-line);
   transition: background 120ms ease, width 120ms ease;
 }
 
 .pb-resize-handle:hover::before,
 .pb-resize-handle:focus-visible::before {
-  background: var(--tp-accent);
+  background: var(--th-accent);
   width: 4px;
 }
 

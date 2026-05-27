@@ -83,7 +83,7 @@ export default function SportPicker({
       : `${selectedTags.length} sporter`
 
   return (
-    <div className="tp-sport-picker" ref={rootRef}>
+    <div className="th-sport-picker" ref={rootRef}>
       <SportTrigger
         open={open}
         selectedTags={selectedTags}

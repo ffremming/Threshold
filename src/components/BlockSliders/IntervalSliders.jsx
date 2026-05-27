@@ -85,8 +85,8 @@ export default function IntervalSliders({ block, unit, activityTag, onPatch }) {
   }
 
   return (
-    <div className="tp-block-sliders">
-      <div className="tp-block-mode-toggle" role="tablist" aria-label="Define interval by">
+    <div className="th-block-sliders">
+      <div className="th-block-mode-toggle" role="tablist" aria-label="Define interval by">
         <ModeButton current={paceMode} value="pace" label="Pace" onSelect={setMode} />
         <ModeButton current={paceMode} value="length" label="Length" onSelect={setMode} />
         <ModeButton current={paceMode} value="time" label="Time" onSelect={setMode} />
@@ -169,14 +169,14 @@ export default function IntervalSliders({ block, unit, activityTag, onPatch }) {
         onChange={(v) => onPatch({ pauseSec: Math.round(v) })}
       />
 
-      <div className="tp-block-totals">
-        <span className="tp-block-total">
-          <span className="tp-block-total-label">Total time</span>
-          <span className="tp-block-total-value">{formatDuration(block.durationMin)}</span>
+      <div className="th-block-totals">
+        <span className="th-block-total">
+          <span className="th-block-total-label">Total time</span>
+          <span className="th-block-total-value">{formatDuration(block.durationMin)}</span>
         </span>
-        <span className="tp-block-total">
-          <span className="tp-block-total-label">Total distance{paceMode === 'time' ? ' (est.)' : ''}</span>
-          <span className="tp-block-total-value">{formatDistance(block.distanceKm)}</span>
+        <span className="th-block-total">
+          <span className="th-block-total-label">Total distance{paceMode === 'time' ? ' (est.)' : ''}</span>
+          <span className="th-block-total-value">{formatDistance(block.distanceKm)}</span>
         </span>
       </div>
     </div>

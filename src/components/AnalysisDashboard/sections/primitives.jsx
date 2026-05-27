@@ -5,7 +5,7 @@ export function SummaryCell({ label, value, note, highlight, trend }) {
   return (
     <div className={`an-summary-cell${highlight ? ' is-highlight' : ''}`}>
       <span className="an-summary-label">{label}</span>
-      <strong className={`an-summary-value tp-num ${trendClass}`}>{value}</strong>
+      <strong className={`an-summary-value th-num ${trendClass}`}>{value}</strong>
       {note && <span className="an-summary-note">{note}</span>}
     </div>
   )
@@ -15,7 +15,7 @@ export function Stat({ label, value }) {
   return (
     <div className="an-stat">
       <dt>{label}</dt>
-      <dd className="tp-num">{value}</dd>
+      <dd className="th-num">{value}</dd>
     </div>
   )
 }

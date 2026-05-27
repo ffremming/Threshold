@@ -42,7 +42,7 @@ export default function TemplatePickerModal({ targetWorkout, templates, loading,
         <EmptyState title="Empty session bank" description="You have no sessions in the bank yet." />
       ) : (
         <>
-          <div style={{ marginBottom: 'var(--tp-space-3)' }}>
+          <div style={{ marginBottom: 'var(--th-space-3)' }}>
             <SearchBox
               value={searchQuery}
               onChange={setSearchQuery}

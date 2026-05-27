@@ -65,13 +65,13 @@ export function Modal({ open, onClose, title, eyebrow, size = 'md', children, fo
   }
 
   return (
-    <div className="tp-modal-backdrop" onClick={handleBackdrop} role="dialog" aria-modal="true">
-      <div ref={modalRef} tabIndex={-1} className={`tp-modal tp-modal--${size}`}>
+    <div className="th-modal-backdrop" onClick={handleBackdrop} role="dialog" aria-modal="true">
+      <div ref={modalRef} tabIndex={-1} className={`th-modal th-modal--${size}`}>
         {(title || eyebrow || onClose) && (
-          <header className="tp-modal-head">
-            <div className="tp-modal-titles">
-              {eyebrow && <span className="tp-modal-eyebrow">{eyebrow}</span>}
-              {title && <h2 className="tp-modal-title">{title}</h2>}
+          <header className="th-modal-head">
+            <div className="th-modal-titles">
+              {eyebrow && <span className="th-modal-eyebrow">{eyebrow}</span>}
+              {title && <h2 className="th-modal-title">{title}</h2>}
             </div>
             {onClose && (
               <IconButton ariaLabel="Close" variant="ghost" onClick={onClose}>
@@ -80,8 +80,8 @@ export function Modal({ open, onClose, title, eyebrow, size = 'md', children, fo
             )}
           </header>
         )}
-        <div className="tp-modal-body">{children}</div>
-        {footer && <footer className="tp-modal-foot">{footer}</footer>}
+        <div className="th-modal-body">{children}</div>
+        {footer && <footer className="th-modal-foot">{footer}</footer>}
       </div>
     </div>
   )

@@ -10,7 +10,7 @@ export const ROLE_ICONS = {
 export default function RoleChip({ role }) {
   const Icon = ROLE_ICONS[role] || User
   return (
-    <span className={`tp-role-chip tp-role-chip--${role}`}>
+    <span className={`th-role-chip th-role-chip--${role}`}>
       <Icon size={12} strokeWidth={2} aria-hidden="true" />
       {ROLE_LABELS[role] || role}
     </span>

@@ -45,8 +45,8 @@ export default function ProfileCard({ profile }) {
   }
 
   return (
-    <Card className="tp-athlete-profile">
-      <div className="tp-athlete-profile-grid">
+    <Card className="th-athlete-profile">
+      <div className="th-athlete-profile-grid">
         <Field label="Max HR (bpm)">
           <Input
             type="number"
@@ -89,7 +89,7 @@ export default function ProfileCard({ profile }) {
           />
         </Field>
       </div>
-      <div className="tp-athlete-profile-actions">
+      <div className="th-athlete-profile-actions">
         <Button onClick={handleSave} disabled={!dirty || saving}>
           {saving ? 'Saving…' : 'Save'}
         </Button>

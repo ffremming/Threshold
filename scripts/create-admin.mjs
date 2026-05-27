@@ -4,7 +4,12 @@
 
 import { createInterface } from 'readline'
 
-const API_KEY = 'AIzaSyDS-iDj7t9bgG1wBtld0KA4gtfCCxB6yI0'
+const API_KEY = process.env.VITE_FIREBASE_API_KEY
+
+if (!API_KEY) {
+  console.error('Missing VITE_FIREBASE_API_KEY. Run via: npm run create-admin')
+  process.exit(1)
+}
 
 const rl = createInterface({ input: process.stdin, output: process.stdout })
 const ask = q => new Promise(resolve => rl.question(q, resolve))

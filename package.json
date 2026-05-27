@@ -7,10 +7,11 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "create-admin": "node scripts/create-admin.mjs",
-    "seed-templates": "node scripts/seed-templates.mjs",
-    "seed-global-templates": "node scripts/seed-global-templates.mjs",
-    "normalize-zones": "node scripts/normalize-zones.mjs"
+    "create-admin": "node --env-file=.env scripts/create-admin.mjs",
+    "seed-templates": "node --env-file=.env scripts/seed-templates.mjs",
+    "seed-global-templates": "node --env-file=.env scripts/seed-global-templates.mjs",
+    "normalize-zones": "node --env-file=.env scripts/normalize-zones.mjs",
+    "migrate-workouts": "node --env-file=.env scripts/migrate-workouts.mjs"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.0",

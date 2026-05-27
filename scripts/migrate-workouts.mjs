@@ -7,8 +7,14 @@
 
 import { createInterface } from 'readline'
 
-const API_KEY = 'AIzaSyDS-iDj7t9bgG1wBtld0KA4gtfCCxB6yI0'
-const PROJECT_ID = 'trainingplanner-53081'
+const API_KEY = process.env.VITE_FIREBASE_API_KEY
+const PROJECT_ID = process.env.VITE_FIREBASE_PROJECT_ID
+
+if (!API_KEY || !PROJECT_ID) {
+  console.error('Missing VITE_FIREBASE_API_KEY or VITE_FIREBASE_PROJECT_ID. Run with: node --env-file=.env scripts/migrate-workouts.mjs ...')
+  process.exit(1)
+}
+
 const FIRESTORE_URL = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents`
 
 const rl = createInterface({ input: process.stdin, output: process.stdout })

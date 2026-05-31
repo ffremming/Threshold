@@ -17,6 +17,12 @@ export function Modal({ open, onClose, title, eyebrow, size = 'md', children, fo
   const onCloseRef = useRef(onClose)
   onCloseRef.current = onClose
 
+  // TEMP focus-loss probe — remove after diagnosing.
+  useEffect(() => {
+    console.count('[Modal] MOUNT')
+    return () => console.count('[Modal] UNMOUNT')
+  }, [])
+
   useEffect(() => {
     if (!open) return undefined
     const previouslyFocused = typeof document !== 'undefined' ? document.activeElement : null

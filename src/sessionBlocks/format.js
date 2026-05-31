@@ -23,7 +23,7 @@ export function formatDuration(minutes) {
 export function formatDistance(km) {
   if (!Number.isFinite(km) || km <= 0) return '0 km'
   if (km < 1) return `${Math.round(km * 1000)} m`
-  return `${km.toFixed(km < 10 ? 1 : 0)} km`
+  return `${km.toFixed(1)} km`
 }
 
 export function formatPauseLabel(seconds) {

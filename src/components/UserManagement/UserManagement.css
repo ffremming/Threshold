@@ -56,6 +56,41 @@
   justify-content: flex-end;
 }
 
+.th-status-editor {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--th-space-2);
+}
+
+.th-status-toggle {
+  min-height: 2.25rem;
+  padding: 0 var(--th-space-3);
+  border-radius: var(--th-radius-sm);
+  border: 1px solid var(--th-line);
+  background: var(--th-bg);
+  color: var(--th-ink-muted);
+  font-size: var(--th-text-sm);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.th-status-toggle:hover {
+  border-color: var(--th-ink);
+  color: var(--th-ink);
+}
+
+.th-status-toggle:focus-visible {
+  outline: none;
+  border-color: var(--th-ink);
+  box-shadow: 0 0 0 3px var(--th-focus);
+}
+
+.th-status-toggle.is-on {
+  background: var(--th-surface);
+  border-color: color-mix(in srgb, var(--th-accent) 45%, transparent);
+  color: var(--th-ink);
+}
+
 /* ── Role chip (display) ─────────────────────────────────────────── */
 .th-role-chip {
   display: inline-flex;

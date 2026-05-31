@@ -4,6 +4,11 @@ import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'fire
 import { auth } from '../firebase'
 import { createUserProfile } from '../userService'
 import {
+  assertAuthAttemptAllowed,
+  clearAuthAttempts,
+  isRateLimitError,
+} from '../security/rateLimits'
+import {
   Button,
   Field,
   GradientText,
@@ -27,16 +32,31 @@ export default function Login({ onClose, fullScreen }) {
 
   async function handleSubmit(e) {
     e.preventDefault()
-    setLoading(true)
     setError('')
+    if (isRegistering && !displayName.trim()) {
+      setError('Enter your name')
+      return
+    }
+
+    const normalizedEmail = email.trim().toLowerCase()
+    const authAction = isRegistering ? 'register' : 'login'
+
+    try {
+      assertAuthAttemptAllowed(authAction, normalizedEmail)
+    } catch (err) {
+      setError(isRateLimitError(err) ? err.message : 'Please wait before trying again.')
+      return
+    }
+
+    setLoading(true)
     try {
       if (isRegistering) {
-        if (!displayName.trim()) { setError('Enter your name'); setLoading(false); return }
-        const cred = await createUserWithEmailAndPassword(auth, email, password)
-        await createUserProfile(cred.user.uid, email, displayName.trim(), 'athlete')
+        const cred = await createUserWithEmailAndPassword(auth, normalizedEmail, password)
+        await createUserProfile(cred.user.uid, normalizedEmail, displayName.trim(), 'athlete')
       } else {
-        await signInWithEmailAndPassword(auth, email, password)
+        await signInWithEmailAndPassword(auth, normalizedEmail, password)
       }
+      clearAuthAttempts(authAction, normalizedEmail)
       onClose?.()
     } catch (err) {
       if (isRegistering) {

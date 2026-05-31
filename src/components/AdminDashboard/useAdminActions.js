@@ -1,9 +1,32 @@
 import { signOut } from 'firebase/auth'
 import { auth } from '../../firebase'
+import { isRateLimitError } from '../../security/rateLimits'
 import { createWorkoutCrud } from './workoutActions'
 import { createTemplateInsertActions } from './templateInsertActions'
 import { createMoveActions, createDragHandlers } from './dragDrop'
 import { createTemplateActions, createGlobalTemplateActions } from './templateActions'
+
+function reportActionError(error) {
+  console.error('Admin action failed', error)
+  window.alert(isRateLimitError(error) ? error.message : 'Could not save the change. Please try again.')
+}
+
+function wrapAction(action) {
+  if (typeof action !== 'function') return action
+
+  return (...args) => {
+    try {
+      const result = action(...args)
+      if (result && typeof result.catch === 'function') {
+        return result.catch(reportActionError)
+      }
+      return result
+    } catch (error) {
+      reportActionError(error)
+      return undefined
+    }
+  }
+}
 
 export function useAdminActions(state) {
   const {
@@ -52,8 +75,12 @@ export function useAdminActions(state) {
     onClose()
   }
 
-  return {
+  const actions = {
     ...crud, ...inserts, ...moves, ...drag, ...templateActs, ...globalActs,
     handleStartReplaceWorkout, handleLogout,
   }
+
+  return Object.fromEntries(
+    Object.entries(actions).map(([key, action]) => [key, wrapAction(action)])
+  )
 }

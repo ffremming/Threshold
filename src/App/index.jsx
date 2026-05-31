@@ -7,7 +7,7 @@ import {
   getWeekWindow,
   groupWorkoutsByWeekday,
 } from '../utils'
-import { hasRole } from '../roles'
+import { hasRole, isActiveUserProfile } from '../roles'
 import ShortcutsHelp from '../components/ShortcutsHelp'
 import '../components/AthleteHome.css'
 import { useAuth } from './hooks/useAuth'
@@ -45,25 +45,31 @@ export default function App() {
   )
   const selectedWeekKey = getWeekKey(currentWeek, currentYear)
 
-  const isSuperadmin = hasRole(userProfile, 'superadmin')
-  const isCoach = hasRole(userProfile, 'coach')
-  const isAthlete = hasRole(userProfile, 'athlete')
+  const accountActive = isActiveUserProfile(userProfile)
+  const activeUserProfile = accountActive ? userProfile : null
+  const isSuperadmin = accountActive && hasRole(userProfile, 'superadmin')
+  const isCoach = accountActive && hasRole(userProfile, 'coach')
+  const isAthlete = accountActive && hasRole(userProfile, 'athlete')
   const canManageWorkouts = isSuperadmin || isCoach
   const workoutLayout = userProfile?.workoutLayout === 'calendar' ? 'calendar' : 'list'
 
   const { athletes, selectedAthleteId, setSelectedAthleteId } = useAthletes(
-    userProfile,
+    activeUserProfile,
     { isAthlete, isCoach, isSuperadmin }
   )
 
   const selectedAthleteProfile = athletes.find(athlete => athlete.uid === selectedAthleteId) || null
   const adminWorkoutLayout = selectedAthleteProfile?.workoutLayout === 'calendar' ? 'calendar' : 'list'
-  const viewedAthleteId = canManageWorkouts
-    ? (selectedAthleteId || userProfile?.uid || user?.uid)
-    : (userProfile?.uid || user?.uid)
-  const activeHomeAthlete = canManageWorkouts
-    ? (selectedAthleteProfile || (selectedAthleteId === userProfile?.uid ? userProfile : null))
-    : userProfile
+  const viewedAthleteId = !accountActive
+    ? null
+    : canManageWorkouts
+      ? (selectedAthleteId || userProfile?.uid || user?.uid)
+      : (activeUserProfile?.uid || user?.uid)
+  const activeHomeAthlete = !accountActive
+    ? null
+    : canManageWorkouts
+      ? (selectedAthleteProfile || (selectedAthleteId === userProfile?.uid ? userProfile : null))
+      : activeUserProfile
   const homeWorkoutLayout = canManageWorkouts ? adminWorkoutLayout : workoutLayout
 
   const { workouts, overviewWorkouts, loading, overviewLoading } = useWorkouts({
@@ -78,7 +84,7 @@ export default function App() {
     setSelectedWorkout(freshWorkout || null)
   }, [workouts, selectedWorkout])
 
-  const { templates, loadingTemplates } = useTemplates(userProfile)
+  const { templates, loadingTemplates } = useTemplates(activeUserProfile)
 
   function prevWeek() {
     const previous = getAdjacentWeek(currentWeek, currentYear, -1)

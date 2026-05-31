@@ -4,18 +4,19 @@ import {
   collection, query, where, onSnapshot, serverTimestamp,
 } from 'firebase/firestore'
 import { db } from '../firebase'
+import { withDatabaseWriteLimit } from '../security/rateLimits'
 import { normalizeUserDoc, relationshipId } from './firestore'
 
 export async function addRelationship(coachId, athleteId) {
-  await setDoc(doc(db, 'relationships', relationshipId(coachId, athleteId)), {
+  await withDatabaseWriteLimit('relationships', () => setDoc(doc(db, 'relationships', relationshipId(coachId, athleteId)), {
     coachId,
     athleteId,
     createdAt: serverTimestamp(),
-  })
+  }))
 }
 
 export async function removeRelationship(coachId, athleteId) {
-  await deleteDoc(doc(db, 'relationships', relationshipId(coachId, athleteId)))
+  await withDatabaseWriteLimit('relationships', () => deleteDoc(doc(db, 'relationships', relationshipId(coachId, athleteId))))
 }
 
 export function onRelationshipsSnapshot(callback) {

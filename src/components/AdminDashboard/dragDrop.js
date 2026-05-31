@@ -1,5 +1,6 @@
-import { doc, writeBatch } from 'firebase/firestore'
+import { doc, serverTimestamp, writeBatch } from 'firebase/firestore'
 import { db } from '../../firebase'
+import { withDatabaseWriteLimit } from '../../security/rateLimits'
 import {
   compareWorkoutsBySchedule,
   getDateStringForWeekday,
@@ -16,9 +17,15 @@ export function createMoveActions(ctx) {
     const swapIdx = idx + direction
     if (swapIdx < 0 || swapIdx >= sorted.length) return
     const batch = writeBatch(db)
-    batch.update(doc(db, 'workouts', sorted[idx].id), { order: sorted[swapIdx].order ?? swapIdx + 1 })
-    batch.update(doc(db, 'workouts', sorted[swapIdx].id), { order: sorted[idx].order ?? idx + 1 })
-    await batch.commit()
+    batch.update(doc(db, 'workouts', sorted[idx].id), {
+      order: sorted[swapIdx].order ?? swapIdx + 1,
+      updatedAt: serverTimestamp(),
+    })
+    batch.update(doc(db, 'workouts', sorted[swapIdx].id), {
+      order: sorted[idx].order ?? idx + 1,
+      updatedAt: serverTimestamp(),
+    })
+    await withDatabaseWriteLimit('workouts', () => batch.commit())
   }
 
   async function moveWorkoutByDrag(workoutId, targetWeekday, beforeWorkoutId = null) {
@@ -67,16 +74,20 @@ export function createMoveActions(ctx) {
         weekday: normalizedTargetWeekday,
         date: getDateStringForWeekday(currentWeek, currentYear, normalizedTargetWeekday),
         order: index + 1,
+        updatedAt: serverTimestamp(),
       })
     })
 
     if (sourceWeekday !== normalizedTargetWeekday) {
       sourceDayWorkouts.forEach((workout, index) => {
-        batch.update(doc(db, 'workouts', workout.id), { order: index + 1 })
+        batch.update(doc(db, 'workouts', workout.id), {
+          order: index + 1,
+          updatedAt: serverTimestamp(),
+        })
       })
     }
 
-    await batch.commit()
+    await withDatabaseWriteLimit('workouts', () => batch.commit())
   }
 
   return { moveWorkout, moveWorkoutByDrag }

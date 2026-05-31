@@ -12,6 +12,14 @@ export const ROLE_DESCRIPTIONS = {
 
 export const ROLE_OPTIONS = ['athlete', 'coach', 'superadmin']
 
+export const USER_STATUS_LABELS = {
+  active: 'Active',
+  pending: 'Pending',
+  disabled: 'Disabled',
+}
+
+export const USER_STATUS_OPTIONS = ['active', 'pending', 'disabled']
+
 const ROLE_PRIORITY = {
   superadmin: 0,
   coach: 1,
@@ -45,4 +53,12 @@ export function compareUsersByRole(a, b) {
   const roleA = getPrimaryRole(a)
   const roleB = getPrimaryRole(b)
   return (ROLE_PRIORITY[roleA] ?? 99) - (ROLE_PRIORITY[roleB] ?? 99)
+}
+
+export function getUserStatus(user) {
+  return user?.status || 'active'
+}
+
+export function isActiveUserProfile(user) {
+  return Boolean(user) && getUserStatus(user) === 'active'
 }

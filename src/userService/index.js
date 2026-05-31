@@ -7,6 +7,7 @@ export {
   getUserProfile,
   onUserProfileSnapshot,
   updateUserRole,
+  updateUserStatus,
   updateUserProfile,
   onAllUsersSnapshot,
 } from './users'

@@ -1,6 +1,7 @@
 // Coaching profile for athletes: max HR, training zones and logged results.
-import { doc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore'
+import { doc, updateDoc, arrayUnion, arrayRemove, serverTimestamp } from 'firebase/firestore'
 import { db } from '../firebase'
+import { withDatabaseWriteLimit } from '../security/rateLimits'
 
 function numberOrNull(value) {
   const n = Number(value)
@@ -13,18 +14,20 @@ function trimmedOrNull(value) {
 }
 
 export async function updateAthleteMaxHr(uid, maxHr) {
-  await updateDoc(doc(db, 'users', uid), {
+  await withDatabaseWriteLimit('users', () => updateDoc(doc(db, 'users', uid), {
     maxHr: numberOrNull(maxHr),
-  })
+    updatedAt: serverTimestamp(),
+  }))
 }
 
 export async function updateAthleteZones(uid, { thresholdHr, vo2maxHr, easyTempo, longTempo }) {
-  await updateDoc(doc(db, 'users', uid), {
+  await withDatabaseWriteLimit('users', () => updateDoc(doc(db, 'users', uid), {
     thresholdHr: numberOrNull(thresholdHr),
     vo2maxHr: numberOrNull(vo2maxHr),
     easyTempo: trimmedOrNull(easyTempo),
     longTempo: trimmedOrNull(longTempo),
-  })
+    updatedAt: serverTimestamp(),
+  }))
 }
 
 export async function addAthleteResult(uid, { date, distance, time, note }) {
@@ -37,14 +40,16 @@ export async function addAthleteResult(uid, { date, distance, time, note }) {
     note: typeof note === 'string' ? note.trim() : '',
     createdAt: new Date().toISOString(),
   }
-  await updateDoc(doc(db, 'users', uid), {
+  await withDatabaseWriteLimit('users', () => updateDoc(doc(db, 'users', uid), {
     results: arrayUnion(entry),
-  })
+    updatedAt: serverTimestamp(),
+  }))
   return entry
 }
 
 export async function removeAthleteResult(uid, entry) {
-  await updateDoc(doc(db, 'users', uid), {
+  await withDatabaseWriteLimit('users', () => updateDoc(doc(db, 'users', uid), {
     results: arrayRemove(entry),
-  })
+    updatedAt: serverTimestamp(),
+  }))
 }

@@ -3,6 +3,7 @@ import {
   addDoc, collection, updateDoc, doc, serverTimestamp, deleteField,
 } from 'firebase/firestore'
 import { db, auth } from '../firebase'
+import { isRateLimitError, withDatabaseWriteLimit } from '../security/rateLimits'
 import {
   getAdjacentWeek,
   getDateStringForWeekday,
@@ -17,7 +18,7 @@ import { updateUserProfile } from '../userService'
 function reportError(message, error) {
   console.error(message, error)
   if (typeof window !== 'undefined') {
-    window.alert(`${message} Please try again.`)
+    window.alert(isRateLimitError(error) ? error.message : `${message} Please try again.`)
   }
 }
 
@@ -50,10 +51,11 @@ export function createHandlers({
   async function handleToggleComplete(workout) {
     const wasCompleted = workout.completed
     try {
-      await updateDoc(doc(db, 'workouts', workout.id), {
+      await withDatabaseWriteLimit('workouts', () => updateDoc(doc(db, 'workouts', workout.id), {
         completed: !wasCompleted,
         completedAt: !wasCompleted ? serverTimestamp() : null,
-      })
+        updatedAt: serverTimestamp(),
+      }))
       if (selectedWorkout?.id === workout.id) {
         setSelectedWorkout(prev => ({ ...prev, completed: !prev.completed }))
       }
@@ -65,12 +67,13 @@ export function createHandlers({
   async function handleSaveComment(workout, payload) {
     const userComment = typeof payload === 'string' ? payload : payload.userComment
     try {
-      await updateDoc(doc(db, 'workouts', workout.id), {
+      await withDatabaseWriteLimit('workouts', () => updateDoc(doc(db, 'workouts', workout.id), {
         userComment,
         formScore: deleteField(),
         surplusScore: deleteField(),
         userCommentUpdatedAt: serverTimestamp(),
-      })
+        updatedAt: serverTimestamp(),
+      }))
       if (selectedWorkout?.id === workout.id) {
         setSelectedWorkout(prev => ({
           ...prev,
@@ -100,7 +103,7 @@ export function createHandlers({
     const { id, createdAt, updatedAt, templateId, source, ...fields } = template
     const intensityZone = normalizeIntensityZones(fields.type, fields.intensityZone)
     try {
-      await updateDoc(doc(db, 'workouts', replacementTarget.id), {
+      await withDatabaseWriteLimit('workouts', () => updateDoc(doc(db, 'workouts', replacementTarget.id), {
         ...fields,
         intensityZone,
         loadTag: normalizeLoadTag(fields.type, intensityZone, fields.loadTag),
@@ -117,7 +120,7 @@ export function createHandlers({
         userComment: '',
         userCommentUpdatedAt: null,
         updatedAt: serverTimestamp(),
-      })
+      }))
       setReplacementTarget(null)
     } catch (err) {
       reportError('Could not swap the session.', err)
@@ -144,7 +147,7 @@ export function createHandlers({
     } = workout
 
     try {
-      await addDoc(collection(db, 'workouts'), {
+      await withDatabaseWriteLimit('workouts', () => addDoc(collection(db, 'workouts'), {
         ...fields,
         week: targetWeek,
         year: targetYear,
@@ -155,7 +158,8 @@ export function createHandlers({
         userComment: '',
         userCommentUpdatedAt: null,
         createdAt: serverTimestamp(),
-      })
+        updatedAt: serverTimestamp(),
+      }))
       setSelectedWorkout(null)
     } catch (err) {
       reportError('Could not duplicate the session.', err)

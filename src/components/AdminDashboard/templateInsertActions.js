@@ -2,6 +2,7 @@ import {
   collection, doc, serverTimestamp, updateDoc, writeBatch,
 } from 'firebase/firestore'
 import { db } from '../../firebase'
+import { withDatabaseWriteLimit } from '../../security/rateLimits'
 import {
   compareWorkoutsBySchedule,
   getDateStringForWeekday,
@@ -36,7 +37,7 @@ export function createTemplateInsertActions(ctx) {
       )
       if (!shouldReplace) return
 
-      await updateDoc(doc(db, 'workouts', replacementTarget.id), {
+      await withDatabaseWriteLimit('workouts', () => updateDoc(doc(db, 'workouts', replacementTarget.id), {
         ...EMPTY_TEMPLATE,
         ...fields,
         intensityZone: normalizeIntensityZones(fields.type, fields.intensityZone),
@@ -53,7 +54,8 @@ export function createTemplateInsertActions(ctx) {
         completedAt: null,
         userComment: '',
         userCommentUpdatedAt: null,
-      })
+        updatedAt: serverTimestamp(),
+      }))
 
       if (selectedWorkout?.id === replacementTarget.id) setSelectedWorkout(null)
       setReplacementTarget(null)
@@ -107,6 +109,7 @@ export function createTemplateInsertActions(ctx) {
       userComment: '',
       userCommentUpdatedAt: null,
       createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
       order: insertIndex + 1,
     })
 
@@ -119,13 +122,13 @@ export function createTemplateInsertActions(ctx) {
 
     nextTargetDayWorkouts.forEach((workout, index) => {
       if (workout.id === newWorkoutRef.id) {
-        batch.set(newWorkoutRef, { order: index + 1 }, { merge: true })
+        batch.set(newWorkoutRef, { order: index + 1, updatedAt: serverTimestamp() }, { merge: true })
         return
       }
-      batch.update(doc(db, 'workouts', workout.id), { order: index + 1 })
+      batch.update(doc(db, 'workouts', workout.id), { order: index + 1, updatedAt: serverTimestamp() })
     })
 
-    await batch.commit()
+    await withDatabaseWriteLimit('workouts', () => batch.commit())
   }
 
   return { handleAddCustom, handleAddFromTemplate, handleAddTemplateToDay }

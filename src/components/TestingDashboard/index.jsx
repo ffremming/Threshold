@@ -11,6 +11,7 @@ import {
   where,
 } from 'firebase/firestore'
 import { db } from '../../firebase'
+import { isRateLimitError, withDatabaseWriteLimit } from '../../security/rateLimits'
 import { EmptyState, Page } from '../ui'
 import TestLibrary from './TestLibrary'
 import TestEditor from './TestEditor'
@@ -86,18 +87,30 @@ export default function TestingDashboard({ selectedAthleteId, userProfile }) {
       updatedBy: userProfile?.uid || null,
     }
 
-    if (editingTest && editingTest !== 'new') {
-      await updateDoc(doc(db, 'tests', editingTest), payload)
-    } else {
-      await addDoc(collection(db, 'tests'), { ...payload, createdAt: serverTimestamp(), createdBy: userProfile?.uid || null })
+    try {
+      if (editingTest && editingTest !== 'new') {
+        await withDatabaseWriteLimit('tests', () => updateDoc(doc(db, 'tests', editingTest), payload))
+      } else {
+        await withDatabaseWriteLimit('tests', () => addDoc(collection(db, 'tests'), {
+          ...payload,
+          createdAt: serverTimestamp(),
+          createdBy: userProfile?.uid || null,
+        }))
+      }
+      resetForm()
+    } catch (err) {
+      window.alert(isRateLimitError(err) ? err.message : 'Could not save the test. Please try again.')
     }
-    resetForm()
   }
 
   async function handleDelete(test) {
     if (!window.confirm(`Delete the test "${test.title}"?`)) return
-    await deleteDoc(doc(db, 'tests', test.id))
-    if (editingTest === test.id) resetForm()
+    try {
+      await withDatabaseWriteLimit('tests', () => deleteDoc(doc(db, 'tests', test.id)))
+      if (editingTest === test.id) resetForm()
+    } catch (err) {
+      window.alert(isRateLimitError(err) ? err.message : 'Could not delete the test. Please try again.')
+    }
   }
 
   if (!selectedAthleteId) {

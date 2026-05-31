@@ -5,6 +5,7 @@ export function normalizeUserDoc(snapshot) {
   return {
     id: snapshot.id,
     uid: data.uid || snapshot.id,
+    status: data.status || 'active',
     ...data,
   }
 }

@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useState } from 'react'
 import {
   updateUserRole,
+  updateUserStatus,
   addRelationship,
   removeRelationship,
   onAllUsersSnapshot,
   onRelationshipsSnapshot,
 } from '../../userService'
-import { getUserRoles, hasRole } from '../../roles'
+import { getUserRoles, getUserStatus, hasRole } from '../../roles'
 import UserDetail from './UserDetail'
 import UserList from './UserList'
 
@@ -16,6 +17,7 @@ export default function UserManagement({ currentUser, onClose }) {
   const [loading, setLoading] = useState(true)
   const [selectedUid, setSelectedUid] = useState(null)
   const [busyRole, setBusyRole] = useState(null)
+  const [busyStatus, setBusyStatus] = useState(null)
 
   useEffect(() => {
     const unsubUsers = onAllUsersSnapshot(allUsers => {
@@ -63,6 +65,26 @@ export default function UserManagement({ currentUser, onClose }) {
     }
   }
 
+  async function handleStatusChange(user, status) {
+    if (getUserStatus(user) === status) return
+
+    if (user.uid === currentUser.uid && status !== 'active') {
+      const ok = window.confirm(
+        'Are you sure you want to change your own access? You may lose access immediately.',
+      )
+      if (!ok) return
+    }
+
+    setBusyStatus(status)
+    try {
+      await updateUserStatus(user.uid, status)
+    } catch (err) {
+      window.alert(`Could not update access: ${err.message}`)
+    } finally {
+      setBusyStatus(null)
+    }
+  }
+
   async function handleAddRelationship(coachId, athleteId) {
     try {
       await addRelationship(coachId, athleteId)
@@ -88,8 +110,10 @@ export default function UserManagement({ currentUser, onClose }) {
         athletes={athletes}
         relationships={relationships}
         busyRole={busyRole}
+        busyStatus={busyStatus}
         onBack={() => setSelectedUid(null)}
         onRoleToggle={handleRoleToggle}
+        onStatusChange={handleStatusChange}
         onAddRelationship={handleAddRelationship}
         onRemoveRelationship={handleRemoveRelationship}
       />

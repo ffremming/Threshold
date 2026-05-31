@@ -1,7 +1,13 @@
 import { useMemo } from 'react'
 import { Mail } from 'lucide-react'
-import { getUserRoles, hasRole } from '../../roles'
-import { Card, Page, PageShell, Section, ShellBrand, Stat } from '../ui'
+import {
+  USER_STATUS_LABELS,
+  USER_STATUS_OPTIONS,
+  getUserRoles,
+  getUserStatus,
+  hasRole,
+} from '../../roles'
+import { Card, Page, PageShell, Section, ShellBrand, Stat, StatusPill } from '../ui'
 import { useNav } from '../../App/primaryNav'
 import RelationshipSection from './RelationshipSection'
 import RoleEditor from './RoleEditor'
@@ -12,14 +18,17 @@ export default function UserDetail({
   athletes,
   relationships,
   busyRole,
+  busyStatus,
   onBack,
   onRoleToggle,
+  onStatusChange,
   onAddRelationship,
   onRemoveRelationship,
 }) {
   const nav = useNav()
   const isCoach = hasRole(selectedUser, 'coach')
   const isAthlete = hasRole(selectedUser, 'athlete')
+  const status = getUserStatus(selectedUser)
 
   const { coachAthletes, athleteCoaches } = useMemo(() => {
     const athleteIds = new Set(
@@ -68,7 +77,31 @@ export default function UserDetail({
             }
           />
           <Stat label="Active roles" value={getUserRoles(selectedUser).length} />
+          <Stat
+            label="Access"
+            value={<StatusPill status={status === 'active' ? 'success' : status === 'pending' ? 'warning' : 'danger'}>{USER_STATUS_LABELS[status] || status}</StatusPill>}
+          />
         </Card>
+
+        <Section
+          title="Access"
+          subtitle="Pending and disabled users can sign in, but cannot read or write training data."
+        >
+          <div className="th-status-editor" role="group" aria-label="Access status">
+            {USER_STATUS_OPTIONS.map(option => (
+              <button
+                key={option}
+                type="button"
+                className={`th-status-toggle${status === option ? ' is-on' : ''}`}
+                aria-pressed={status === option}
+                disabled={busyStatus === option}
+                onClick={() => onStatusChange(selectedUser, option)}
+              >
+                {USER_STATUS_LABELS[option]}
+              </button>
+            ))}
+          </div>
+        </Section>
 
         <Section
           title="Roles"

@@ -3,6 +3,7 @@ import {
   serverTimestamp,
 } from 'firebase/firestore'
 import { db } from './firebase'
+import { withDatabaseWriteLimit } from './security/rateLimits'
 import { normalizeBlocks } from './sessionBlocks'
 
 const COLLECTION = 'athleteSessions'
@@ -53,36 +54,36 @@ export function subscribeAthleteSessions(coachId, athleteId, callback) {
 
 export async function addAthleteSessionFromBank(coachId, athleteId, bankTemplate) {
   const session = stripSessionFields(bankTemplate)
-  return addDoc(collection(db, COLLECTION), {
+  return withDatabaseWriteLimit('athlete-sessions', () => addDoc(collection(db, COLLECTION), {
     coachId,
     athleteId,
     sourceBankId: bankTemplate?.id || null,
     ...session,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
-  })
+  }))
 }
 
 export async function addAthleteSession(coachId, athleteId, data) {
   const session = stripSessionFields(data)
-  return addDoc(collection(db, COLLECTION), {
+  return withDatabaseWriteLimit('athlete-sessions', () => addDoc(collection(db, COLLECTION), {
     coachId,
     athleteId,
     sourceBankId: data?.sourceBankId || null,
     ...session,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
-  })
+  }))
 }
 
 export async function updateAthleteSession(sessionId, fields) {
   const next = stripSessionFields(fields)
-  await updateDoc(doc(db, COLLECTION, sessionId), {
+  await withDatabaseWriteLimit('athlete-sessions', () => updateDoc(doc(db, COLLECTION, sessionId), {
     ...next,
     updatedAt: serverTimestamp(),
-  })
+  }))
 }
 
 export async function deleteAthleteSession(sessionId) {
-  await deleteDoc(doc(db, COLLECTION, sessionId))
+  await withDatabaseWriteLimit('athlete-sessions', () => deleteDoc(doc(db, COLLECTION, sessionId)))
 }

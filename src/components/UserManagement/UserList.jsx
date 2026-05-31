@@ -1,7 +1,12 @@
 import { useMemo, useState } from 'react'
 import { ChevronRight, Users } from 'lucide-react'
-import { compareUsersByRole, getUserRoles } from '../../roles'
-import { Card, EmptyState, List, Page, PageHeader, PageShell, SearchBox } from '../ui'
+import {
+  USER_STATUS_LABELS,
+  compareUsersByRole,
+  getUserRoles,
+  getUserStatus,
+} from '../../roles'
+import { Card, EmptyState, List, Page, PageHeader, PageShell, SearchBox, StatusPill } from '../ui'
 import { useNav } from '../../App/primaryNav'
 import RoleChip from './RoleChip'
 import './UserManagement.css'
@@ -70,7 +75,7 @@ export default function UserList({ users, loading, onSelectUser }) {
         ) : (
           <List className="th-um-list">
             {sorted.map(u => (
-              <List.Row key={u.uid} onClick={() => onSelectUser(u)} columns="1fr auto auto">
+              <List.Row key={u.uid} onClick={() => onSelectUser(u)} columns="1fr auto auto auto">
                 <div className="th-um-user">
                   <span className="th-um-avatar" aria-hidden="true">{initialOf(u)}</span>
                   <span className="th-um-user-meta">
@@ -81,6 +86,9 @@ export default function UserList({ users, loading, onSelectUser }) {
                 <span className="th-um-roles">
                   {getUserRoles(u).map(role => <RoleChip key={role} role={role} />)}
                 </span>
+                <StatusPill status={getUserStatus(u) === 'active' ? 'success' : getUserStatus(u) === 'pending' ? 'warning' : 'danger'}>
+                  {USER_STATUS_LABELS[getUserStatus(u)] || getUserStatus(u)}
+                </StatusPill>
                 <ChevronRight size={16} aria-hidden="true" style={{ color: 'var(--th-ink-muted)' }} />
               </List.Row>
             ))}

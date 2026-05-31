@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Plus } from 'lucide-react'
 import { collection, onSnapshot, query, where } from 'firebase/firestore'
 import { db } from '../../firebase'
+import { isRateLimitError } from '../../security/rateLimits'
 import { mergeTemplates } from '../../templateLibrary'
 import {
   subscribeAthleteSessions,
@@ -51,18 +52,30 @@ export default function AthleteSessionPool({ coachId, athleteId }) {
   }, [coachId])
 
   async function handleAddFromBank(template) {
-    await addAthleteSessionFromBank(coachId, athleteId, template)
-    setPickerOpen(false)
+    try {
+      await addAthleteSessionFromBank(coachId, athleteId, template)
+      setPickerOpen(false)
+    } catch (err) {
+      window.alert(isRateLimitError(err) ? err.message : 'Could not add the session. Please try again.')
+    }
   }
 
   async function handleEditSave(updated) {
-    await updateAthleteSession(updated.id, updated)
-    setEditing(null)
+    try {
+      await updateAthleteSession(updated.id, updated)
+      setEditing(null)
+    } catch (err) {
+      window.alert(isRateLimitError(err) ? err.message : 'Could not save the session. Please try again.')
+    }
   }
 
   async function handleDelete(session) {
     if (!window.confirm(`Delete the session «${session.title}»?`)) return
-    await deleteAthleteSession(session.id)
+    try {
+      await deleteAthleteSession(session.id)
+    } catch (err) {
+      window.alert(isRateLimitError(err) ? err.message : 'Could not delete the session. Please try again.')
+    }
   }
 
   return (

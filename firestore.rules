@@ -3,12 +3,32 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    function signedIn() {
+      return request.auth != null;
+    }
+
     function getUserData() {
       return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
     }
 
+    function userExists() {
+      return signedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function hasActiveStatus(userData) {
+      return !('status' in userData) || userData.status == 'active';
+    }
+
+    function isActiveUser() {
+      return userExists() && hasActiveStatus(getUserData());
+    }
+
+    function isValidStatus(status) {
+      return status == 'active' || status == 'pending' || status == 'disabled';
+    }
+
     function hasRole(role) {
-      return request.auth != null && (
+      return isActiveUser() && (
         getUserData().role == role ||
         ('roles' in getUserData() && role in getUserData().roles)
       );
@@ -19,85 +39,115 @@ service cloud.firestore {
     }
 
     function isCoachOf(athleteId) {
-      return exists(/databases/$(database)/documents/relationships/$(request.auth.uid + '_' + athleteId));
+      return isActiveUser()
+        && exists(/databases/$(database)/documents/relationships/$(request.auth.uid + '_' + athleteId));
+    }
+
+    function canAccessAthlete(athleteId) {
+      return isActiveUser() && (
+        athleteId == request.auth.uid ||
+        isSuperadmin() ||
+        isCoachOf(athleteId)
+      );
     }
 
     function isTemplateOwner(templateData) {
-      return request.auth != null && templateData.ownerId == request.auth.uid;
+      return isActiveUser() && templateData.ownerId == request.auth.uid;
     }
 
     function isBuiltinTemplate(templateData) {
       return templateData.source == 'builtin';
     }
 
+    function changedKeys() {
+      return request.resource.data.diff(resource.data).affectedKeys();
+    }
+
+    function isValidSelfCreate(userId) {
+      return signedIn()
+        && request.auth.uid == userId
+        && request.resource.data.keys().hasOnly([
+          'uid', 'email', 'displayName', 'workoutLayout',
+          'role', 'roles', 'status', 'createdAt', 'updatedAt'
+        ])
+        && request.resource.data.uid == userId
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.displayName is string
+        && request.resource.data.workoutLayout in ['list', 'calendar']
+        && request.resource.data.role == 'athlete'
+        && request.resource.data.roles is list
+        && request.resource.data.roles.size() == 1
+        && request.resource.data.roles[0] == 'athlete'
+        && request.resource.data.status == 'pending'
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time;
+    }
+
+    function isValidUserAdminUpdate() {
+      return !changedKeys().hasAny(['uid', 'email', 'createdAt'])
+        && (!('status' in request.resource.data) || isValidStatus(request.resource.data.status))
+        && (!('roles' in request.resource.data) || request.resource.data.roles is list);
+    }
+
+    function isSafeProfileUpdate() {
+      return changedKeys().hasOnly([
+        'displayName', 'workoutLayout', 'maxHr', 'thresholdHr', 'vo2maxHr',
+        'easyTempo', 'longTempo', 'results', 'updatedAt'
+      ]);
+    }
+
     // Users collection
     match /users/{userId} {
-      allow read: if request.auth != null && (
+      allow read: if signedIn() && (
         request.auth.uid == userId ||
         isSuperadmin() ||
         (hasRole('coach') && isCoachOf(userId))
       );
-      // New users may only self-create as athlete. Role/roles fields must be
-      // exactly the default — elevated roles are granted by a superadmin via
-      // updateUserRole, never set by the user themselves.
-      allow create: if request.auth != null
-        && request.auth.uid == userId
-        && request.resource.data.uid == userId
-        && request.resource.data.role == 'athlete'
-        && request.resource.data.roles is list
-        && request.resource.data.roles.size() == 1
-        && request.resource.data.roles[0] == 'athlete';
-      // Self-updates may NOT change role/roles. Only superadmin can promote.
-      allow update: if request.auth != null && (
-        isSuperadmin() ||
-        (
-          request.auth.uid == userId &&
-          (!('role' in request.resource.data) || request.resource.data.role == resource.data.role) &&
-          (!('roles' in request.resource.data) || request.resource.data.roles == resource.data.roles)
-        )
+      // New users may only self-create as pending athletes. A superadmin must
+      // activate the profile before it can read or write training data.
+      allow create: if isValidSelfCreate(userId);
+      // Self/coach profile edits cannot change identity, roles, or status.
+      // Superadmins can manage role and status but not rewrite immutable identity.
+      allow update: if isActiveUser() && (
+        (isSuperadmin() && isValidUserAdminUpdate()) ||
+        (request.auth.uid == userId && isSafeProfileUpdate()) ||
+        (isCoachOf(userId) && isSafeProfileUpdate())
       );
     }
 
     // Coach-Athlete Relationships
     match /relationships/{relationshipId} {
-      allow read: if request.auth != null;
-      allow write: if isSuperadmin();
+      allow read: if isActiveUser() && (
+        isSuperadmin() ||
+        resource.data.coachId == request.auth.uid ||
+        resource.data.athleteId == request.auth.uid
+      );
+      allow create, update: if isSuperadmin()
+        && request.resource.data.coachId is string
+        && request.resource.data.athleteId is string
+        && relationshipId == request.resource.data.coachId + '_' + request.resource.data.athleteId;
+      allow delete: if isSuperadmin();
     }
 
     // Workouts
     match /workouts/{workoutId} {
-      allow read: if request.auth != null && (
-        resource.data.athleteId == request.auth.uid ||
-        isSuperadmin() ||
-        isCoachOf(resource.data.athleteId)
-      );
-      allow create: if request.auth != null
+      allow read: if canAccessAthlete(resource.data.athleteId);
+      allow create: if isActiveUser()
         && request.resource.data.athleteId is string
-        && (
-          request.resource.data.athleteId == request.auth.uid ||
-          isSuperadmin() ||
-          isCoachOf(request.resource.data.athleteId)
-        );
-      allow update: if request.auth != null && (
-        resource.data.athleteId == request.auth.uid ||
-        isSuperadmin() ||
-        isCoachOf(resource.data.athleteId)
-      );
-      allow delete: if request.auth != null && (
-        resource.data.athleteId == request.auth.uid ||
-        isSuperadmin() ||
-        isCoachOf(resource.data.athleteId)
-      );
+        && canAccessAthlete(request.resource.data.athleteId);
+      allow update: if canAccessAthlete(resource.data.athleteId)
+        && request.resource.data.athleteId == resource.data.athleteId;
+      allow delete: if canAccessAthlete(resource.data.athleteId);
     }
 
     // Templates (global, read by all authenticated, write by superadmin/coach)
     match /templates/{templateId} {
-      allow read: if request.auth != null && (
+      allow read: if isActiveUser() && (
         isBuiltinTemplate(resource.data) ||
         isTemplateOwner(resource.data) ||
         isSuperadmin()
       );
-      allow create: if request.auth != null && (
+      allow create: if isActiveUser() && (
         isSuperadmin() ||
         (
           hasRole('coach') &&
@@ -105,7 +155,17 @@ service cloud.firestore {
           isTemplateOwner(request.resource.data)
         )
       );
-      allow update, delete: if request.auth != null && (
+      allow update: if isActiveUser() && (
+        isSuperadmin() ||
+        (
+          hasRole('coach') &&
+          !isBuiltinTemplate(resource.data) &&
+          isTemplateOwner(resource.data)
+        )
+      )
+        && request.resource.data.ownerId == resource.data.ownerId
+        && request.resource.data.source == resource.data.source;
+      allow delete: if isActiveUser() && (
         isSuperadmin() ||
         (
           hasRole('coach') &&
@@ -117,26 +177,35 @@ service cloud.firestore {
 
     // Global session library (read by all authenticated, write by superadmin only)
     match /globalTemplates/{templateId} {
-      allow read: if request.auth != null;
+      allow read: if isActiveUser();
       allow write: if isSuperadmin();
     }
 
     // Per-athlete session pool (coach maintains a session bank per athlete)
     match /athleteSessions/{sessionId} {
-      allow read: if request.auth != null && (
+      allow read: if isActiveUser() && (
         isSuperadmin() ||
         resource.data.coachId == request.auth.uid ||
         resource.data.athleteId == request.auth.uid ||
         isCoachOf(resource.data.athleteId)
       );
-      allow create: if request.auth != null && (
+      allow create: if isActiveUser() && (
         isSuperadmin() ||
         (
           request.resource.data.coachId == request.auth.uid &&
           isCoachOf(request.resource.data.athleteId)
         )
       );
-      allow update, delete: if request.auth != null && (
+      allow update: if isActiveUser() && (
+        isSuperadmin() ||
+        (
+          resource.data.coachId == request.auth.uid &&
+          isCoachOf(resource.data.athleteId)
+        )
+      )
+        && request.resource.data.coachId == resource.data.coachId
+        && request.resource.data.athleteId == resource.data.athleteId;
+      allow delete: if isActiveUser() && (
         isSuperadmin() ||
         (
           resource.data.coachId == request.auth.uid &&
@@ -147,23 +216,13 @@ service cloud.firestore {
 
     // Tests
     match /tests/{testId} {
-      allow read: if request.auth != null && (
-        resource.data.athleteId == request.auth.uid ||
-        isSuperadmin() ||
-        isCoachOf(resource.data.athleteId)
-      );
-      allow create: if request.auth != null
+      allow read: if canAccessAthlete(resource.data.athleteId);
+      allow create: if isActiveUser()
         && request.resource.data.athleteId is string
-        && (
-          request.resource.data.athleteId == request.auth.uid ||
-          isSuperadmin() ||
-          isCoachOf(request.resource.data.athleteId)
-        );
-      allow update, delete: if request.auth != null && (
-        resource.data.athleteId == request.auth.uid ||
-        isSuperadmin() ||
-        isCoachOf(resource.data.athleteId)
-      );
+        && canAccessAthlete(request.resource.data.athleteId);
+      allow update: if canAccessAthlete(resource.data.athleteId)
+        && request.resource.data.athleteId == resource.data.athleteId;
+      allow delete: if canAccessAthlete(resource.data.athleteId);
     }
   }
 }

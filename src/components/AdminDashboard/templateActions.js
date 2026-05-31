@@ -2,6 +2,7 @@ import {
   addDoc, collection, deleteDoc, doc, serverTimestamp, updateDoc,
 } from 'firebase/firestore'
 import { db } from '../../firebase'
+import { withDatabaseWriteLimit } from '../../security/rateLimits'
 import {
   getDefaultCooldown,
   getDefaultWarmup,
@@ -30,7 +31,7 @@ export function createTemplateActions(ctx) {
     e.preventDefault()
     if (!templateForm.title.trim()) return
     if (editingTemplate === 'new') {
-      await addDoc(collection(db, 'templates'), {
+      await withDatabaseWriteLimit('templates', () => addDoc(collection(db, 'templates'), {
         ...templateForm,
         source: 'custom',
         ownerId: userProfile.uid,
@@ -40,30 +41,30 @@ export function createTemplateActions(ctx) {
         cooldown: templateForm.cooldown?.trim() || getDefaultCooldown(templateForm.type, templateForm.activityTag),
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
-      })
+      }))
     } else {
       const { id, ...fields } = templateForm
-      await updateDoc(doc(db, 'templates', editingTemplate.id), {
+      await withDatabaseWriteLimit('templates', () => updateDoc(doc(db, 'templates', editingTemplate.id), {
         ...fields,
         intensityZone: normalizeIntensityZones(fields.type, fields.intensityZone),
         loadTag: normalizeLoadTag(fields.type, fields.intensityZone, fields.loadTag),
         warmup: fields.warmup?.trim() || getDefaultWarmup(fields.type, fields.activityTag),
         cooldown: fields.cooldown?.trim() || getDefaultCooldown(fields.type, fields.activityTag),
         updatedAt: serverTimestamp(),
-      })
+      }))
     }
     setEditingTemplate(null)
   }
 
   async function handleDeleteTemplate(template) {
     if (!window.confirm(`Delete the template "${template.title}"?`)) return
-    await deleteDoc(doc(db, 'templates', template.id))
+    await withDatabaseWriteLimit('templates', () => deleteDoc(doc(db, 'templates', template.id)))
   }
 
   async function handleAddFromLibrary(template) {
     if (!userProfile?.uid) return
     const { id, source, createdAt, updatedAt, ownerId, libraryId, ...fields } = template
-    await addDoc(collection(db, 'templates'), {
+    await withDatabaseWriteLimit('templates', () => addDoc(collection(db, 'templates'), {
       ...fields,
       source: 'custom',
       ownerId: userProfile.uid,
@@ -74,7 +75,7 @@ export function createTemplateActions(ctx) {
       cooldown: fields.cooldown?.trim() || getDefaultCooldown(fields.type, fields.activityTag),
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
-    })
+    }))
   }
 
   function isAlreadyInBank(template) {
@@ -96,7 +97,7 @@ export function createGlobalTemplateActions(ctx) {
   async function handleDeleteGlobalTemplate(template) {
     if (!isSuperadmin) return
     if (!window.confirm(`Delete "${template.title}" from the library? Coach copies are kept.`)) return
-    await deleteDoc(doc(db, 'globalTemplates', template.id))
+    await withDatabaseWriteLimit('global-templates', () => deleteDoc(doc(db, 'globalTemplates', template.id)))
   }
 
   function startEditGlobalTemplate(template) {
@@ -126,14 +127,14 @@ export function createGlobalTemplateActions(ctx) {
     }
 
     if (editingGlobalTemplate === 'new') {
-      await addDoc(collection(db, 'globalTemplates'), {
+      await withDatabaseWriteLimit('global-templates', () => addDoc(collection(db, 'globalTemplates'), {
         ...fields,
         source: 'global',
         createdAt: serverTimestamp(),
-      })
+      }))
     } else {
       const { id, ...rest } = fields
-      await updateDoc(doc(db, 'globalTemplates', editingGlobalTemplate.id), rest)
+      await withDatabaseWriteLimit('global-templates', () => updateDoc(doc(db, 'globalTemplates', editingGlobalTemplate.id), rest))
     }
     setEditingGlobalTemplate(null)
   }

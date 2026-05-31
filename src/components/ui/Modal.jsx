@@ -14,6 +14,8 @@ const FOCUSABLE_SELECTOR = [
 
 export function Modal({ open, onClose, title, eyebrow, size = 'md', children, footer }) {
   const modalRef = useRef(null)
+  const onCloseRef = useRef(onClose)
+  onCloseRef.current = onClose
 
   useEffect(() => {
     if (!open) return undefined
@@ -21,7 +23,7 @@ export function Modal({ open, onClose, title, eyebrow, size = 'md', children, fo
 
     function onKey(e) {
       if (e.key === 'Escape') {
-        onClose?.()
+        onCloseRef.current?.()
         return
       }
       if (e.key !== 'Tab' || !modalRef.current) return
@@ -56,7 +58,7 @@ export function Modal({ open, onClose, title, eyebrow, size = 'md', children, fo
         previouslyFocused.focus()
       }
     }
-  }, [open, onClose])
+  }, [open])
 
   if (!open) return null
 

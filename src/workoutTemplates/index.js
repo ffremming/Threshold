@@ -10,4 +10,8 @@ export const WORKOUT_TEMPLATES = [
   ...STYRKE_TEMPLATES,
 ]
 
-export const TEMPLATE_CATEGORIES = ['All', ...new Set(WORKOUT_TEMPLATES.map(t => t.category))]
+const CATEGORY_ORDER = ['Easy', 'Hard']
+export const TEMPLATE_CATEGORIES = [
+  'All',
+  ...CATEGORY_ORDER.filter(cat => WORKOUT_TEMPLATES.some(t => t.category === cat)),
+]

@@ -5,10 +5,17 @@ import {
   normalizeSection,
   paceToSpeed,
 } from '../../sessionBlocks'
-import SliderRow, { PaceOrSpeedSlider } from './SliderRow'
+import SliderRow, { ModeButton, PaceOrSpeedSlider } from './SliderRow'
 import IntervalSliders from './IntervalSliders'
 import { StrengthSliders, DurationSliders } from './StrengthSliders'
-import { DISTANCE_MAX, DISTANCE_MIN, DISTANCE_STEP } from './constants'
+import {
+  DISTANCE_MAX,
+  DISTANCE_MIN,
+  DISTANCE_STEP,
+  DURATION_MAX,
+  DURATION_MIN,
+  DURATION_STEP,
+} from './constants'
 
 export default function BlockSliders({ block, onChange, activityTag }) {
   const unit = getSpeedUnitForActivity(activityTag)
@@ -37,17 +44,42 @@ export default function BlockSliders({ block, onChange, activityTag }) {
 
 function SteadySliders({ block, unit, onPatch }) {
   const speedKmh = paceToSpeed(block.paceSecPerKm)
+  const paceMode = block.paceMode === 'time' ? 'time' : 'length'
+
+  function setMode(nextMode) {
+    if (nextMode === paceMode) return
+    onPatch({ paceMode: nextMode })
+  }
+
   return (
     <div className="th-block-sliders">
-      <SliderRow
-        label="Length"
-        value={block.distanceKm}
-        min={DISTANCE_MIN}
-        max={DISTANCE_MAX}
-        step={DISTANCE_STEP}
-        display={formatDistance(block.distanceKm)}
-        onChange={(v) => onPatch({ distanceKm: Number(v.toFixed(2)) })}
-      />
+      <div className="th-block-mode-toggle" role="tablist" aria-label="Define by">
+        <ModeButton current={paceMode} value="time" label="Time" onSelect={setMode} />
+        <ModeButton current={paceMode} value="length" label="Length" onSelect={setMode} />
+      </div>
+
+      {paceMode === 'time' ? (
+        <SliderRow
+          label="Duration"
+          value={Math.min(DURATION_MAX, Math.max(DURATION_MIN, Number(block.durationMin) || DURATION_MIN))}
+          min={DURATION_MIN}
+          max={DURATION_MAX}
+          step={DURATION_STEP}
+          display={formatDuration(block.durationMin)}
+          onChange={(v) => onPatch({ durationMin: Math.round(v) })}
+        />
+      ) : (
+        <SliderRow
+          label="Length"
+          value={block.distanceKm}
+          min={DISTANCE_MIN}
+          max={DISTANCE_MAX}
+          step={DISTANCE_STEP}
+          display={formatDistance(block.distanceKm)}
+          onChange={(v) => onPatch({ distanceKm: Number(v.toFixed(2)) })}
+        />
+      )}
+
       <PaceOrSpeedSlider unit={unit} paceSecPerKm={block.paceSecPerKm} speedKmh={speedKmh} onPatch={onPatch} />
       <div className="th-block-totals">
         <span className="th-block-total">
@@ -55,7 +87,7 @@ function SteadySliders({ block, unit, onPatch }) {
           <span className="th-block-total-value">{formatDuration(block.durationMin)}</span>
         </span>
         <span className="th-block-total">
-          <span className="th-block-total-label">Distance</span>
+          <span className="th-block-total-label">Distance{paceMode === 'time' ? ' (est.)' : ''}</span>
           <span className="th-block-total-value">{formatDistance(block.distanceKm)}</span>
         </span>
       </div>

@@ -1,7 +1,7 @@
 export const STYRKE_TEMPLATES = [
   {
     id: 'molle-styrke-fullkropp',
-    category: 'Treadmill + strength',
+    category: 'Easy',
     type: 'molle',
     activityTag: 'run',
     title: 'Treadmill + strength (full body)',
@@ -15,7 +15,7 @@ export const STYRKE_TEMPLATES = [
   },
   {
     id: 'styrke-overkropp',
-    category: 'Strength',
+    category: 'Easy',
     type: 'styrke',
     activityTag: 'strength',
     title: 'Strength – upper body',
@@ -26,7 +26,7 @@ export const STYRKE_TEMPLATES = [
   },
   {
     id: 'styrke-underkropp',
-    category: 'Strength',
+    category: 'Easy',
     type: 'styrke',
     activityTag: 'strength',
     title: 'Strength – lower body',
@@ -37,7 +37,7 @@ export const STYRKE_TEMPLATES = [
   },
   {
     id: 'styrke-fullkropp',
-    category: 'Strength',
+    category: 'Easy',
     type: 'styrke',
     activityTag: 'strength',
     title: 'Strength – full body A',
@@ -48,7 +48,7 @@ export const STYRKE_TEMPLATES = [
   },
   {
     id: 'styrke-fullkropp-b',
-    category: 'Strength',
+    category: 'Easy',
     type: 'styrke',
     activityTag: 'strength',
     title: 'Strength – full body B',

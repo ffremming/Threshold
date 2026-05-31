@@ -1,7 +1,7 @@
 export const INTERVALL_TEMPLATES = [
   {
     id: 'rask-intervall-400m',
-    category: 'Interval',
+    category: 'Hard',
     type: 'interval',
     activityTag: 'run',
     title: 'Fast interval – 400m',
@@ -15,7 +15,7 @@ export const INTERVALL_TEMPLATES = [
   },
   {
     id: '45-15-3x10',
-    category: 'Interval',
+    category: 'Hard',
     type: 'interval',
     activityTag: 'run',
     title: '45/15 – 3x10',
@@ -27,7 +27,7 @@ export const INTERVALL_TEMPLATES = [
   },
   {
     id: '1min-x10-13kmt',
-    category: 'Interval',
+    category: 'Hard',
     type: 'interval',
     activityTag: 'run',
     title: 'Fast interval – 1min x10',
@@ -39,7 +39,7 @@ export const INTERVALL_TEMPLATES = [
   },
   {
     id: '200m-sprint',
-    category: 'Interval',
+    category: 'Hard',
     type: 'interval',
     activityTag: 'run',
     title: '200m sprint',
@@ -50,7 +50,7 @@ export const INTERVALL_TEMPLATES = [
   },
   {
     id: 'hardt-5x4min',
-    category: 'Interval',
+    category: 'Hard',
     type: 'interval',
     activityTag: 'run',
     title: 'Hard – 5x4 min',

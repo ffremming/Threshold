@@ -1,7 +1,7 @@
 export const TERSKEL_TEMPLATES = [
   {
     id: 'hard-4x1km',
-    category: 'interval',
+    category: 'Hard',
     type: 'interval',
     activityTag: 'run',
     title: 'hard – 4x1km',
@@ -13,7 +13,7 @@ export const TERSKEL_TEMPLATES = [
   },
   {
     id: 'terskel-3x2km',
-    category: 'Threshold',
+    category: 'Hard',
     type: 'terskel',
     activityTag: 'run',
     title: 'Threshold – 3x2km',
@@ -24,7 +24,7 @@ export const TERSKEL_TEMPLATES = [
   },
   {
     id: 'terskel-4x2km',
-    category: 'Threshold',
+    category: 'Hard',
     type: 'terskel',
     activityTag: 'run',
     title: 'Threshold – 4x2km',
@@ -35,7 +35,7 @@ export const TERSKEL_TEMPLATES = [
   },
   {
     id: 'terskel-5x6min',
-    category: 'Threshold',
+    category: 'Hard',
     type: 'terskel',
     activityTag: 'run',
     title: 'Threshold – 5x6 min',

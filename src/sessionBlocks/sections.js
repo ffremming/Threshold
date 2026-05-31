@@ -27,6 +27,8 @@ export const SECTION_LABELS = {
 }
 
 export const INTERVAL_PACE_MODES = ['pace', 'length', 'time']
+// Simple distance blocks (warmup/steady/cooldown) can be defined by length or time.
+export const STEADY_PACE_MODES = ['length', 'time']
 
 let sectionCounter = 0
 export function makeSectionId() {
@@ -35,10 +37,10 @@ export function makeSectionId() {
 }
 
 const KIND_DEFAULTS = {
-  warmup:   { distanceKm: 2, paceSecPerKm: 360 },
-  steady:   { distanceKm: 6, paceSecPerKm: 330 },
+  warmup:   { distanceKm: 2, durationMin: 10, paceSecPerKm: 360, paceMode: 'time' },
+  steady:   { distanceKm: 6, durationMin: 40, paceSecPerKm: 330, paceMode: 'time' },
   interval: { reps: 5, dragKm: 1, dragSec: 240, paceSecPerKm: 240, pauseSec: 120, paceMode: 'pace' },
-  cooldown: { distanceKm: 1, paceSecPerKm: 360 },
+  cooldown: { distanceKm: 1, durationMin: 5, paceSecPerKm: 360, paceMode: 'time' },
   exercise: { exerciseName: '', sets: 3, reps: 8, loadKg: 0, restSec: 90 },
   effort:   { durationMin: 30 },
 }
@@ -115,6 +117,10 @@ export function computeSectionDuration(section, activityTag) {
     const restMin = (reps - 1) * pauseSec / 60
     return Math.round((movingMin + restMin) * 10) / 10
   }
+  // Time-first warmup/steady/cooldown: duration is the primary input.
+  if (section.paceMode === 'time') {
+    return Math.max(0, Math.round((Number(section.durationMin) || 0) * 10) / 10)
+  }
   const distanceKm = Number(section.distanceKm) || 0
   return Math.round((distanceKm * pace / 60) * 10) / 10
 }
@@ -135,6 +141,15 @@ export function computeSectionDistance(section, activityTag) {
     }
     const dragKm = Number(section.dragKm) || 0
     return Math.round(reps * dragKm * 100) / 100
+  }
+  // Time-first warmup/steady/cooldown: estimate distance from duration + pace,
+  // counted toward weekly stats but not the primary input.
+  if (section.paceMode === 'time') {
+    const durationMin = Number(section.durationMin) || 0
+    const pace = Number(section.paceSecPerKm) || 0
+    if (durationMin <= 0 || pace <= 0) return 0
+    const estKm = (durationMin * 60) / pace
+    return Math.round(estKm * 100) / 100
   }
   return Math.round((Number(section.distanceKm) || 0) * 100) / 100
 }
@@ -199,8 +214,18 @@ export function normalizeSection(section, activityTag) {
     normalized.durationMin = computeSectionDuration(normalized, activityTag)
     return normalized
   }
+  // Simple distance blocks: warmup / steady / cooldown.
+  // Old data without paceMode defaults to 'length' (distance-first) so it renders
+  // unchanged; newly created blocks default to 'time' via KIND_DEFAULTS.
+  const paceMode = STEADY_PACE_MODES.includes(section.paceMode) ? section.paceMode : 'length'
+  if (paceMode === 'time') {
+    const durationMin = Math.max(0, Math.round((Number(section.durationMin) || 0) * 10) / 10)
+    const normalized = { id, kind, paceMode, durationMin, paceSecPerKm }
+    normalized.distanceKm = computeSectionDistance(normalized, activityTag)
+    return normalized
+  }
   const distanceKm = Math.max(0, Number(section.distanceKm) || 0)
-  const normalized = { id, kind, distanceKm, paceSecPerKm }
+  const normalized = { id, kind, paceMode, distanceKm, paceSecPerKm }
   normalized.durationMin = computeSectionDuration(normalized, activityTag)
   return normalized
 }

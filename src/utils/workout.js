@@ -106,10 +106,6 @@ export function getIntensityZoneLabel(workout) {
 }
 
 export const TEMPLATE_CATEGORIES = [
-  'Interval',
-  'Threshold',
   'Easy',
-  'Treadmill + strength',
-  'Strength',
-  'Other',
+  'Hard',
 ]

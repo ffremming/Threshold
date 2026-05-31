@@ -6,7 +6,7 @@ import {
 } from '../../utils'
 
 export const EMPTY_TEMPLATE = {
-  category: 'Interval',
+  category: 'Hard',
   type: 'interval',
   title: '',
   description: '',

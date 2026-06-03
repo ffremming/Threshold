@@ -13,6 +13,8 @@ import {
 import { EMPTY_TEMPLATE } from '../constants'
 import AdminWorkoutSlot from '../AdminWorkoutSlot'
 import WeekCalendarList from '../../AdminPlanBuilder/WeekCalendarList'
+import StravaConnectButton from '../../../strava/StravaConnectButton'
+import CompletedActivities from '../../../strava/CompletedActivities'
 
 function buildDayDropZone(weekday, draggedWorkoutId, handleDropTargetChange, handleDropWorkout) {
   return {
@@ -46,6 +48,7 @@ function buildWorkoutDropZone(weekday, workoutId, handleDropTargetChange, handle
 
 export default function PlanTab(props) {
   const {
+    selectedAthleteId,
     currentWeek, currentYear, monday, sunday, isThisWeek,
     onWeekChange, prevWeek, nextWeek,
     workoutLayout, onWorkoutLayoutChange,
@@ -172,6 +175,14 @@ export default function PlanTab(props) {
             ))}
           </div>
         )}
+      </div>
+
+      <div className="pb-strava">
+        <div className="pb-strava-head">
+          <h3 className="pb-strava-title">Strava</h3>
+          <StravaConnectButton athleteId={selectedAthleteId} />
+        </div>
+        <CompletedActivities athleteId={selectedAthleteId} />
       </div>
     </Page>
   )

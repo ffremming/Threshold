@@ -12,12 +12,14 @@ import '../AdminPlanBuilder.css'
 import { EMPTY_TEMPLATE } from './constants'
 import {
   useCoachTemplates,
+  useCompletedActivities,
   useGlobalTemplates,
   useWeekWorkouts,
   useWeeklyRangeWorkouts,
 } from './hooks'
 import { useAdminActions } from './useAdminActions'
 import { deriveAdminState } from './derived'
+import { mergeStravaIntoAnalysis, stravaActivityToWorkoutShape } from '../../strava/activityToWorkout'
 import CustomFormView from './CustomFormView'
 import Shell from './Shell'
 import TabContent from './TabContent'
@@ -66,6 +68,15 @@ export default function AdminDashboard({
   const { workouts: analysisWorkouts, loading: loadingAnalysis } = useWeeklyRangeWorkouts(selectedAthleteId, analysisWeeks, analysisWeekKeys)
   const { templates, loading: loadingTemplates } = useCoachTemplates(userProfile?.uid)
   const { templates: globalTemplates, loading: loadingGlobalTemplates } = useGlobalTemplates(userProfile?.uid)
+  const completedActivities = useCompletedActivities(selectedAthleteId)
+
+  // Merge imported Strava activities into the analysis window before deriving
+  // state: they are the source of truth for completed past-week sessions.
+  const mergedAnalysisWorkouts = useMemo(() => {
+    if (!completedActivities.length) return analysisWorkouts
+    const stravaWorkouts = completedActivities.map(stravaActivityToWorkoutShape)
+    return mergeStravaIntoAnalysis(analysisWorkouts, stravaWorkouts)
+  }, [analysisWorkouts, completedActivities])
 
   const selectedWorkoutId = selectedWorkout?.id
   useEffect(() => {
@@ -96,9 +107,9 @@ export default function AdminDashboard({
 
   const selectedWeekKey = getWeekKey(currentWeek, currentYear)
   const derived = useMemo(() => deriveAdminState({
-    workouts, overviewWorkouts, analysisWorkouts,
+    workouts, overviewWorkouts, analysisWorkouts: mergedAnalysisWorkouts,
     activeTagFilter, athletes, selectedAthleteId, userProfile,
-  }), [workouts, overviewWorkouts, analysisWorkouts, activeTagFilter, athletes, selectedAthleteId, userProfile])
+  }), [workouts, overviewWorkouts, mergedAnalysisWorkouts, activeTagFilter, athletes, selectedAthleteId, userProfile])
 
   if (showCustomForm) {
     return (

@@ -8,6 +8,22 @@ import {
 } from '../../utils'
 import { sortTemplates } from '../../templateLibrary'
 import { subscribeToWorkoutWeeks } from '../../workoutSubscriptions'
+import { subscribeCompletedActivities } from '../../strava/stravaClient'
+
+export function useCompletedActivities(selectedAthleteId) {
+  const [activities, setActivities] = useState([])
+
+  useEffect(() => {
+    if (!selectedAthleteId) {
+      setActivities([])
+      return
+    }
+    const unsub = subscribeCompletedActivities(selectedAthleteId, setActivities)
+    return unsub
+  }, [selectedAthleteId])
+
+  return activities
+}
 
 export function useWeekWorkouts(selectedAthleteId, currentWeek, currentYear) {
   const [workouts, setWorkouts] = useState([])

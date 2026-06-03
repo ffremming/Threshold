@@ -224,5 +224,17 @@ service cloud.firestore {
         && request.resource.data.athleteId == resource.data.athleteId;
       allow delete: if canAccessAthlete(resource.data.athleteId);
     }
+
+    match /completedActivities/{activityId} {
+      // Imported and written only by Cloud Functions (Admin SDK bypasses rules).
+      allow read: if canAccessAthlete(resource.data.athleteId);
+      allow write: if false;
+    }
+
+    match /stravaConnections/{athleteId} {
+      // Token storage. Read by owner/coach; never client-writable.
+      allow read: if canAccessAthlete(athleteId);
+      allow write: if false;
+    }
   }
 }

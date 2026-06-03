@@ -35,6 +35,14 @@ export default function App() {
 
   const { user, userProfile, profileLoading, profileError } = useAuth()
 
+  // Clear the ?strava=connected param Strava's OAuth callback redirects back with,
+  // so it doesn't linger in the URL after the connection completes.
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get('strava') === 'connected') {
+      window.history.replaceState({}, '', window.location.pathname)
+    }
+  }, [])
+
   const overviewWeeks = useMemo(
     () => getWeekWindow(currentWeek, currentYear, 4, 4),
     [currentWeek, currentYear]

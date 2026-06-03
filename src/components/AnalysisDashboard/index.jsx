@@ -11,6 +11,7 @@ import WindowControls from './filters/WindowControls'
 import SummaryRow from './sections/SummaryRow'
 import InsightGrid from './sections/InsightGrid'
 import ChartGrid from './sections/ChartGrid'
+import ValidationGrid from './sections/ValidationGrid'
 
 export default function AnalysisDashboard({ weeks, workoutsByWeekKey, currentWeek, currentYear }) {
   const { range, setRange, activeTagFilter, setActiveTagFilter, primaryMetric, setPrimaryMetric } = usePersistedFilters()
@@ -100,6 +101,8 @@ export default function AnalysisDashboard({ weeks, workoutsByWeekKey, currentWee
             topActivityEntries={topActivityEntries}
             currentVisibleIndex={currentVisibleIndex}
           />
+
+          <ValidationGrid focusWeek={focusWeek} />
         </>
       )}
     </Page>

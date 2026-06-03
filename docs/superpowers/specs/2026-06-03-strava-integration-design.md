@@ -11,8 +11,20 @@ appear in a per-athlete **completed activities** log. This is the "actual" side
 of training, kept separate from the "planned" sessions for now — planned-vs-actual
 matching is explicitly out of scope for phase 1.
 
+Imported activities also **feed the existing AnalysisDashboard**: for past weeks
+they become the source of truth for load/volume/zone analysis (the dashboard
+already filters past weeks to `completed` entries), while planned workouts still
+drive the current and future weeks.
+
 Heart-rate and other per-sample streams are **fetched on demand** (live from
-Strava when a coach opens an activity), not stored.
+Strava when a coach opens an activity), not stored. Within a single browser
+session, any stream already fetched is served from an in-memory cache so the same
+data is **never requested from Strava twice per session**.
+
+Testing-results integration (deriving test-like performance metrics from
+activities) is **out of scope for phase 1**, but the data model captures the
+fields a later phase would need (per-lap power/pace, HR, zones) so nothing must be
+re-imported.
 
 ## Constraints & key facts
 
@@ -119,6 +131,47 @@ actual cleanly separated and to make later planned-vs-actual matching additive.
 - **Activity Zones** (`GET /activities/{id}/zones`): HR-zone and power-zone
   time-in-zone distribution.
 
+## Analysis integration
+
+The existing `AnalysisDashboard` (`src/components/AnalysisDashboard`) consumes
+`workoutsByWeekKey` (planned workouts grouped by ISO week) and runs
+`computeAnalysis` over fields like `activityTag`, `type`, `intensityZone`,
+`weekday`, `completed`, plus estimators (`estimateWorkoutLoad`,
+`getWorkoutDistance`, `normalizeIntensityZones`). For **past weeks** it already
+filters to `completed` entries (`aggregations.js`).
+
+Strava activities feed this pipeline via a pure adapter rather than a parallel
+analysis path:
+
+- `stravaActivityToWorkoutShape(activity)` maps a `completedActivities` doc into
+  the shape `computeAnalysis` expects:
+  - `activityTag` ← mapped from Strava `sport_type` (Run→run, Ride→bike, Swim→swim,
+    else a sensible default; mapping table lives in the adapter).
+  - `type` / `intensityZone` ← derived from the stored `zones` (time-in-HR-zone)
+    so zone-based analysis works for imported activities; if zones are absent the
+    activity contributes to load/volume but not zone breakdown.
+  - duration/distance ← `movingTime` / `distance` (the estimators read these).
+  - `weekday`, week key ← derived from `startDate`.
+  - `completed: true` ← so past-week filtering keeps them.
+  - `source: 'strava'` ← preserved for dedup and display.
+- **Source-of-truth rule (past weeks):** for a past week, Strava activities are the
+  truth. Planned workouts that have a matching activity (same day + compatible
+  `activityTag`) are dropped from analysis to avoid double-counting; planned
+  workouts with no matching activity remain (a planned-but-not-done session still
+  shows as planned). Current and future weeks use planned workouts unchanged.
+- The merge happens at the mount point that owns `workoutsByWeekKey`; the
+  dashboard component and `computeAnalysis` are **not modified** — they just
+  receive a merged map.
+
+## Session stream cache
+
+`stravaActivityStreams` calls are memoized in-memory in the frontend client for
+the lifetime of the browser session, keyed by `activityId` (+ stream keys). A
+second "Show HR" on the same activity reads the cache; the same data is **never
+requested from Strava twice in one session**. A page reload clears the cache.
+This is distinct from the optional persistent lazy-cache (phase 2) and is required
+from the start.
+
 ## Security
 
 - `client_secret` and Strava `verify_token` live only in Functions config
@@ -142,14 +195,34 @@ expired, refreshes via the refresh token and updates the stored connection. No
 scheduled job. A failed refresh (athlete revoked access) sets
 `status = "disconnected"` and the UI surfaces a "Reconnect Strava" prompt.
 
-## Rate limits & on-demand streams
+## Rate limits, athlete capacity & on-demand streams
 
-- Import path uses 1–2 calls/activity (detail + zones), well within limits for a
-  coach with a handful of athletes.
-- Stream fetches are live per "Show HR" view. Acceptable for phase 1. If repeat
-  views become common, add a **lazy cache** (phase 2): first fetch also writes the
-  stream to a `completedActivities/{id}/streams` subcollection; later views check
-  the cache before calling Strava. Additive, no rework.
+**Cost:** The Strava API is free — no credits, no per-call billing. Access is
+gated by approval and rate limits, not money. Firebase Cloud Functions (Blaze)
+cost is negligible for this workload (well within the free invocation tier).
+
+**Rate limits (per application, verified 2026-06):**
+- Default read (non-upload): **100 / 15 min**, **1,000 / day**.
+- Default overall: **200 / 15 min**, **2,000 / day**.
+- After leaving single-player mode: read **200 / 15 min**, **2,000 / day**.
+
+**Athlete capacity — the key gotcha:** a new Strava app authenticates **1 athlete
+(yourself)** by default; self-service upgrade to **10 athletes** via the API
+Settings dashboard; **beyond 10 requires submitting the app for Strava review**
+(human approval, brand-guideline + agreement check — has lead time). Fine for the
+initial coach+athletes group; plan ahead before scaling past 10 linked accounts.
+
+**Call budget:**
+- Import path: 1–2 calls/activity (detail + zones) — far within limits.
+- Stream fetches: 1 call per first "Show HR" per activity per session
+  (session cache prevents repeats). A coach browsing many activities in a 15-min
+  burst could approach the read limit → handled by the session cache now and the
+  persistent lazy-cache later.
+- Strava returns HTTP `429` with `X-RateLimit-Limit`/`X-RateLimit-Usage` headers
+  when exceeded; graceful back-off is a phase-2 robustness add.
+- Persistent lazy-cache (phase 2): first fetch also writes the stream to a
+  `completedActivities/{id}/streams` subcollection; later sessions read it before
+  calling Strava. Additive, no rework.
 - Bulk backfill of historical activities (if added later) must throttle to respect
   100/15min.
 
@@ -172,7 +245,12 @@ scheduled job. A failed refresh (athlete revoked access) sets
 ## Out of scope (phase 1)
 
 - Planned-vs-actual matching / linking activities to scheduled sessions.
-- Storing streams persistently (fetch-on-demand only).
+- Storing streams persistently (fetch-on-demand only; session cache is in-memory).
+- **Testing-results integration** — deriving test-like performance metrics (best
+  5/10/20-min power or pace, estimated thresholds, max HR) from activities, and
+  surfacing them in `TestingDashboard`. The `completedActivities` model already
+  captures the source fields (`laps[]` with per-lap power/speed, `averageWatts`,
+  `averageHeartrate`, `zones`), so a later phase can mine them without re-importing.
 - Historical bulk backfill.
 - Non-Strava sources (Garmin, Polar, manual upload).
 

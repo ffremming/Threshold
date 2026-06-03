@@ -481,10 +481,13 @@ export const stravaCallback = onRequest({ secrets: STRAVA_SECRETS }, async (req,
   if (!tokenRes.ok) return res.status(502).send('Token exchange failed')
   const t = await tokenRes.json()
 
-  // coachId: the athlete's coach if a relationship exists; else self.
+  // coachId: resolved from the relationships collection (doc id `{coachId}_{athleteId}`,
+  // with coachId/athleteId stored as fields). An athlete may have multiple coaches;
+  // we store the first as the denormalized owner and fall back to self.
   const db = getFirestore()
-  const userSnap = await db.collection('users').doc(athleteId).get()
-  const coachId = userSnap.exists ? (userSnap.data().coachId || athleteId) : athleteId
+  const relSnap = await db.collection('relationships')
+    .where('athleteId', '==', athleteId).limit(1).get()
+  const coachId = relSnap.empty ? athleteId : relSnap.docs[0].data().coachId
 
   await db.collection('stravaConnections').doc(athleteId).set({
     athleteId,
@@ -503,10 +506,12 @@ export const stravaCallback = onRequest({ secrets: STRAVA_SECRETS }, async (req,
 })
 ```
 
-> Note: `coachId` resolution mirrors how the app links athletes to coaches. If the
-> users doc stores the coach differently (e.g. via `relationships`), adjust this
-> lookup to match — confirm the field name during implementation by inspecting a
-> users document.
+> Note (verified): there is NO `coachId` field on user docs. The coach link lives
+> in the `relationships` collection — doc id `{coachId}_{athleteId}`
+> (`relationshipId()` in `src/userService/firestore.js`), with `coachId` and
+> `athleteId` stored as fields. Hence the `where('athleteId','==',athleteId)`
+> query above. The streams callable's `assertCanAccess` uses the deterministic
+> doc id `{callerUid}_{athleteId}` to check a coach relationship, which is correct.
 
 - [ ] **Step 2: Wire into `functions/index.js`**
 
@@ -1317,6 +1322,337 @@ git commit -m "feat(strava): feed imported activities into analysis (past-week s
 
 ---
 
+## Task 15: Training-validation analytics module
+
+Builds a new analytics layer that answers "does the executed training match good
+training-planning principles?" It is a **pure** module consuming the per-week
+stats `computeAnalysis` already produces (`weeklyStats` with `zones`/`zoneLoads`,
+`activityLoad`, `count`, etc.) plus the per-activity `zones` (HR-zone buckets) and
+`laps[]` now stored on `completedActivities`. No new Strava calls.
+
+Five validation dimensions:
+- **Intensity distribution / polarization** — % of time in easy (Z1–2) vs
+  threshold (Z3) vs hard (Z4–5). Classify the week as polarized / pyramidal /
+  threshold-heavy and compare to an 80/20 target.
+- **Threshold / VO2max work** — minutes and share of time in Z4–5; flag whether the
+  block contains enough high-intensity stimulus (and not too much).
+- **Speed work** — detect from lap-level pace/power variance: laps markedly faster
+  than the activity average indicate intervals/strides.
+- **Muscular / strength** — share of load from strength-group activity tags
+  (strength, calisthenics, plyometric, crossfit, mobility, pilates, yoga — from
+  `ACTIVITY_GROUP_MAP` group `strength`); flag weeks with no muscular work.
+- **Specificity** — share of endurance load in the athlete's primary discipline
+  (dominant `activityTag`) vs cross-training.
+
+**Files:**
+- Create: `src/strava/trainingValidation.js`
+- Test: `src/strava/trainingValidation.test.js`
+- Create: `src/components/AnalysisDashboard/sections/ValidationGrid.jsx`
+- Modify: `src/components/AnalysisDashboard/index.jsx` (render ValidationGrid)
+- Modify: `src/components/AnalysisDashboard/aggregations.js` (expose per-activity zones/laps onto weekly workouts so validation can read them) — see Step 5
+
+- [ ] **Step 1: Write the failing test**
+
+`src/strava/trainingValidation.test.js`:
+
+```js
+import { describe, it, expect } from 'vitest'
+import {
+  intensityDistribution, classifyPolarization, thresholdVo2Load,
+  detectSpeedWork, muscularShare, specificityShare, validateTraining,
+} from './trainingValidation'
+
+// zoneTotals: minutes in each 1-5 zone
+const zoneTotals = { 1: 200, 2: 200, 3: 40, 4: 40, 5: 20 } // 500 min total
+
+describe('intensityDistribution', () => {
+  it('buckets zone minutes into easy/threshold/hard %', () => {
+    const d = intensityDistribution(zoneTotals)
+    expect(d.easyPct).toBe(80)        // (200+200)/500
+    expect(d.thresholdPct).toBe(8)    // 40/500
+    expect(d.hardPct).toBe(12)        // (40+20)/500
+  })
+})
+
+describe('classifyPolarization', () => {
+  it('labels an 80/20 spread as polarized', () => {
+    expect(classifyPolarization({ easyPct: 80, thresholdPct: 8, hardPct: 12 })).toBe('polarized')
+  })
+  it('labels heavy Z3 as threshold-heavy', () => {
+    expect(classifyPolarization({ easyPct: 55, thresholdPct: 35, hardPct: 10 })).toBe('threshold')
+  })
+  it('labels a broad-base spread as pyramidal', () => {
+    expect(classifyPolarization({ easyPct: 70, thresholdPct: 20, hardPct: 10 })).toBe('pyramidal')
+  })
+})
+
+describe('thresholdVo2Load', () => {
+  it('sums Z4+Z5 minutes and share', () => {
+    const r = thresholdVo2Load(zoneTotals)
+    expect(r.minutes).toBe(60)
+    expect(r.pct).toBe(12)
+  })
+})
+
+describe('detectSpeedWork', () => {
+  it('flags laps clearly faster than activity average', () => {
+    // speeds in m/s; lap 3 is much faster than the rest
+    const laps = [
+      { averageSpeed: 3.0, movingTime: 600 },
+      { averageSpeed: 3.1, movingTime: 600 },
+      { averageSpeed: 4.5, movingTime: 120 },
+      { averageSpeed: 3.0, movingTime: 600 },
+    ]
+    const r = detectSpeedWork(laps)
+    expect(r.hasSpeedWork).toBe(true)
+    expect(r.fastLaps).toBe(1)
+  })
+  it('returns false when laps are uniform', () => {
+    const laps = [{ averageSpeed: 3.0, movingTime: 600 }, { averageSpeed: 3.05, movingTime: 600 }]
+    expect(detectSpeedWork(laps).hasSpeedWork).toBe(false)
+  })
+})
+
+describe('muscularShare', () => {
+  it('computes strength-group load share', () => {
+    const activityLoad = { run: 800, strength: 200 }
+    expect(muscularShare(activityLoad)).toBe(20)
+  })
+})
+
+describe('specificityShare', () => {
+  it('share of endurance load in the dominant discipline', () => {
+    const activityLoad = { run: 700, bike: 200, strength: 100 }
+    const r = specificityShare(activityLoad)
+    expect(r.primary).toBe('run')
+    expect(r.pct).toBe(78) // 700 / (700+200) endurance, rounded
+  })
+})
+
+describe('validateTraining', () => {
+  it('produces a dimensioned report with flags', () => {
+    const weekStats = {
+      zones: zoneTotals,
+      activityLoad: { run: 800, strength: 0 },
+      workouts: [{ source: 'strava', laps: [
+        { averageSpeed: 3.0, movingTime: 600 }, { averageSpeed: 4.5, movingTime: 120 },
+      ] }],
+    }
+    const report = validateTraining(weekStats)
+    expect(report.distribution.easyPct).toBe(80)
+    expect(report.polarization).toBe('polarized')
+    expect(report.thresholdVo2.minutes).toBe(60)
+    expect(report.speedWork.hasSpeedWork).toBe(true)
+    expect(report.muscular.share).toBe(0)
+    expect(report.muscular.flag).toBe('none')      // no muscular work this week
+    expect(report.specificity.primary).toBe('run')
+    expect(Array.isArray(report.flags)).toBe(true)
+  })
+})
+```
+
+- [ ] **Step 2: Run test to verify it fails**
+
+Run: `npx vitest run src/strava/trainingValidation.test.js`
+Expected: FAIL — module not found.
+
+- [ ] **Step 3: Implement `src/strava/trainingValidation.js`**
+
+```js
+import { ACTIVITY_TAG_MAP } from '../utils/activity'
+
+const round = n => Math.round(n)
+const pct = (part, total) => (total > 0 ? round((part / total) * 100) : 0)
+
+// % of zone-minutes in easy (Z1-2), threshold (Z3), hard (Z4-5).
+export function intensityDistribution(zoneTotals) {
+  const z = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, ...(zoneTotals || {}) }
+  const total = z[1] + z[2] + z[3] + z[4] + z[5]
+  return {
+    totalMinutes: total,
+    easyPct: pct(z[1] + z[2], total),
+    thresholdPct: pct(z[3], total),
+    hardPct: pct(z[4] + z[5], total),
+  }
+}
+
+// Polarized: lots of easy + meaningful hard, little Z3.
+// Threshold: Z3 dominates the quality work.
+// Pyramidal: easy base, more Z3 than Z4-5.
+export function classifyPolarization(dist) {
+  const { easyPct, thresholdPct, hardPct } = dist
+  if (thresholdPct >= 25) return 'threshold'
+  if (easyPct >= 75 && hardPct >= thresholdPct) return 'polarized'
+  return 'pyramidal'
+}
+
+export function thresholdVo2Load(zoneTotals) {
+  const z = { 4: 0, 5: 0, ...(zoneTotals || {}) }
+  const all = intensityDistribution(zoneTotals).totalMinutes
+  const minutes = z[4] + z[5]
+  return { minutes, pct: pct(minutes, all) }
+}
+
+// Lap-based speed-work detection: a lap whose pace is >=15% faster than the
+// time-weighted average lap speed counts as a fast effort.
+export function detectSpeedWork(laps) {
+  const valid = (laps || []).filter(l => l.averageSpeed > 0 && l.movingTime > 0)
+  if (valid.length < 2) return { hasSpeedWork: false, fastLaps: 0 }
+  const totalTime = valid.reduce((s, l) => s + l.movingTime, 0)
+  const avgSpeed = valid.reduce((s, l) => s + l.averageSpeed * l.movingTime, 0) / totalTime
+  const fastLaps = valid.filter(l => l.averageSpeed >= avgSpeed * 1.15).length
+  return { hasSpeedWork: fastLaps > 0, fastLaps }
+}
+
+const STRENGTH_TAGS = new Set(
+  Object.values(ACTIVITY_TAG_MAP).filter(t => t.group === 'strength').map(t => t.value)
+)
+
+export function muscularShare(activityLoad) {
+  const entries = Object.entries(activityLoad || {})
+  const total = entries.reduce((s, [, v]) => s + v, 0)
+  const muscular = entries.filter(([tag]) => STRENGTH_TAGS.has(tag)).reduce((s, [, v]) => s + v, 0)
+  return pct(muscular, total)
+}
+
+const ENDURANCE_TAGS = new Set(
+  Object.values(ACTIVITY_TAG_MAP).filter(t => t.group === 'endurance').map(t => t.value)
+)
+
+export function specificityShare(activityLoad) {
+  const endurance = Object.entries(activityLoad || {}).filter(([tag]) => ENDURANCE_TAGS.has(tag))
+  const total = endurance.reduce((s, [, v]) => s + v, 0)
+  if (total === 0) return { primary: null, pct: 0 }
+  const primary = endurance.sort((a, b) => b[1] - a[1])[0]
+  return { primary: primary[0], pct: pct(primary[1], total) }
+}
+
+// Combine all dimensions for a single week's stats into a validation report.
+export function validateTraining(weekStats) {
+  const distribution = intensityDistribution(weekStats.zones)
+  const polarization = classifyPolarization(distribution)
+  const thresholdVo2 = thresholdVo2Load(weekStats.zones)
+
+  const laps = (weekStats.workouts || []).flatMap(w => w.laps || [])
+  const speedWork = detectSpeedWork(laps)
+
+  const mShare = muscularShare(weekStats.activityLoad)
+  const muscular = { share: mShare, flag: mShare === 0 ? 'none' : (mShare < 10 ? 'low' : 'ok') }
+
+  const specificity = specificityShare(weekStats.activityLoad)
+
+  const flags = []
+  if (distribution.totalMinutes > 0 && distribution.easyPct < 70) {
+    flags.push('Too little easy volume — aim for ~80% easy.')
+  }
+  if (thresholdVo2.minutes === 0 && distribution.totalMinutes > 0) {
+    flags.push('No threshold/VO2max stimulus this week.')
+  }
+  if (muscular.flag === 'none') flags.push('No muscular/strength work this week.')
+  if (polarization === 'threshold') flags.push('Threshold-heavy — risk of grey-zone training.')
+
+  return { distribution, polarization, thresholdVo2, speedWork, muscular, specificity, flags }
+}
+```
+
+- [ ] **Step 4: Run test to verify it passes**
+
+Run: `npx vitest run src/strava/trainingValidation.test.js`
+Expected: PASS.
+
+- [ ] **Step 5: Expose per-activity zones/laps on weekly workouts**
+
+`validateTraining` reads `weekStats.workouts[].laps`. The analysis adapter
+(Task 14) must therefore carry `laps` (and `zones`) through onto the
+workout-shaped object. Update `stravaActivityToWorkoutShape` in
+`src/strava/activityToWorkout.js` to also copy them:
+
+```js
+  // …inside the returned object in stravaActivityToWorkoutShape:
+    laps: activity.laps || [],
+    zones: activity.zones || null,
+```
+
+`buildWeekStats` in `aggregations.js` maps each workout through the estimators but
+**spreads the original workout fields**; confirm the per-week `workouts` array
+preserves `laps`/`zones` (it keeps the source object). If it constructs a fresh
+object without spreading, add `laps: workout.laps, zones: workout.zones` to the
+mapped workout so they survive into `weekStats.workouts`.
+
+- [ ] **Step 6: Implement `ValidationGrid.jsx`**
+
+```jsx
+import { ChartCard, Stat } from './primitives'
+import { validateTraining } from '../../../strava/trainingValidation'
+
+export default function ValidationGrid({ focusWeek }) {
+  if (!focusWeek) return null
+  const v = validateTraining(focusWeek)
+  const d = v.distribution
+  return (
+    <div className="validation-grid">
+      <ChartCard title="Intensity distribution" caption={`Polarization: ${v.polarization}`}>
+        <Stat label="Easy (Z1–2)" value={`${d.easyPct}%`} />
+        <Stat label="Threshold (Z3)" value={`${d.thresholdPct}%`} />
+        <Stat label="Hard (Z4–5)" value={`${d.hardPct}%`} />
+      </ChartCard>
+      <ChartCard title="Threshold / VO2max">
+        <Stat label="Time in Z4–5" value={`${v.thresholdVo2.minutes} min`} />
+        <Stat label="Share" value={`${v.thresholdVo2.pct}%`} />
+      </ChartCard>
+      <ChartCard title="Speed work">
+        <Stat label="Detected" value={v.speedWork.hasSpeedWork ? 'Yes' : 'No'} />
+        <Stat label="Fast efforts" value={v.speedWork.fastLaps} />
+      </ChartCard>
+      <ChartCard title="Muscular work">
+        <Stat label="Strength load share" value={`${v.muscular.share}%`} />
+      </ChartCard>
+      <ChartCard title="Specificity">
+        <Stat label="Primary discipline" value={v.specificity.primary || '—'} />
+        <Stat label="In-discipline share" value={`${v.specificity.pct}%`} />
+      </ChartCard>
+      {v.flags.length > 0 && (
+        <ChartCard title="Planning flags">
+          <ul className="validation-flags">
+            {v.flags.map((f, i) => <li key={i}>{f}</li>)}
+          </ul>
+        </ChartCard>
+      )}
+    </div>
+  )
+}
+```
+
+> Note: confirm the exact export names/props of `ChartCard` and `Stat` in
+> `sections/primitives.jsx` and match them; if `Stat` takes different prop names,
+> adapt. Reuse existing card styling classes rather than inventing new CSS where
+> possible.
+
+- [ ] **Step 7: Render ValidationGrid in the dashboard**
+
+In `src/components/AnalysisDashboard/index.jsx`, import and render it below the
+existing `InsightGrid`/`ChartGrid`, passing the focus week:
+
+```jsx
+import ValidationGrid from './sections/ValidationGrid'
+// …in the returned JSX, after InsightGrid/ChartGrid:
+<ValidationGrid focusWeek={focusWeek} />
+```
+
+(`focusWeek` is already destructured from `analysis` in `index.jsx`.)
+
+- [ ] **Step 8: Build to verify no errors**
+
+Run: `npm run build`
+Expected: build succeeds.
+
+- [ ] **Step 9: Run the full frontend test suite**
+
+Run: `npx vitest run`
+Expected: all tests pass (existing + new strava + validation suites).
+
+---
+
 ## Verification (end-to-end, after deploy + secrets set)
 
 1. `cd functions && npx vitest run` → all unit tests pass.
@@ -1329,4 +1665,7 @@ git commit -m "feat(strava): feed imported activities into analysis (past-week s
 6. Open **AnalysisDashboard** for an athlete with an imported past-week activity →
    the activity contributes to that week's load/volume; a planned workout it
    matches (same day + activity type) is not double-counted.
-7. Click **Disconnect Strava** → connection removed; activities remain.
+7. Open **AnalysisDashboard** → the **Validation** section shows intensity
+   distribution / polarization, threshold-VO2max minutes, speed-work detection,
+   muscular-load share, specificity, and planning flags for the focus week.
+8. Click **Disconnect Strava** → connection removed; activities remain.

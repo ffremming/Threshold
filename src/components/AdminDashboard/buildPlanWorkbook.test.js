@@ -60,11 +60,13 @@ describe('buildPlanWorkbook', () => {
       includeAthleteColumn: false,
     })
     const rows = sheetRows(wb)
+    // Canonical column order from EXPORT_FIELDS: date, weekday, title, intensityZone
     expect(rows.length).toBe(2)
-    expect(rows[1][0]).toBe('03.06.2026') // date formatted
-    expect(rows[1][1]).toBe('Wednesday')  // weekday label
-    expect(typeof rows[1][2]).toBe('string') // intensity zone label
-    expect(rows[1][3]).toBe('Threshold 4x6')
+    expect(rows[0]).toEqual(['Date', 'Weekday', 'Title', 'Intensity zone'])
+    expect(rows[1][0]).toBe('03.06.2026')   // date formatted
+    expect(rows[1][1]).toBe('Wednesday')    // weekday label
+    expect(rows[1][2]).toBe('Threshold 4x6')
+    expect(typeof rows[1][3]).toBe('string') // intensity zone label
   })
 
   it('prepends an Athlete column only when includeAthleteColumn is true', () => {
@@ -79,14 +81,15 @@ describe('buildPlanWorkbook', () => {
     expect(rows[1]).toEqual(['Jane Doe', 'Threshold 4x6'])
   })
 
-  it('handles empty selectedFieldKeys by producing only a header (or athlete col)', () => {
+  it('handles empty selectedFieldKeys without crashing (no columns)', () => {
     const wb = buildPlanWorkbook({
       workouts: [workout],
       selectedFieldKeys: [],
       includeAthleteColumn: false,
     })
     const rows = sheetRows(wb)
-    expect(rows[0]).toEqual([])
+    // Empty header + empty rows produce no data cells.
+    expect(rows.flat()).toEqual([])
   })
 })
 

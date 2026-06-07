@@ -1,0 +1,16 @@
+.export-plan-form { display: flex; flex-direction: column; gap: 16px; }
+.export-plan-row { display: flex; gap: 12px; }
+.export-plan-row > * { flex: 1; }
+.export-plan-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px 16px;
+}
+.export-plan-field {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 14px; cursor: pointer;
+}
+.export-plan-allrow { display: flex; justify-content: flex-end; margin-bottom: 4px; }
+.export-plan-status { font-size: 14px; }
+.export-plan-status--empty { color: var(--th-muted, #6b7280); }
+.export-plan-status--error { color: #dc2626; }

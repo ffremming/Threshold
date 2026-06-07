@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Download } from 'lucide-react'
 import { getWeekDates, getWeekNumber } from '../../../utils'
-import { Page, WeekNav, EmptyState, Toolbar, ToolbarGroup, Button } from '../../ui'
+import { Page, WeekNav, EmptyState, Button } from '../../ui'
 import WeekOverview from '../WeekOverview'
 import ExportPlanModal from '../ExportPlanModal'
 
@@ -37,18 +37,16 @@ export default function PlanTab(props) {
         onToday={() => onWeekChange(getWeekNumber(new Date()), new Date().getFullYear())}
       />
 
-      <Toolbar>
-        <ToolbarGroup label="Export">
-          <Button onClick={() => setExportOpen(true)}>
-            <Download size={16} strokeWidth={2} aria-hidden="true" />
-            Export to Excel
-          </Button>
-        </ToolbarGroup>
-      </Toolbar>
-
       {loadingWorkouts
         ? <EmptyState title="Loading…" />
         : <WeekOverview workouts={workouts} onSelectWorkout={setSelectedWorkout} />}
+
+      <div className="pb-plan-export">
+        <Button variant="secondary" onClick={() => setExportOpen(true)}>
+          <Download size={16} strokeWidth={2} aria-hidden="true" />
+          Export to Excel
+        </Button>
+      </div>
 
       <ExportPlanModal
         open={exportOpen}

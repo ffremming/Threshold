@@ -18,6 +18,7 @@ export default function PlanTab(props) {
     onWeekChange, prevWeek, nextWeek,
     workouts, loadingWorkouts,
     athletes, selectedAthleteId,
+    setSelectedWorkout,
   } = props
 
   const [exportOpen, setExportOpen] = useState(false)
@@ -38,16 +39,16 @@ export default function PlanTab(props) {
 
       <Toolbar>
         <ToolbarGroup label="Export">
-          <Button variant="secondary" size="sm" onClick={() => setExportOpen(true)}>
+          <Button onClick={() => setExportOpen(true)}>
             <Download size={16} strokeWidth={2} aria-hidden="true" />
-            Export
+            Export to Excel
           </Button>
         </ToolbarGroup>
       </Toolbar>
 
       {loadingWorkouts
         ? <EmptyState title="Loading…" />
-        : <WeekOverview workouts={workouts} />}
+        : <WeekOverview workouts={workouts} onSelectWorkout={setSelectedWorkout} />}
 
       <ExportPlanModal
         open={exportOpen}

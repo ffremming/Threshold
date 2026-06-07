@@ -131,7 +131,7 @@ export default function AdminDashboard({
 
   const tabProps = {
     ...actions, ...derived,
-    tab, selectedAthleteId, userProfile, isSuperadmin,
+    tab, selectedAthleteId, athletes, userProfile, isSuperadmin,
     currentWeek, currentYear, monday, sunday, isThisWeek,
     onWeekChange, prevWeek, nextWeek,
     workoutLayout, onWorkoutLayoutChange,

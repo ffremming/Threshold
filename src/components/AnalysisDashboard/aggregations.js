@@ -14,6 +14,7 @@ import {
   safeDivide,
   sumLastValues,
 } from './utils'
+import { computeWeekSummary } from '../../utils/weekSummary'
 
 function buildWeekStats(week, workoutsByWeekKey, currentWeek, currentYear, activeTagFilter) {
   let weekWorkouts = workoutsByWeekKey[week.key] || []
@@ -27,12 +28,12 @@ function buildWeekStats(week, workoutsByWeekKey, currentWeek, currentYear, activ
     weekWorkouts = weekWorkouts.filter(workout => workout.activityTag === activeTagFilter)
   }
 
+  // Shared totals / per-activity / per-zone breakdown (one source of truth).
+  const summary = computeWeekSummary(weekWorkouts)
+
   const dailyLoads = Array(7).fill(0)
   const dailyDurations = Array(7).fill(0)
-  const activityLoad = {}
-  const activityDuration = {}
   const tags = {}
-  const zones = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
   const zoneLoads = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
 
   const workouts = weekWorkouts.map(workout => {
@@ -47,14 +48,10 @@ function buildWeekStats(week, workoutsByWeekKey, currentWeek, currentYear, activ
     dailyLoads[weekdayIndex] += load
     dailyDurations[weekdayIndex] += duration
     tags[activityTag] = (tags[activityTag] || 0) + 1
-    activityLoad[activityTag] = (activityLoad[activityTag] || 0) + load
-    activityDuration[activityTag] = (activityDuration[activityTag] || 0) + duration
 
     if (normalizedZones.length > 0 && duration > 0) {
-      const zoneShare = duration / normalizedZones.length
       const zoneLoadShare = load / normalizedZones.length
       normalizedZones.forEach(zone => {
-        zones[zone] += zoneShare
         zoneLoads[zone] += zoneLoadShare
       })
     }
@@ -63,19 +60,26 @@ function buildWeekStats(week, workoutsByWeekKey, currentWeek, currentYear, activ
   })
 
   const hardSessions = workouts.filter(isHardWorkout).length
-  const duration = workouts.reduce((sum, w) => sum + w.duration, 0)
-  const load = workouts.reduce((sum, w) => sum + w.load, 0)
   const mechanicalLoad = workouts.reduce((sum, w) => sum + w.mechanicalLoad, 0)
-  const distance = workouts.reduce((sum, w) => sum + w.distance, 0)
   const longestSession = workouts.reduce((longest, workout) => {
     if (!longest || workout.duration > longest.duration) return workout
     return longest
   }, null)
 
   return {
-    week, workouts, count: workouts.length, distance, duration, load, mechanicalLoad,
+    week, workouts, count: workouts.length,
+    distance: summary.totalDistance,
+    duration: summary.totalDuration,
+    load: summary.totalLoad,
+    mechanicalLoad,
     hardSessions, easySessions: Math.max(0, workouts.length - hardSessions),
-    zones, zoneLoads, tags, activityLoad, activityDuration, dailyLoads, dailyDurations, longestSession,
+    zones: summary.zones,
+    zoneLoads,
+    tags,
+    activityLoad: summary.activityLoad,
+    activityDuration: summary.activityDuration,
+    activityDistance: summary.activityDistance,
+    dailyLoads, dailyDurations, longestSession,
   }
 }
 

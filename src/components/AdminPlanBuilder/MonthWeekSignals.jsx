@@ -1,7 +1,7 @@
 // Compact per-week load-signal bar for the month grid: training load, the
 // week-over-week ramp %, and an ACWR readiness pill. Pure presentation — every
 // number comes precomputed from computeWeekSignals; no aggregation lives here.
-// Renders nothing for an empty/zero-load week so quiet weeks add no chrome.
+// Renders for every week; zero-load weeks get an `is-empty` muted style.
 
 function formatRamp(rampPct) {
   if (rampPct == null || !Number.isFinite(rampPct)) return '—'
@@ -12,7 +12,7 @@ function formatRamp(rampPct) {
 }
 
 export default function MonthWeekSignals({ signal }) {
-  if (!signal || !(signal.load > 0)) return null
+  if (!signal) return null
 
   const { load, rampPct, acwr, readiness } = signal
   // High-magnitude ramp gets an amber chip regardless of direction.
@@ -24,7 +24,7 @@ export default function MonthWeekSignals({ signal }) {
   const band = readiness || 'settling'
 
   return (
-    <div className="pb-month-signals" aria-label="Weekly load signals">
+    <div className={`pb-month-signals${load > 0 ? '' : ' is-empty'}`} aria-label="Weekly load signals">
       <span className="pb-signal-load">
         <span className="pb-signal-label">Load</span>
         <span className="pb-signal-value">{Math.round(load)}</span>

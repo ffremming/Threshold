@@ -57,8 +57,18 @@ describe('MonthWeekSignals', () => {
     expect(screen.queryByText(/ACWR/)).not.toBeInTheDocument()
   })
 
-  it('renders nothing for a null signal or zero-load empty week', () => {
+  it('renders nothing only when the signal is missing', () => {
     const { container } = render(<MonthWeekSignals signal={null} />)
     expect(container.firstChild).toBeNull()
+  })
+
+  it('renders a muted Load 0 bar for a zero-load week (with ramp + band)', () => {
+    const { container } = render(<MonthWeekSignals signal={{
+      load: 0, rampPct: -100, acwr: 0.4, readiness: 'undertraining', settling: false,
+    }} />)
+    expect(container.querySelector('.pb-month-signals')).toHaveClass('is-empty')
+    expect(container.querySelector('.pb-signal-value')).toHaveTextContent('0')
+    expect(screen.getByText(/-100%/)).toBeInTheDocument()
+    expect(screen.getByText(/undertraining/i)).toBeInTheDocument()
   })
 })

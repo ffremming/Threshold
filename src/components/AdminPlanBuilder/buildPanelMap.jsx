@@ -1,36 +1,42 @@
 import BankPanel from './BankPanel'
-import ExtraPanel from './ExtraPanel'
-import CalendarPanel from './CalendarPanel'
+import BuilderWeekPanel from './BuilderWeekPanel'
+import MonthGridPanel from './MonthGridPanel'
 
 export function buildPanelMap(props) {
   const {
+    view,
     visiblePanelIds,
-    movePanel,
-    bankWindows,
+    currentWeek,
+    currentYear,
     onCreateTemplate,
-    handleAddBankWindow,
-    handleRemoveBankWindow,
     loadingTemplates,
     templates,
     handleTemplateDragStart,
     handleDragEnd,
     handleAddTemplateClick,
-    onEditTemplate,
-    onDeleteTemplate,
     visibleActivities,
     addVisibleActivity,
     removeVisibleActivity,
-    workoutLayout,
     loadingWorkouts,
-    groupedWorkouts,
-    sortedWorkouts,
+    workouts,
+    overviewWeeks,
+    overviewWorkoutsByWeekKey,
+    selectedWeekKey,
+    loadingOverview,
     dragState,
     dropTarget,
     handleDropTargetChange,
     handleDrop,
     onSelectWorkout,
-    onMoveWorkout,
+    onDeleteWorkout,
+    onAddSessionToDay,
+    onAddSessionToDayAcross,
+    onAddManySessions,
+    onMoveMany,
+    modalOpen,
+    onJumpToWeek,
     handleWorkoutDragStart,
+    handleDayDragStart,
   } = props
 
   return {
@@ -38,50 +44,55 @@ export function buildPanelMap(props) {
       <BankPanel
         visiblePanelIds={visiblePanelIds}
         onCreateTemplate={onCreateTemplate}
-        handleAddBankWindow={handleAddBankWindow}
         loadingTemplates={loadingTemplates}
         templates={templates}
         handleTemplateDragStart={handleTemplateDragStart}
         handleDragEnd={handleDragEnd}
         handleAddTemplateClick={handleAddTemplateClick}
-        onEditTemplate={onEditTemplate}
-        onDeleteTemplate={onDeleteTemplate}
         visibleActivities={visibleActivities}
         addVisibleActivity={addVisibleActivity}
         removeVisibleActivity={removeVisibleActivity}
       />
     ),
-    extra: (
-      <ExtraPanel
-        bankWindows={bankWindows}
+    calendar: view === 'month' ? (
+      <MonthGridPanel
         visiblePanelIds={visiblePanelIds}
-        movePanel={movePanel}
-        templates={templates}
-        handleTemplateDragStart={handleTemplateDragStart}
-        handleDragEnd={handleDragEnd}
-        handleAddTemplateClick={handleAddTemplateClick}
-        handleRemoveBankWindow={handleRemoveBankWindow}
-        onEditTemplate={onEditTemplate}
-        onDeleteTemplate={onDeleteTemplate}
-        visibleActivities={visibleActivities}
-        addVisibleActivity={addVisibleActivity}
-        removeVisibleActivity={removeVisibleActivity}
-      />
-    ),
-    calendar: (
-      <CalendarPanel
-        workoutLayout={workoutLayout}
-        visiblePanelIds={visiblePanelIds}
-        loadingWorkouts={loadingWorkouts}
-        groupedWorkouts={groupedWorkouts}
-        sortedWorkouts={sortedWorkouts}
+        currentWeek={currentWeek}
+        currentYear={currentYear}
+        overviewWeeks={overviewWeeks}
+        overviewWorkoutsByWeekKey={overviewWorkoutsByWeekKey}
+        selectedWeekKey={selectedWeekKey}
+        loadingOverview={loadingOverview}
         dragState={dragState}
         dropTarget={dropTarget}
         handleDropTargetChange={handleDropTargetChange}
         handleDrop={handleDrop}
         onSelectWorkout={onSelectWorkout}
-        onMoveWorkout={onMoveWorkout}
+        onDeleteWorkout={onDeleteWorkout}
+        onAddSessionToDay={onAddSessionToDayAcross}
+        onAddManySessions={onAddManySessions}
+        onMoveMany={onMoveMany}
+        modalOpen={modalOpen}
+        onJumpToWeek={onJumpToWeek}
         handleWorkoutDragStart={handleWorkoutDragStart}
+        handleDragEnd={handleDragEnd}
+      />
+    ) : (
+      <BuilderWeekPanel
+        visiblePanelIds={visiblePanelIds}
+        currentWeek={currentWeek}
+        currentYear={currentYear}
+        loadingWorkouts={loadingWorkouts}
+        workouts={workouts}
+        dragState={dragState}
+        dropTarget={dropTarget}
+        handleDropTargetChange={handleDropTargetChange}
+        handleDrop={handleDrop}
+        onSelectWorkout={onSelectWorkout}
+        onDeleteWorkout={onDeleteWorkout}
+        onAddSessionToDay={onAddSessionToDay}
+        handleWorkoutDragStart={handleWorkoutDragStart}
+        handleDayDragStart={handleDayDragStart}
         handleDragEnd={handleDragEnd}
       />
     ),
@@ -92,9 +103,5 @@ export function buildLayoutStyle(calendarPanelWidth) {
   return {
     '--builder-side-font': calendarPanelWidth < 900 ? '0.68rem' : calendarPanelWidth < 1120 ? '0.72rem' : '0.74rem',
     '--builder-side-title-font': calendarPanelWidth < 900 ? '0.78rem' : calendarPanelWidth < 1120 ? '0.82rem' : '0.84rem',
-    '--builder-calendar-day-font': calendarPanelWidth < 900 ? '0.68rem' : calendarPanelWidth < 1120 ? '0.72rem' : '0.78rem',
-    '--builder-calendar-meta-font': calendarPanelWidth < 900 ? '0.58rem' : calendarPanelWidth < 1120 ? '0.6rem' : '0.62rem',
-    '--builder-calendar-card-title-font': calendarPanelWidth < 900 ? '0.66rem' : calendarPanelWidth < 1120 ? '0.7rem' : '0.72rem',
-    '--builder-calendar-support-font': calendarPanelWidth < 900 ? '0.56rem' : calendarPanelWidth < 1120 ? '0.58rem' : '0.6rem',
   }
 }

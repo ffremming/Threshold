@@ -78,3 +78,14 @@ export function buildWeekStats(week, workoutsByWeekKey, currentWeek, currentYear
     dailyLoads, dailyDurations, longestSession,
   }
 }
+
+// ACWR readiness bands. Boundaries are inclusive on the lower-risk side:
+// exactly 1.3 is safe, exactly 1.5 is caution. A ratio of 0 / non-finite means
+// there is no chronic baseline yet — caller treats that as "settling".
+export function classifyAcwr(acwr) {
+  if (!Number.isFinite(acwr) || acwr <= 0) return null
+  if (acwr < 0.8) return 'undertraining'
+  if (acwr <= 1.3) return 'safe'
+  if (acwr <= 1.5) return 'caution'
+  return 'spike'
+}

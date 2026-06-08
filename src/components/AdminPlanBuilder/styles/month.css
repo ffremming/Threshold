@@ -411,10 +411,12 @@
 .pb-month-toolbar {
   display: flex;
   justify-content: flex-end;
+  gap: 6px;
   padding: 0 2px 4px;
 }
 
-.pb-month-signals-toggle {
+/* Shared chrome for the month-view toolbar toggles (load signals, trends). */
+.pb-month-toggle {
   font-size: var(--th-text-2xs);
   font-weight: 600;
   padding: 3px 10px;
@@ -425,14 +427,62 @@
   cursor: pointer;
   transition: background 0.12s, color 0.12s, border-color 0.12s;
 }
-.pb-month-signals-toggle:hover {
+.pb-month-toggle:hover {
   background: var(--th-hover);
   color: var(--th-ink);
 }
-.pb-month-signals-toggle.is-on {
+.pb-month-toggle.is-on {
   background: var(--th-accent-soft);
   color: var(--th-accent);
   border-color: var(--th-accent-ring);
+}
+
+/* ── Empty-week (rest) badge — muted ─────────────────────────────────── */
+.pb-month-signals.is-empty {
+  opacity: 0.62;
+}
+
+/* ── Month-view trend chart panel ────────────────────────────────────── */
+.pb-month-trends {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  background: var(--th-surface);
+  border: 1px solid var(--th-line);
+  border-radius: var(--th-radius-sm);
+}
+
+.pb-trend-switcher {
+  display: flex;
+  gap: 6px;
+}
+
+.pb-trend-metric {
+  font-size: var(--th-text-2xs);
+  font-weight: 600;
+  padding: 3px 12px;
+  border: 1px solid var(--th-line);
+  border-radius: 999px;
+  background: var(--th-surface);
+  color: var(--th-ink-muted);
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+}
+.pb-trend-metric:hover {
+  color: var(--th-ink);
+}
+.pb-trend-metric.is-active {
+  background: var(--th-accent-soft);
+  color: var(--th-accent);
+  border-color: var(--th-accent-ring);
+}
+
+/* chart.js needs a sized box; the canvas fills it (maintainAspectRatio:false). */
+.pb-trend-canvas {
+  position: relative;
+  height: 220px;
 }
 
 /* The strip spans the full row width (week-label column + 7 days) below the

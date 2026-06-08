@@ -223,7 +223,7 @@ export default function MonthGridPanel({
       <div className="pb-month-toolbar">
         <button
           type="button"
-          className={`pb-month-signals-toggle${showSignals ? ' is-on' : ''}`}
+          className={`pb-month-toggle${showSignals ? ' is-on' : ''}`}
           onClick={() => setShowSignals(v => !v)}
           aria-pressed={showSignals}
           title="Show weekly load signals (load, ramp, readiness)"
@@ -232,7 +232,7 @@ export default function MonthGridPanel({
         </button>
         <button
           type="button"
-          className={`pb-month-signals-toggle${showTrends ? ' is-on' : ''}`}
+          className={`pb-month-toggle${showTrends ? ' is-on' : ''}`}
           onClick={() => setShowTrends(v => !v)}
           aria-pressed={showTrends}
           title="Show training trends (distance, duration, load over time)"

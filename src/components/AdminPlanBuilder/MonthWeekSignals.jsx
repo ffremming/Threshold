@@ -3,13 +3,6 @@
 // number comes precomputed from computeWeekSignals; no aggregation lives here.
 // Renders nothing for an empty/zero-load week so quiet weeks add no chrome.
 
-const BAND_LABEL = {
-  undertraining: 'undertraining',
-  safe: 'safe',
-  caution: 'caution',
-  spike: 'spike',
-}
-
 function formatRamp(rampPct) {
   if (rampPct == null || !Number.isFinite(rampPct)) return '—'
   const rounded = Math.round(rampPct)
@@ -39,14 +32,14 @@ export default function MonthWeekSignals({ signal }) {
 
       <span
         className={`pb-signal-acwr pb-band-${band}`}
-        title={settling ? 'Building chronic baseline (needs 6 weeks)' : `Acute:chronic load ratio (${BAND_LABEL[readiness]})`}
+        title={settling ? 'Building chronic baseline (needs 6 weeks)' : `Acute:chronic load ratio (${band})`}
       >
         <span className="pb-signal-dot" aria-hidden="true" />
         {settling ? (
           <span className="pb-signal-acwr-text">settling</span>
         ) : (
           <span className="pb-signal-acwr-text">
-            ACWR {acwr.toFixed(2)} {BAND_LABEL[readiness]}
+            ACWR {acwr.toFixed(2)} {band}
           </span>
         )}
       </span>

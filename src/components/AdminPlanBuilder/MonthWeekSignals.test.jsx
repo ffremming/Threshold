@@ -21,6 +21,20 @@ describe('MonthWeekSignals', () => {
     expect(screen.getByText(/-26%/)).toBeInTheDocument()
   })
 
+  it('marks the ramp chip hot when the magnitude exceeds 30%', () => {
+    const { container } = render(<MonthWeekSignals signal={{
+      load: 500, rampPct: 45, acwr: 1.6, readiness: 'spike', settling: false,
+    }} />)
+    expect(container.querySelector('.pb-signal-ramp')).toHaveClass('is-hot')
+  })
+
+  it('does not mark the ramp chip hot for a moderate change', () => {
+    const { container } = render(<MonthWeekSignals signal={{
+      load: 305, rampPct: -26, acwr: 0.92, readiness: 'safe', settling: false,
+    }} />)
+    expect(container.querySelector('.pb-signal-ramp')).not.toHaveClass('is-hot')
+  })
+
   it('renders a muted dash for ramp when rampPct is null', () => {
     const { container } = render(<MonthWeekSignals signal={{
       load: 200, rampPct: null, acwr: 1.0, readiness: 'safe', settling: false,

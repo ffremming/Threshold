@@ -12,9 +12,11 @@ import { makeDropZoneProps } from './dragProps'
 import { useMonthSelection, cellKey } from './useMonthSelection'
 import MonthWeekSummary from './MonthWeekSummary'
 import MonthGhostChip from './MonthGhostChip'
-import { computeWeekSignals } from '../../utils/loadSignals'
+import { computeWeekSignals, computeWeekSeries } from '../../utils/loadSignals'
 import { useMonthSignalsToggle } from './useMonthSignalsToggle'
 import MonthWeekSignals from './MonthWeekSignals'
+import { useMonthTrendsToggle } from './useMonthTrendsToggle'
+import MonthTrendPanel from './MonthTrendPanel'
 
 const DAY_FMT = new Intl.DateTimeFormat('en', { day: 'numeric', month: 'short' })
 
@@ -135,6 +137,12 @@ export default function MonthGridPanel({
     [overviewWeeks, overviewWorkoutsByWeekKey, currentWeek, currentYear]
   )
 
+  const { showTrends, setShowTrends } = useMonthTrendsToggle()
+  const weekSeries = useMemo(
+    () => computeWeekSeries(overviewWeeks, overviewWorkoutsByWeekKey, currentWeek, currentYear),
+    [overviewWeeks, overviewWorkoutsByWeekKey, currentWeek, currentYear]
+  )
+
   const cellDrag = { onDragStart: handleWorkoutDragStart, onDragEnd: handleDragEnd }
   const hasClipboard = Boolean(sel.clipboard)
   const selectionCount = sel.selectedCells.size
@@ -222,7 +230,18 @@ export default function MonthGridPanel({
         >
           {showSignals ? 'Hide load signals' : 'Show load signals'}
         </button>
+        <button
+          type="button"
+          className={`pb-month-signals-toggle${showTrends ? ' is-on' : ''}`}
+          onClick={() => setShowTrends(v => !v)}
+          aria-pressed={showTrends}
+          title="Show training trends (distance, duration, load over time)"
+        >
+          {showTrends ? 'Hide trends' : 'Show trends'}
+        </button>
       </div>
+
+      {showTrends && <MonthTrendPanel series={weekSeries} />}
 
       {loadingOverview ? (
         <div className="pb-empty-state">Loading month…</div>

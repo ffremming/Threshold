@@ -4,6 +4,10 @@ import userEvent from '@testing-library/user-event'
 import '@testing-library/jest-dom'
 import MonthGridPanel from './MonthGridPanel'
 
+vi.mock('react-chartjs-2', () => ({
+  Line: () => <div data-testid="trend-line" />,
+}))
+
 const WEEKS = [
   { week: 20, year: 2026, monday: new Date(2026, 4, 11), sunday: new Date(2026, 4, 17), key: '2026-20' },
   { week: 21, year: 2026, monday: new Date(2026, 4, 18), sunday: new Date(2026, 4, 24), key: '2026-21' },
@@ -145,5 +149,12 @@ describe('MonthGridPanel', () => {
     expect(screen.queryByLabelText('Weekly load signals')).not.toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: /show load signals/i }))
     expect(screen.getAllByLabelText('Weekly load signals').length).toBeGreaterThan(0)
+  })
+
+  it('shows the trend chart only after toggling trends on', () => {
+    renderPanel()
+    expect(screen.queryByLabelText('Training trend chart')).not.toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: /show trends/i }))
+    expect(screen.getByLabelText('Training trend chart')).toBeInTheDocument()
   })
 })

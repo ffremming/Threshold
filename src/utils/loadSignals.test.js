@@ -60,4 +60,33 @@ describe('computeWeekSignals', () => {
     expect(signals['2026-1'].rampPct).toBeNull() // no previous week at all
     expect(signals['2026-2'].rampPct).toBeNull() // previous load is 0
   })
+
+  // One completed run per week. Load = duration * intensity factor, and the
+  // factor is identical across these (same type/zone), so load scales linearly
+  // with the minutes in `notes` — letting us assert exact ramp % and the
+  // acute(3wk) vs chronic(6wk) wiring with real (non-zero) loads.
+  const run = mins => [{ activityTag: 'run', type: 'rolig', intensityZone: [2], completed: true, notes: `${mins} min` }]
+
+  it('computes an exact week-over-week ramp from real loads', () => {
+    const weeks = weeksWithKeys(2)
+    const byKey = { '2026-1': run(60), '2026-2': run(120) } // load doubles
+    const signals = computeWeekSignals(weeks, byKey, 99, 2026)
+    expect(signals['2026-2'].rampPct).toBeCloseTo(100, 5) // +100%
+  })
+
+  it('wires acute(3wk) above chronic(6wk) into a spike when recent load jumps', () => {
+    // Weeks 1-6 easy (60 min), weeks 7-8 a sharp 5x block (300 min). Week 8's
+    // 3-week acute avg ≈ 3.67·L sits well above the 6-week chronic avg ≈ 2.33·L
+    // (L = the easy-week load), so ACWR ≈ 1.57 → spike. This pins the acute(3)
+    // vs chronic(6) windowing, not just the structural shape.
+    const weeks = weeksWithKeys(8)
+    const byKey = Object.fromEntries(
+      weeks.map(w => [w.key, run(w.week >= 7 ? 300 : 60)])
+    )
+    const signals = computeWeekSignals(weeks, byKey, 99, 2026)
+    const w8 = signals['2026-8']
+    expect(w8.acuteLoad).toBeGreaterThan(w8.chronicLoad)
+    expect(w8.acwr).toBeGreaterThan(1.5)
+    expect(w8.readiness).toBe('spike')
+  })
 })

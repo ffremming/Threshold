@@ -89,3 +89,41 @@ export function classifyAcwr(acwr) {
   if (acwr <= 1.5) return 'caution'
   return 'spike'
 }
+
+// Compute per-week load signals across the full chronological `weeks` series.
+// ACWR's chronic load is a 6-week trailing average, so signals must be derived
+// from the whole series in order — never per-row in isolation. Returns a map
+// keyed by week.key: { load, rampPct, acuteLoad, chronicLoad, acwr, readiness,
+// settling }.
+//   - rampPct: week-over-week load change % vs the immediately preceding week;
+//     null when there is no previous week or the previous load is 0.
+//   - acwr: acute(3wk avg) / chronic(6wk avg); 0 when no chronic baseline.
+//   - readiness: classifyAcwr(acwr) band, or null while settling.
+//   - settling: true until 6 weeks of history exist (low-confidence ACWR).
+const CHRONIC_WEEKS = 6
+const ACUTE_WEEKS = 3
+
+export function computeWeekSignals(weeks, workoutsByWeekKey, currentWeek, currentYear) {
+  const stats = weeks.map(week =>
+    buildWeekStats(week, workoutsByWeekKey, currentWeek, currentYear))
+  const loadSeries = stats.map(s => s.load)
+
+  const signals = {}
+  stats.forEach((s, index) => {
+    const load = s.load
+    const prevLoad = index > 0 ? loadSeries[index - 1] : null
+    const rampPct = prevLoad && prevLoad > 0
+      ? ((load - prevLoad) / prevLoad) * 100
+      : null
+
+    const acuteLoad = averageLastValues(loadSeries, ACUTE_WEEKS, index)
+    const chronicLoad = averageLastValues(loadSeries, CHRONIC_WEEKS, index)
+    const acwr = safeDivide(acuteLoad, chronicLoad)
+    const settling = index + 1 < CHRONIC_WEEKS
+    const readiness = settling ? null : classifyAcwr(acwr)
+
+    signals[s.week.key] = { load, rampPct, acuteLoad, chronicLoad, acwr, readiness, settling }
+  })
+
+  return signals
+}

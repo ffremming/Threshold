@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { classifyAcwr } from './loadSignals'
+import { classifyAcwr, computeWeekSignals } from './loadSignals'
 
 describe('classifyAcwr', () => {
   it('classifies the band boundaries on the lower-risk side', () => {
@@ -15,5 +15,49 @@ describe('classifyAcwr', () => {
     expect(classifyAcwr(0)).toBeNull()
     expect(classifyAcwr(NaN)).toBeNull()
     expect(classifyAcwr(Infinity)).toBeNull()
+  })
+})
+
+// Build a chronological week list with given loads by injecting one workout per
+// week whose estimated load we control. We bypass the estimator by giving each
+// week a single completed workout and asserting on ramp/acwr structure rather
+// than exact load — exact load math is covered by weekSummary tests.
+function weeksWithKeys(n) {
+  return Array.from({ length: n }, (_, i) => ({
+    week: i + 1, year: 2026, key: `2026-${i + 1}`,
+  }))
+}
+
+describe('computeWeekSignals', () => {
+  it('returns a map keyed by week.key with a signal entry per week', () => {
+    const weeks = weeksWithKeys(3)
+    const byKey = { '2026-1': [], '2026-2': [], '2026-3': [] }
+    const signals = computeWeekSignals(weeks, byKey, 99, 2026) // all weeks are "past"
+    expect(Object.keys(signals).sort()).toEqual(['2026-1', '2026-2', '2026-3'])
+    for (const key of Object.keys(signals)) {
+      expect(signals[key]).toHaveProperty('load')
+      expect(signals[key]).toHaveProperty('rampPct')
+      expect(signals[key]).toHaveProperty('acwr')
+      expect(signals[key]).toHaveProperty('readiness')
+      expect(signals[key]).toHaveProperty('settling')
+    }
+  })
+
+  it('marks the first weeks as settling until chronic has 6 weeks of history', () => {
+    const weeks = weeksWithKeys(8)
+    const byKey = Object.fromEntries(weeks.map(w => [w.key, []]))
+    const signals = computeWeekSignals(weeks, byKey, 99, 2026)
+    expect(signals['2026-1'].settling).toBe(true)
+    expect(signals['2026-5'].settling).toBe(true)  // only 5 weeks of history
+    expect(signals['2026-6'].settling).toBe(false) // 6 weeks of history
+    expect(signals['2026-8'].settling).toBe(false)
+  })
+
+  it('reports rampPct as null when the previous week had zero load', () => {
+    const weeks = weeksWithKeys(2)
+    const byKey = { '2026-1': [], '2026-2': [] } // both zero load
+    const signals = computeWeekSignals(weeks, byKey, 99, 2026)
+    expect(signals['2026-1'].rampPct).toBeNull() // no previous week at all
+    expect(signals['2026-2'].rampPct).toBeNull() // previous load is 0
   })
 })

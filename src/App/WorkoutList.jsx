@@ -1,5 +1,6 @@
 import { CalendarX } from 'lucide-react'
 import { Section, EmptyState, Stat, WorkoutCard } from '../components/ui'
+import { sessionDuration } from '../utils/weekSummary'
 
 const TYPE_LABELS = {
   rolig: 'easy',
@@ -33,7 +34,7 @@ function buildTypeBreakdown(workouts) {
 }
 
 function WeekSummary({ workouts, doneCount }) {
-  const totalMinutes = workouts.reduce((sum, w) => sum + (Number(w.duration) || 0), 0)
+  const totalMinutes = Math.round(workouts.reduce((sum, w) => sum + sessionDuration(w), 0))
   const typeBreakdown = buildTypeBreakdown(workouts)
   const progressPct = workouts.length > 0
     ? Math.round((doneCount / workouts.length) * 100)

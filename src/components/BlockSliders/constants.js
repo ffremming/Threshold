@@ -52,6 +52,15 @@ export const DURATION_MIN = 1
 export const DURATION_MAX = 180
 export const DURATION_STEP = 1
 
+// Sprint block ranges: reps × work seconds.
+export const SPRINT_REPS_MIN = 1
+export const SPRINT_REPS_MAX = 30
+export const SPRINT_REPS_STEP = 1
+
+export const SPRINT_SEC_MIN = 5
+export const SPRINT_SEC_MAX = 120
+export const SPRINT_SEC_STEP = 5
+
 export function clampPace(pace) {
   if (!Number.isFinite(pace) || pace <= 0) return PACE_MIN
   return Math.min(PACE_MAX, Math.max(PACE_MIN, pace))

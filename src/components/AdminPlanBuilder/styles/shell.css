@@ -16,6 +16,85 @@
   .pb-shell { padding: var(--th-space-3); gap: var(--th-space-2); }
 }
 
+/* Week / Month view switch — topmost element of the builder content. */
+.pb-view-tabs {
+  border-bottom: 1px solid var(--th-line);
+}
+
+/* Custom drag image — a crisp little card shown under the cursor while dragging
+ * a session/template. Rendered off-screen; the browser snapshots it for the
+ * native drag image, then it is removed. */
+.pb-drag-ghost {
+  position: fixed;
+  top: -1000px;
+  left: -1000px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 120px;
+  max-width: 220px;
+  padding: 8px 10px 8px 14px;
+  background-color: var(--th-surface);
+  background-image: var(--pb-zone-bar, linear-gradient(#94a3b8, #94a3b8));
+  background-repeat: no-repeat;
+  background-position: left center;
+  background-size: 6px 100%;
+  border: 1px solid var(--th-line-strong);
+  border-radius: var(--th-radius-sm);
+  box-shadow: var(--th-shadow-md);
+  font-family: var(--th-font-sans);
+  pointer-events: none;
+}
+
+.pb-drag-ghost-title {
+  font-size: var(--th-text-sm);
+  font-weight: 700;
+  color: var(--th-ink);
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pb-drag-ghost-zone {
+  font-size: var(--th-text-2xs);
+  font-weight: 700;
+  letter-spacing: var(--th-tracking-wide);
+  text-transform: uppercase;
+  color: var(--th-ink-muted);
+}
+
+/* Multi-session drag image: a stack with every session's card visible. The
+ * stack carries the off-screen positioning; its cards flow normally. */
+.pb-drag-ghost-stack {
+  position: fixed;
+  top: -1000px;
+  left: -1000px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  pointer-events: none;
+}
+
+.pb-drag-ghost-stack .pb-drag-ghost {
+  position: static;
+  top: auto;
+  left: auto;
+}
+
+/* Clone-of-selection drag image: cloned day-cells positioned at their real
+ * offsets so the ghost reproduces the exact horizontal layout. */
+.pb-drag-ghost-clone {
+  position: fixed;
+  top: -2000px;
+  left: -2000px;
+  background: var(--th-surface);
+  pointer-events: none;
+}
+.pb-drag-ghost-clone .pb-month-cell {
+  box-sizing: border-box;
+}
+
 .pb-athlete-banner {
   font-size: var(--th-text-sm);
   color: var(--th-ink-muted);

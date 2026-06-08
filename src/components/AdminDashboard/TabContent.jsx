@@ -4,6 +4,7 @@ import AdminPlanBuilder from '../AdminPlanBuilder'
 import { Page, EmptyState } from '../ui'
 import PlanTab from './tabs/PlanTab'
 import BibliotekTab from './tabs/BibliotekTab'
+import { EMPTY_TEMPLATE } from './constants'
 
 export default function TabContent(p) {
   const { tab, selectedAthleteId } = p
@@ -53,6 +54,17 @@ export default function TabContent(p) {
   }
 
   if (tab === 'builder' && selectedAthleteId) {
+    // Per-day "+": open the custom-session form preset to that weekday (week
+    // view) or week+weekday (month view), reusing the toolbar's creation flow.
+    const onAddSessionToDay = weekday => {
+      p.setCustomForm({ ...EMPTY_TEMPLATE, weekday: String(weekday) })
+      p.setShowCustomForm(true)
+    }
+    const onAddSessionToDayAcross = (week, year, weekday) => {
+      p.onWeekChange(week, year)
+      p.setCustomForm({ ...EMPTY_TEMPLATE, weekday: String(weekday) })
+      p.setShowCustomForm(true)
+    }
     return (
       <AdminPlanBuilder
         currentWeek={p.currentWeek}
@@ -60,24 +72,26 @@ export default function TabContent(p) {
         monday={p.monday}
         sunday={p.sunday}
         isThisWeek={p.isThisWeek}
-        workoutLayout={p.workoutLayout}
         workouts={p.workouts}
         loadingWorkouts={p.loadingWorkouts}
         templates={p.templates}
         loadingTemplates={p.loadingTemplates}
         overviewWeeks={p.overviewWeeks}
         overviewWorkoutsByWeekKey={p.overviewWorkoutsByWeekKey}
+        overviewWorkouts={p.overviewWorkouts}
         loadingOverview={p.loadingOverview}
         onWeekChange={p.onWeekChange}
         onSelectWorkout={p.setSelectedWorkout}
         onDeleteWorkout={p.handleDeleteWorkout}
-        onToggleComplete={p.handleToggleComplete}
-        onMoveWorkout={p.moveWorkout}
         onMoveWorkoutByDrag={p.moveWorkoutByDrag}
+        onMoveWorkoutAcross={p.moveWorkoutAcross}
+        onMoveMany={p.moveManyWorkouts}
         onAddTemplateToDay={p.handleAddTemplateToDay}
-        onEditTemplate={p.startEditTemplate}
+        onAddTemplateToDayAcross={p.addTemplateToDayAcross}
+        onAddManySessions={p.addManySessions}
+        onAddSessionToDay={onAddSessionToDay}
+        onAddSessionToDayAcross={onAddSessionToDayAcross}
         onCreateTemplate={p.startNewTemplate}
-        onDeleteTemplate={p.handleDeleteTemplate}
       />
     )
   }

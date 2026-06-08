@@ -82,6 +82,29 @@ export function getWeekOffsetFromAnchor(targetWeek, targetYear, anchorWeek, anch
   return offset
 }
 
+// Absolute day index for a (week, year, weekday), anchored to an arbitrary
+// fixed point. Lets callers compute and re-apply (week, weekday) offsets that
+// roll correctly across week and year boundaries — used by month-grid
+// copy/paste and multi-move to preserve a selection's shape relative to a
+// paste target. Anchor cancels out of any offset, so its value is irrelevant.
+const DAY_INDEX_ANCHOR = { week: 1, year: 2000 }
+
+export function getDayIndex(week, year, weekday) {
+  const weekOffset = getWeekOffsetFromAnchor(week, year, DAY_INDEX_ANCHOR.week, DAY_INDEX_ANCHOR.year)
+  return weekOffset * 7 + (weekday - 1)
+}
+
+export function getCellFromDayIndex(dayIndex) {
+  const weekOffset = Math.floor(dayIndex / 7)
+  const weekday = (dayIndex % 7) + 1
+  let cursor = { week: DAY_INDEX_ANCHOR.week, year: DAY_INDEX_ANCHOR.year }
+  const direction = weekOffset >= 0 ? 1 : -1
+  for (let i = 0; i < Math.abs(weekOffset); i += 1) {
+    cursor = getAdjacentWeek(cursor.week, cursor.year, direction)
+  }
+  return { week: cursor.week, year: cursor.year, weekday }
+}
+
 export function getWeeklyProgressionTarget(
   week,
   year,

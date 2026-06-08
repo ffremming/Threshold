@@ -15,6 +15,7 @@ export function createWorkoutCrud(ctx) {
   const {
     selectedAthleteId, currentWeek, currentYear,
     workouts, selectedWorkout, setSelectedWorkout,
+    pushUndo,
   } = ctx
 
   async function addWorkoutToWeek(fields) {
@@ -22,7 +23,7 @@ export function createWorkoutCrud(ctx) {
     const nextOrder = workouts.length > 0 ? Math.max(...workouts.map(w => w.order ?? 0)) + 1 : 1
     const weekday = Number(fields.weekday)
     const intensityZone = normalizeIntensityZones(fields.type, fields.intensityZone)
-    await withDatabaseWriteLimit('workouts', () => addDoc(collection(db, 'workouts'), {
+    const ref = await withDatabaseWriteLimit('workouts', () => addDoc(collection(db, 'workouts'), {
       ...fields,
       intensityZone,
       loadTag: normalizeLoadTag(fields.type, intensityZone, fields.loadTag),
@@ -38,6 +39,11 @@ export function createWorkoutCrud(ctx) {
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     }))
+    // Undo a custom add by deleting the doc it created.
+    if (ref?.id) {
+      pushUndo?.(() => withDatabaseWriteLimit('workouts', () => deleteDoc(doc(db, 'workouts', ref.id))))
+    }
+    return ref?.id || null
   }
 
   async function handleEditWorkout(updated) {
@@ -57,9 +63,17 @@ export function createWorkoutCrud(ctx) {
   }
 
   async function handleDeleteWorkout(workout) {
-    if (!window.confirm(`Delete "${workout.title}"?`)) return
+    // Capture before deleting so undo can recreate it (with a new id, which is
+    // fine — nothing external keys off a workout id).
+    const { id, ...snapshot } = workout
     await withDatabaseWriteLimit('workouts', () => deleteDoc(doc(db, 'workouts', workout.id)))
     setSelectedWorkout(null)
+    pushUndo?.(() => withDatabaseWriteLimit('workouts', () => addDoc(collection(db, 'workouts'), {
+      ...snapshot,
+      athleteId: snapshot.athleteId || selectedAthleteId,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    })))
   }
 
   async function handleToggleComplete(workout) {

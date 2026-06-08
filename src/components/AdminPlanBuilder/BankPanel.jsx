@@ -5,14 +5,11 @@ import BankPickerWindow from './BankPickerWindow'
 export default function BankPanel({
   visiblePanelIds,
   onCreateTemplate,
-  handleAddBankWindow,
   loadingTemplates,
   templates,
   handleTemplateDragStart,
   handleDragEnd,
   handleAddTemplateClick,
-  onEditTemplate,
-  onDeleteTemplate,
   visibleActivities,
   addVisibleActivity,
   removeVisibleActivity,
@@ -30,31 +27,20 @@ export default function BankPanel({
             New template
           </button>
         )}
-        <button type="button" className="pb-mini-btn" onClick={handleAddBankWindow}>
-          <Plus className="pb-btn-icon" aria-hidden="true" strokeWidth={2} />
-          Window
-        </button>
       </BuilderPanelHeader>
 
       {loadingTemplates ? (
         <div className="pb-empty-state">Loading sessions…</div>
       ) : (
-        <div className="pb-bank-grid">
-          <BankPickerWindow
-            isPrimary
-            templates={templates}
-            onDragStart={handleTemplateDragStart}
-            onDragEnd={handleDragEnd}
-            onAddTemplate={handleAddTemplateClick}
-            canRemove={false}
-            onRemove={() => {}}
-            onEditTemplate={onEditTemplate}
-            onDeleteTemplate={onDeleteTemplate}
-            visibleActivities={visibleActivities}
-            onAddActivity={addVisibleActivity}
-            onRemoveActivity={removeVisibleActivity}
-          />
-        </div>
+        <BankPickerWindow
+          templates={templates}
+          onDragStart={handleTemplateDragStart}
+          onDragEnd={handleDragEnd}
+          onAddTemplate={handleAddTemplateClick}
+          visibleActivities={visibleActivities}
+          onAddActivity={addVisibleActivity}
+          onRemoveActivity={removeVisibleActivity}
+        />
       )}
     </aside>
   )

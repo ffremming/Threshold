@@ -1,6 +1,8 @@
-import { useMemo } from 'react'
-import { Plus } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { Plus, Dumbbell } from 'lucide-react'
 import SectionCard from './SectionCard'
+import SessionMuscleMap from './Strength/SessionMuscleMap'
+import ExercisePicker from './Strength/ExercisePicker'
 import {
   SECTION_LABELS,
   computeSessionTotals,
@@ -40,9 +42,17 @@ export default function SessionEditor({ value, onChange, activityTag, workoutTyp
 
   const sections = normalized.sections
   const totals = computeSessionTotals(normalized, activityTag)
+  const [pickerOpen, setPickerOpen] = useState(false)
 
   function commit(nextSections) {
     onChange({ sections: nextSections })
+  }
+
+  // Append a new exercise section pre-filled from a library entry. Used by the
+  // multi-add picker so a whole strength session can be assembled quickly.
+  function addExerciseFromLibrary(exercise) {
+    const section = createSection('exercise', activityTag)
+    commit([...sections, { ...section, exerciseId: exercise.id, exerciseName: exercise.name }])
   }
 
   function updateSection(id, next) {
@@ -90,6 +100,17 @@ export default function SessionEditor({ value, onChange, activityTag, workoutTyp
         ))
       )}
 
+      {domain === 'strength' && (
+        <button
+          type="button"
+          className="th-session-add-exercises"
+          onClick={() => setPickerOpen(true)}
+        >
+          <Dumbbell size={16} strokeWidth={2.25} aria-hidden="true" />
+          Add exercises
+        </button>
+      )}
+
       <div className="th-session-add-row">
         {addableKinds.map(kind => (
           <button
@@ -106,6 +127,15 @@ export default function SessionEditor({ value, onChange, activityTag, workoutTyp
         ))}
       </div>
 
+      {domain === 'strength' && (
+        <ExercisePicker
+          open={pickerOpen}
+          multiAdd
+          onClose={() => setPickerOpen(false)}
+          onSelect={addExerciseFromLibrary}
+        />
+      )}
+
       <div className="th-session-totals">
         <div className="th-session-total">
           <span className="th-session-total-label">Total time</span>
@@ -118,6 +148,8 @@ export default function SessionEditor({ value, onChange, activityTag, workoutTyp
           </div>
         )}
       </div>
+
+      {domain === 'strength' && <SessionMuscleMap sections={sections} />}
     </div>
   )
 }

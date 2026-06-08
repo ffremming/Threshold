@@ -1,10 +1,6 @@
 /* ────────────────────────────────────────────────────────────────────
- * AdminPlanBuilder — bank panel, picker windows, session columns
+ * AdminPlanBuilder — bank panel, session picker, search
  * ──────────────────────────────────────────────────────────────────── */
-
-.pb-bank-grid { display: flex; flex-direction: column; gap: var(--th-space-3); }
-
-.pb-extra-list { display: flex; flex-direction: column; gap: var(--th-space-3); }
 
 .pb-picker {
   display: flex;
@@ -12,41 +8,65 @@
   gap: var(--th-space-2);
 }
 
-.pb-picker-head {
+/* Search box */
+.pb-search {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--th-space-3);
-}
-
-.pb-picker-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  align-items: center;
   gap: var(--th-space-2);
+  height: 2.25rem;
+  padding: 0 var(--th-space-2);
+  border: 1px solid var(--th-line-strong);
+  border-radius: var(--th-radius-md);
+  background: var(--th-surface);
 }
 
-@media (max-width: 720px) {
-  .pb-picker-grid { grid-template-columns: 1fr; }
+.pb-search:focus-within {
+  border-color: var(--th-accent);
+  box-shadow: 0 0 0 2px var(--th-accent-soft);
 }
 
-.pb-column { display: flex; flex-direction: column; gap: var(--th-space-2); min-width: 0; }
-
-.pb-column-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: var(--th-space-2);
+.pb-search-icon {
+  width: 0.95rem;
+  height: 0.95rem;
+  color: var(--th-ink-muted);
+  flex-shrink: 0;
 }
 
-.pb-column-title {
+.pb-search-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  font-family: var(--th-font-sans);
   font-size: var(--th-text-sm);
-  font-weight: 700;
-  letter-spacing: var(--th-tracking-snug);
   color: var(--th-ink);
-  margin: 0;
+  outline: none;
 }
 
-.pb-column-count {
+.pb-search-input::placeholder { color: var(--th-ink-muted); }
+.pb-search-input::-webkit-search-cancel-button { display: none; }
+
+.pb-search-clear {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  padding: 0;
+  border: none;
+  border-radius: var(--th-radius-sm);
+  background: transparent;
+  color: var(--th-ink-muted);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.pb-search-clear:hover { background: var(--th-hover); color: var(--th-ink); }
+.pb-search-clear .pb-btn-icon { width: 0.8rem; height: 0.8rem; }
+
+/* Result count */
+.pb-picker-count {
   font-size: var(--th-text-2xs);
   text-transform: uppercase;
   letter-spacing: var(--th-tracking-wide);
@@ -54,4 +74,17 @@
   color: var(--th-ink-muted);
 }
 
-.pb-card-list { display: flex; flex-direction: column; gap: var(--th-space-2); }
+/* Responsive card grid — cards flow into as many columns as fit, so titles
+ * always get a sensible width (no one-char-per-line wrapping). */
+.pb-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: var(--th-space-2);
+  align-content: start;
+}
+
+.pb-empty-copy {
+  font-size: var(--th-text-sm);
+  color: var(--th-ink-muted);
+  padding: var(--th-space-3) 0;
+}

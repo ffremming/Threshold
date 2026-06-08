@@ -15,6 +15,9 @@ export default function WorkoutForm({ value, onChange, showScheduleFields = fals
   const type = migrateWorkoutType(value.type)
   const allowedZones = getAllowedIntensityZones(type)
   const domain = getSessionDomain(value.activityTag)
+  // Strength sessions are sets/reps/load based — interval-vs-continuous and
+  // intensity zones don't apply, so those fields are hidden for them.
+  const isStrength = domain === 'strength'
   const descriptionPlaceholder = domain === 'strength'
     ? 'E.g. Squat 3 x 8, deadlift 3 x 5, 90 sec rest'
     : domain === 'duration'
@@ -67,14 +70,16 @@ export default function WorkoutForm({ value, onChange, showScheduleFields = fals
         />
       </label>
 
-      <label>
-        Type
-        <select value={type} onChange={e => setType(e.target.value)}>
-          {WORKOUT_TYPES.map(t => (
-            <option key={t.value} value={t.value}>{t.label}</option>
-          ))}
-        </select>
-      </label>
+      {!isStrength && (
+        <label>
+          Type
+          <select value={type} onChange={e => setType(e.target.value)}>
+            {WORKOUT_TYPES.map(t => (
+              <option key={t.value} value={t.value}>{t.label}</option>
+            ))}
+          </select>
+        </label>
+      )}
 
       {showScheduleFields && (
         <div className="date-time-row">
@@ -117,22 +122,24 @@ export default function WorkoutForm({ value, onChange, showScheduleFields = fals
         />
       </label>
 
-      <label>
-        Intensity zone
-        <div className="field-hint">Select one or more zones</div>
-        <div className="zone-picker">
-          {allowedZones.map(z => (
-            <button
-              key={z}
-              type="button"
-              className={`th-zone-btn th-zone-${z}${normalizeIntensityZones(type, value.intensityZone).includes(z) ? ' is-active' : ''}`}
-              onClick={() => toggleIntensityZone(z)}
-            >
-              Zone {z}
-            </button>
-          ))}
-        </div>
-      </label>
+      {!isStrength && (
+        <label>
+          Intensity zone
+          <div className="field-hint">Select one or more zones</div>
+          <div className="zone-picker">
+            {allowedZones.map(z => (
+              <button
+                key={z}
+                type="button"
+                className={`th-zone-btn th-zone-${z}${normalizeIntensityZones(type, value.intensityZone).includes(z) ? ' is-active' : ''}`}
+                onClick={() => toggleIntensityZone(z)}
+              >
+                Zone {z}
+              </button>
+            ))}
+          </div>
+        </label>
+      )}
 
       <label>
         Description

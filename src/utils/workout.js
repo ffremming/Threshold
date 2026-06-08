@@ -1,5 +1,5 @@
 import { inferActivityTag } from './activity'
-import { normalizeIntensityZones, formatIntensityZoneLabel } from './intensity'
+import { normalizeIntensityZones, formatIntensityZoneLabel, workoutHasZones } from './intensity'
 import { normalizeLoadTag } from './load'
 import {
   WEEKDAY_OPTIONS,
@@ -101,6 +101,7 @@ export function groupWorkoutsByWeekday(workouts) {
 }
 
 export function getIntensityZoneLabel(workout) {
+  if (!workoutHasZones(workout.activityTag)) return null
   const zones = normalizeIntensityZones(workout.type, workout.intensityZone)
   return formatIntensityZoneLabel(zones)
 }

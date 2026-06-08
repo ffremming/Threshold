@@ -108,6 +108,9 @@ export function blocksToSummary(blocks, activityTag) {
       if (s.restSec > 0) parts.push(formatPauseLabel(s.restSec))
       return `${name}: ${parts.join(', ')}`
     }
+    if (s.kind === 'sprint') {
+      return `${label}: ${s.reps} × ${formatSeconds(s.sprintSec)}`
+    }
     if (s.kind === 'effort' || (s.distanceKm === 0 && s.durationMin != null && s.paceSecPerKm == null)) {
       return `${label}: ${formatDuration(s.durationMin)}`
     }

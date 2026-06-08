@@ -1,36 +1,26 @@
-import { useEffect, useMemo, useState } from 'react'
-import { X } from 'lucide-react'
-import { isHardWorkout, normalizeIntensityZones } from '../../utils'
+import { useMemo, useState } from 'react'
+import { Search, X } from 'lucide-react'
+import { normalizeIntensityZones } from '../../utils'
 import { DEFAULT_VISIBLE_ACTIVITIES } from './constants'
 import BankActivityFilter from './BankActivityFilter'
-import SessionColumn from './SessionColumn'
+import TemplateDragCard from './TemplateDragCard'
 
 export default function BankPickerWindow({
-  windowNumber,
-  isPrimary = false,
   templates,
   onDragStart,
   onDragEnd,
   onAddTemplate,
-  canRemove,
-  onRemove,
-  onEditTemplate,
-  onDeleteTemplate,
   visibleActivities = DEFAULT_VISIBLE_ACTIVITIES,
   onAddActivity,
   onRemoveActivity,
 }) {
   const [activeTagFilter, setActiveTagFilter] = useState(null)
   const [activeIntensityFilters, setActiveIntensityFilters] = useState([])
+  const [search, setSearch] = useState('')
 
-  useEffect(() => {
-    if (activeTagFilter && !visibleActivities.includes(activeTagFilter)) {
-      setActiveTagFilter(null)
-    }
-  }, [activeTagFilter, visibleActivities])
-
-  const filteredTemplates = useMemo(() => (
-    templates
+  const filteredTemplates = useMemo(() => {
+    const query = search.trim().toLowerCase()
+    return templates
       .filter(template => !template.activityTag || visibleActivities.includes(template.activityTag))
       .filter(template => !activeTagFilter || template.activityTag === activeTagFilter)
       .filter(template => {
@@ -38,16 +28,9 @@ export default function BankPickerWindow({
         const zones = normalizeIntensityZones(template.type, template.intensityZone)
         return activeIntensityFilters.some(zone => zones.includes(zone))
       })
+      .filter(template => !query || (template.title || '').toLowerCase().includes(query))
       .sort((a, b) => a.title.localeCompare(b.title, 'nb'))
-  ), [activeIntensityFilters, activeTagFilter, templates, visibleActivities])
-
-  const hardTemplates = useMemo(() => (
-    filteredTemplates.filter(template => isHardWorkout(template))
-  ), [filteredTemplates])
-
-  const easyTemplates = useMemo(() => (
-    filteredTemplates.filter(template => !isHardWorkout(template))
-  ), [filteredTemplates])
+  }, [activeIntensityFilters, activeTagFilter, search, templates, visibleActivities])
 
   function toggleIntensityFilter(zone) {
     setActiveIntensityFilters(prev => (
@@ -59,19 +42,27 @@ export default function BankPickerWindow({
 
   return (
     <section className="pb-picker">
-      {!isPrimary && (
-        <header className="pb-picker-head">
-          <div>
-            <h3 className="pb-column-title">Window {windowNumber}</h3>
-            <span className="pb-column-count">{filteredTemplates.length} sessions</span>
-          </div>
-          {canRemove ? (
-            <button type="button" className="pb-mini-btn pb-mini-btn--icon" onClick={onRemove} aria-label="Close window">
-              <X className="pb-btn-icon" aria-hidden="true" strokeWidth={2} />
-            </button>
-          ) : null}
-        </header>
-      )}
+      <div className="pb-search">
+        <Search className="pb-search-icon" aria-hidden="true" strokeWidth={2} />
+        <input
+          type="search"
+          className="pb-search-input"
+          placeholder="Search sessions…"
+          value={search}
+          onChange={event => setSearch(event.target.value)}
+          aria-label="Search sessions by title"
+        />
+        {search && (
+          <button
+            type="button"
+            className="pb-search-clear"
+            onClick={() => setSearch('')}
+            aria-label="Clear search"
+          >
+            <X className="pb-btn-icon" aria-hidden="true" strokeWidth={2} />
+          </button>
+        )}
+      </div>
 
       <BankActivityFilter
         visibleActivities={visibleActivities}
@@ -99,28 +90,25 @@ export default function BankPickerWindow({
         ))}
       </div>
 
-      <div className="pb-picker-grid">
-        <SessionColumn
-          title="Hard sessions"
-          subtitle={`${hardTemplates.length} sessions`}
-          sessions={hardTemplates}
-          onDragStart={onDragStart}
-          onDragEnd={onDragEnd}
-          onAddTemplate={onAddTemplate}
-          onEditTemplate={onEditTemplate}
-          onDeleteTemplate={onDeleteTemplate}
-        />
-        <SessionColumn
-          title="Easy sessions"
-          subtitle={`${easyTemplates.length} sessions`}
-          sessions={easyTemplates}
-          onDragStart={onDragStart}
-          onDragEnd={onDragEnd}
-          onAddTemplate={onAddTemplate}
-          onEditTemplate={onEditTemplate}
-          onDeleteTemplate={onDeleteTemplate}
-        />
+      <div className="pb-picker-count">
+        {filteredTemplates.length} {filteredTemplates.length === 1 ? 'session' : 'sessions'}
       </div>
+
+      {filteredTemplates.length === 0 ? (
+        <div className="pb-empty-copy">No sessions match these filters.</div>
+      ) : (
+        <div className="pb-card-grid">
+          {filteredTemplates.map(session => (
+            <TemplateDragCard
+              key={session.id}
+              session={session}
+              onDragStart={event => onDragStart(session, event)}
+              onDragEnd={onDragEnd}
+              onAdd={onAddTemplate}
+            />
+          ))}
+        </div>
+      )}
     </section>
   )
 }

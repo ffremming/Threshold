@@ -9,9 +9,11 @@ import {
   formatSetsReps,
   formatSpeedLabel,
   getSections,
+  getSessionDomain,
   getSpeedUnitForActivity,
   paceToSpeed,
 } from '../../sessionBlocks'
+import SessionMuscleMap from '../Strength/SessionMuscleMap'
 
 function formatSeconds(totalSec) {
   const sec = Math.max(0, Math.round(Number(totalSec) || 0))
@@ -62,6 +64,25 @@ function SectionRow({ section, activityTag }) {
             {formatDuration(section.durationMin)}
           </span>
         </div>
+      </li>
+    )
+  }
+
+  if (section.kind === 'sprint') {
+    const reps = Math.max(1, Number(section.reps) || 1)
+    return (
+      <li className="session-block-row">
+        <div className="session-block-row-head">
+          <span className="session-block-row-label">{label}</span>
+          <span className="session-block-row-main">
+            {reps} × {formatSeconds(section.sprintSec)}
+          </span>
+        </div>
+        {section.durationMin > 0 && (
+          <div className="session-block-row-meta">
+            <span>{formatDuration(section.durationMin)} totalt</span>
+          </div>
+        )}
       </li>
     )
   }
@@ -133,6 +154,7 @@ export default function SessionBlocksView({ workout }) {
   const sections = getSections(workout.blocks, activityTag)
   if (sections.length === 0) return null
   const totals = computeSessionTotals(workout.blocks, activityTag)
+  const isStrength = getSessionDomain(activityTag) === 'strength'
   return (
     <div className="modal-section">
       <div className="section-label">Plan</div>
@@ -147,6 +169,7 @@ export default function SessionBlocksView({ workout }) {
           {totals.totalDuration > 0 && <span>{formatDuration(totals.totalDuration)}</span>}
         </div>
       )}
+      {isStrength && <SessionMuscleMap sections={sections} />}
     </div>
   )
 }

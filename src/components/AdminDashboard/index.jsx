@@ -18,6 +18,7 @@ import {
   useWeeklyRangeWorkouts,
 } from './hooks'
 import { useAdminActions } from './useAdminActions'
+import { useUndo } from './useUndo'
 import { deriveAdminState } from './derived'
 import { mergeStravaIntoAnalysis, stravaActivityToWorkoutShape } from '../../strava/activityToWorkout'
 import CustomFormView from './CustomFormView'
@@ -81,8 +82,16 @@ export default function AdminDashboard({
   const selectedWorkoutId = selectedWorkout?.id
   useEffect(() => {
     if (!selectedWorkoutId) return
-    setSelectedWorkout(workouts.find(w => w.id === selectedWorkoutId) || null)
-  }, [workouts, selectedWorkoutId])
+    // Refresh the selected workout's data when either the current week or the
+    // multi-week overview changes. A workout opened from the month view lives in
+    // overviewWorkouts, not the loaded week, so only fall back to null when it is
+    // absent from BOTH pools (i.e. actually deleted) — never just because it sits
+    // in a different week than the one currently loaded.
+    const fresh = workouts.find(w => w.id === selectedWorkoutId)
+      || overviewWorkouts.find(w => w.id === selectedWorkoutId)
+    if (fresh) setSelectedWorkout(fresh)
+    else setSelectedWorkout(null)
+  }, [workouts, overviewWorkouts, selectedWorkoutId])
 
   function prevWeek() {
     const p = getAdjacentWeek(currentWeek, currentYear, -1)
@@ -93,12 +102,21 @@ export default function AdminDashboard({
     onWeekChange(n.week, n.year)
   }
 
+  // Single-step undo for plan edits, active on the builder tab. A dialog/form
+  // open means another surface owns the keyboard, so suppress undo then.
+  const { pushUndo } = useUndo({
+    enabled: tab === 'builder',
+    modalOpen: Boolean(selectedWorkout) || showCustomForm
+      || Boolean(editingTemplate) || Boolean(editingGlobalTemplate),
+  })
+
   const actions = useAdminActions({
-    selectedAthleteId, currentWeek, currentYear, workouts, isSuperadmin, userProfile, templates,
+    selectedAthleteId, currentWeek, currentYear, workouts, overviewWorkouts, isSuperadmin, userProfile, templates,
     selectedWorkout, setSelectedWorkout,
     replacementTarget, setReplacementTarget,
     customForm, setCustomForm, setShowCustomForm,
     setPickingFromBank, setTab,
+    pushUndo,
     draggedWorkoutId, setDraggedWorkoutId, setDropTarget,
     templateForm, setTemplateForm, editingTemplate, setEditingTemplate,
     globalTemplateForm, setGlobalTemplateForm, editingGlobalTemplate, setEditingGlobalTemplate,
@@ -137,7 +155,7 @@ export default function AdminDashboard({
     workoutLayout, onWorkoutLayoutChange,
     workouts, loadingWorkouts,
     templates, loadingTemplates, globalTemplates, loadingGlobalTemplates,
-    overviewWeeks, loadingOverview, selectedWeekKey,
+    overviewWeeks, overviewWorkouts, loadingOverview, selectedWeekKey,
     analysisWeeks, loadingAnalysis,
     showOverview, setShowOverview,
     activeTagFilter, setActiveTagFilter,

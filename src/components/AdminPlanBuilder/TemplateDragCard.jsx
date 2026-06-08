@@ -1,16 +1,21 @@
 import { GripVertical, Plus } from 'lucide-react'
 import {
+  ACTIVITY_TAG_MAP,
   TYPE_ICONS,
   formatIntensityZoneLabel,
   normalizeIntensityZones,
+  workoutHasZones,
 } from '../../utils'
 import ActivityIcon from '../ActivityIcon'
-import SystemIcon from '../SystemIcon'
 
-export default function TemplateDragCard({ session, onDragStart, onDragEnd, onAdd, onEdit, onDelete }) {
-  const icon = TYPE_ICONS[session.type] || 'AN'
-  const intensityLabel = formatIntensityZoneLabel(normalizeIntensityZones(session.type, session.intensityZone))
-  const isCustomTemplate = session.source === 'custom'
+export default function TemplateDragCard({ session, onDragStart, onDragEnd, onAdd }) {
+  // Prefer the sport's own icon (running figure, XC skier, …); fall back to the
+  // generic interval/easy type icon only when no activity tag is set.
+  const activityTag = session.activityTag ? ACTIVITY_TAG_MAP[session.activityTag] : null
+  const icon = activityTag?.icon || TYPE_ICONS[session.type] || 'AN'
+  const intensityLabel = workoutHasZones(session.activityTag)
+    ? formatIntensityZoneLabel(normalizeIntensityZones(session.type, session.intensityZone))
+    : null
 
   return (
     <div
@@ -34,31 +39,7 @@ export default function TemplateDragCard({ session, onDragStart, onDragEnd, onAd
               <Plus className="pb-btn-icon" aria-hidden="true" strokeWidth={2.2} />
             </button>
           ) : null}
-          {isCustomTemplate && onEdit ? (
-            <button
-              type="button"
-              className="pb-card-action"
-              onClick={event => { event.preventDefault(); event.stopPropagation(); onEdit(session) }}
-              draggable={false}
-              title="Edit template"
-              aria-label={`Edit template ${session.title}`}
-            >
-              <SystemIcon name="edit" className="system-icon" />
-            </button>
-          ) : null}
-          {isCustomTemplate && onDelete ? (
-            <button
-              type="button"
-              className="pb-card-action pb-card-action--danger"
-              onClick={event => { event.preventDefault(); event.stopPropagation(); onDelete(session) }}
-              draggable={false}
-              title="Delete template"
-              aria-label={`Delete template ${session.title}`}
-            >
-              <SystemIcon name="delete" className="system-icon" />
-            </button>
-          ) : null}
-          <span className="pb-card-grip" title="Drag into calendar" aria-hidden="true">
+          <span className="pb-card-grip" title="Drag into the week" aria-hidden="true">
             <GripVertical className="pb-btn-icon" strokeWidth={1.9} />
           </span>
         </div>

@@ -50,21 +50,25 @@ export default function WorkoutDetail({ workout, onClose, canEdit, onDelete, onT
 
   if (!workout) return null
 
-  const zones = normalizeIntensityZones(workout.type, workout.intensityZone)
-  const zone = normalizeIntensityZone(workout.type, workout.intensityZone)
-  const colors = zone ? ZONE_COLORS[zone] : null
-  const typeColors = TYPE_COLORS[workout.type] || TYPE_COLORS.annet
-  const icon = TYPE_ICONS[workout.type] || 'AN'
-  const typeLabel = WORKOUT_TYPES.find(t => t.value === workout.type)?.label || workout.type
-  const zoneLabel = formatIntensityZoneLabel(zones)
-  const activityTag = workout.activityTag ? ACTIVITY_TAG_MAP[workout.activityTag] : null
-  const loadTag = workout.loadTag ? LOAD_TAG_MAP[workout.loadTag] : null
-  const scheduleLabel = formatWorkoutSchedule(workout)
   // The measurement domain is driven by the activity (run/swim/strength/…),
   // never the legacy intensity-type. Strength sessions must never show km/pace.
   const resolvedActivityTag = workout.activityTag || inferActivityTag(workout)
   const sessionDomain = getSessionDomain(resolvedActivityTag)
   const isStrengthWorkout = sessionDomain === 'strength'
+  // Strength sessions are sets/reps/load based: no intensity zone and no
+  // interval/continuous type. Suppress both from the detail view entirely.
+  const zones = isStrengthWorkout ? [] : normalizeIntensityZones(workout.type, workout.intensityZone)
+  const zone = isStrengthWorkout ? null : normalizeIntensityZone(workout.type, workout.intensityZone)
+  const colors = zone ? ZONE_COLORS[zone] : null
+  const typeColors = TYPE_COLORS[workout.type] || TYPE_COLORS.annet
+  const icon = isStrengthWorkout ? null : (TYPE_ICONS[workout.type] || 'AN')
+  const typeLabel = isStrengthWorkout
+    ? null
+    : (WORKOUT_TYPES.find(t => t.value === workout.type)?.label || workout.type)
+  const zoneLabel = formatIntensityZoneLabel(zones)
+  const activityTag = workout.activityTag ? ACTIVITY_TAG_MAP[workout.activityTag] : null
+  const loadTag = workout.loadTag ? LOAD_TAG_MAP[workout.loadTag] : null
+  const scheduleLabel = formatWorkoutSchedule(workout)
   const isDistanceWorkout = sessionDomain === 'distance'
   const exerciseLines = (workout.exercises || workout.description || '')
     .split('\n')

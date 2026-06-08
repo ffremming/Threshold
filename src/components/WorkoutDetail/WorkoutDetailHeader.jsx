@@ -15,7 +15,7 @@ export default function WorkoutDetailHeader({
       <button className="modal-close" onClick={onClose} aria-label="Close"><SystemIcon name="close" className="system-icon" /></button>
 
       <div className="modal-header">
-        <span className="modal-icon"><ActivityIcon name={icon} className="ui-icon" /></span>
+        {icon && <span className="modal-icon"><ActivityIcon name={icon} className="ui-icon" /></span>}
         <div>
           {scheduleLabel && <div className="modal-date">{scheduleLabel}</div>}
           <div className="modal-title">{title}</div>

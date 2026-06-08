@@ -24,6 +24,7 @@ export {
   getAddableKinds,
   createSection,
   normalizeSection,
+  computeSectionWorkMinutes,
 } from './sections'
 
 export {

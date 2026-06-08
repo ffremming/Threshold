@@ -25,8 +25,10 @@ export default function AdminWorkoutSlot({
   onDragOver,
   onDrop,
 }) {
-  const icon = TYPE_ICONS[workout.type] || 'AN'
   const activityTag = workout.activityTag ? ACTIVITY_TAG_MAP[workout.activityTag] : null
+  // Prefer the sport's own icon (running figure, XC skier, …); fall back to the
+  // generic interval/easy type icon only when no activity tag is set.
+  const icon = activityTag?.icon || TYPE_ICONS[workout.type] || 'AN'
   const scheduleLabel = formatWorkoutTime(workout) || formatWorkoutSchedule(workout, { includeWeekday: false })
 
   return (

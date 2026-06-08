@@ -1,15 +1,20 @@
 import { useState } from 'react'
 import './styles/index.css'
 import { getWeekKey } from '../../utils'
+import { Tabs } from '../ui'
 import { DEFAULT_PANEL_SIZES } from './constants'
 import { useBuilderLayout } from './useBuilderLayout'
 import { useDragHandlers } from './useDragHandlers'
 import { useEdgeScroll } from './useEdgeScroll'
-import { useWeekData } from './useWeekData'
 import { usePlanCallbacks } from './usePlanCallbacks'
 import { buildLayoutStyle, buildPanelMap } from './buildPanelMap'
 import BuilderHeader from './BuilderHeader'
 import TrashZone from './TrashZone'
+
+const VIEW_TABS = [
+  { value: 'week', label: 'Week' },
+  { value: 'month', label: 'Month' },
+]
 
 export default function AdminPlanBuilder({
   currentWeek,
@@ -17,29 +22,43 @@ export default function AdminPlanBuilder({
   monday,
   sunday,
   isThisWeek,
-  workoutLayout = 'calendar',
   workouts,
   loadingWorkouts,
   templates,
   loadingTemplates,
   overviewWeeks,
   overviewWorkoutsByWeekKey,
+  overviewWorkouts,
   loadingOverview,
   onWeekChange,
   onSelectWorkout,
   onDeleteWorkout,
-  onToggleComplete,
-  onMoveWorkout,
   onMoveWorkoutByDrag,
+  onMoveWorkoutAcross,
   onAddTemplateToDay,
-  onEditTemplate,
+  onAddTemplateToDayAcross,
+  onAddSessionToDay,
+  onAddSessionToDayAcross,
+  onAddManySessions,
+  onMoveMany,
   onCreateTemplate,
-  onDeleteTemplate,
 }) {
   const [showOverview, setShowOverview] = useState(false)
+  const [view, setView] = useState('week')
 
   const layout = useBuilderLayout()
-  const drag = useDragHandlers({ workouts, onAddTemplateToDay, onMoveWorkoutByDrag, onDeleteWorkout })
+  const drag = useDragHandlers({
+    currentWeek,
+    currentYear,
+    workouts,
+    overviewWorkouts,
+    onAddTemplateToDay,
+    onAddTemplateToDayAcross,
+    onMoveWorkoutByDrag,
+    onMoveWorkoutAcross,
+    onMoveMany,
+    onDeleteWorkout,
+  })
   useEdgeScroll(drag.dragState)
 
   const callbacks = usePlanCallbacks({
@@ -48,16 +67,12 @@ export default function AdminPlanBuilder({
     onWeekChange,
     isThisWeek,
     onAddTemplateToDay,
-    panelOrder: layout.panelOrder,
-    setPanelOrder: layout.setPanelOrder,
   })
 
   const isDesktopBuilder = layout.viewportWidth >= 1280
   const calendarPanelWidth = layout.panelSizes.calendar || DEFAULT_PANEL_SIZES.calendar
   const builderLayoutStyle = buildLayoutStyle(calendarPanelWidth)
   const selectedWeekKey = getWeekKey(currentWeek, currentYear)
-
-  const weekData = useWeekData({ workouts, currentWeek, currentYear })
 
   function getPanelShellStyle(panelId) {
     if (!isDesktopBuilder) return undefined
@@ -68,38 +83,52 @@ export default function AdminPlanBuilder({
     return { flex: `0 1 ${width}px`, width: `${width}px`, minWidth: '280px' }
   }
 
+  function jumpToWeek(week, year) {
+    onWeekChange(week, year)
+    setView('week')
+  }
+
   const panelMap = buildPanelMap({
+    view,
     visiblePanelIds: callbacks.visiblePanelIds,
-    movePanel: callbacks.movePanel,
-    bankWindows: callbacks.bankWindows,
+    currentWeek,
+    currentYear,
     onCreateTemplate,
-    handleAddBankWindow: callbacks.handleAddBankWindow,
-    handleRemoveBankWindow: callbacks.handleRemoveBankWindow,
     loadingTemplates,
     templates,
     handleTemplateDragStart: drag.handleTemplateDragStart,
     handleDragEnd: drag.handleDragEnd,
     handleAddTemplateClick: callbacks.handleAddTemplateClick,
-    onEditTemplate,
-    onDeleteTemplate,
     visibleActivities: layout.visibleActivities,
     addVisibleActivity: layout.addVisibleActivity,
     removeVisibleActivity: layout.removeVisibleActivity,
-    workoutLayout,
     loadingWorkouts,
-    groupedWorkouts: weekData.groupedWorkouts,
-    sortedWorkouts: weekData.sortedWorkouts,
+    workouts,
+    overviewWeeks,
+    overviewWorkoutsByWeekKey,
+    selectedWeekKey,
+    loadingOverview,
     dragState: drag.dragState,
     dropTarget: drag.dropTarget,
     handleDropTargetChange: drag.handleDropTargetChange,
     handleDrop: drag.handleDrop,
     onSelectWorkout,
-    onMoveWorkout,
+    onDeleteWorkout,
+    onAddSessionToDay,
+    onAddSessionToDayAcross,
+    onAddManySessions,
+    onMoveMany,
+    onJumpToWeek: jumpToWeek,
     handleWorkoutDragStart: drag.handleWorkoutDragStart,
+    handleDayDragStart: drag.handleDayDragStart,
   })
 
   return (
     <div className="pb-shell">
+      <div className="pb-view-tabs">
+        <Tabs value={view} onChange={setView} items={VIEW_TABS} ariaLabel="Plan builder view" />
+      </div>
+
       <BuilderHeader
         currentWeek={currentWeek}
         currentYear={currentYear}

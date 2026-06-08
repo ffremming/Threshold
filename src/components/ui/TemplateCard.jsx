@@ -6,6 +6,7 @@ import {
   formatIntensityZoneLabel,
   normalizeIntensityZones,
   normalizeIntensityZone,
+  workoutHasZones,
 } from '../../utils'
 import SystemIcon from '../SystemIcon'
 import './template-card.css'
@@ -35,8 +36,11 @@ export function TemplateCard({
   onDragEnd,
 }) {
   const tag = template.activityTag ? ACTIVITY_TAG_MAP[template.activityTag] : null
-  const zone = normalizeIntensityZone(template.type, template.intensityZone)
-  const intensityLabel = formatIntensityZoneLabel(normalizeIntensityZones(template.type, template.intensityZone))
+  const showZone = workoutHasZones(template.activityTag)
+  const zone = showZone ? normalizeIntensityZone(template.type, template.intensityZone) : null
+  const intensityLabel = showZone
+    ? formatIntensityZoneLabel(normalizeIntensityZones(template.type, template.intensityZone))
+    : null
 
   return (
     <article

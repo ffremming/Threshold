@@ -30,12 +30,14 @@
   --th-gradient: linear-gradient(135deg, var(--th-accent), var(--th-accent-secondary));
   --th-gradient-h: linear-gradient(to right, var(--th-accent), var(--th-accent-secondary));
 
-  /* ── Intensity zones (5) — semantic, preserved ──────────────────── */
-  --th-zone-1:    #6cb4d8;
-  --th-zone-2:    #6fbe83;
-  --th-zone-3:    #ddb340;
-  --th-zone-4:    #df7d3a;
-  --th-zone-5:    #c4523f;
+  /* ── Intensity zones (5): white → blue → green → yellow → red ───────
+   * Zone 1 is a very light grey so it reads as "white" yet stays visible
+   * on white surfaces. Kept in sync with ZONE_COLORS in utils/intensity.js. */
+  --th-zone-1:    #e2e8f0;
+  --th-zone-2:    #7dabf8;
+  --th-zone-3:    #6dd99a;
+  --th-zone-4:    #f0c94f;
+  --th-zone-5:    #f08080;
 
   /* ── Derived surfaces ───────────────────────────────────────────── */
   --th-line:        #E2E8F0;   /* slate-200 */

@@ -36,18 +36,25 @@ import {
   Wind,
   Zap,
 } from 'lucide-react'
+// Font Awesome 6 has true figurative sport glyphs that lucide lacks:
+// an actual running person and a cross-country (nordic) skier.
+import { FaPersonRunning, FaPersonSkiingNordic } from 'react-icons/fa6'
+
+// Filled react-icons glyphs don't take a strokeWidth prop; the renderer
+// passes only the props each family understands.
+const FILLED_ICONS = new Set([FaPersonRunning, FaPersonSkiingNordic])
 
 const ICONS = {
   // legacy / workout-type aliases
-  run: PersonStanding,
+  run: FaPersonRunning,
   walking: Footprints,
   strength: Dumbbell,
-  xc_skiing: Gauge,
+  xc_skiing: FaPersonSkiingNordic,
   bike: Bike,
   swim: Waves,
   interval: BarChart3,
   terskel: Gauge,
-  rolig: PersonStanding,
+  rolig: FaPersonRunning,
   molle: Dumbbell,
   annet: ClipboardList,
 
@@ -106,9 +113,19 @@ void Compass
 void Hand
 void Tent
 void Users
+void PersonStanding
 
 export default function ActivityIcon({ name, className = '', title, strokeWidth = 1.9 }) {
   const Icon = ICONS[name] || ICONS.annet
+  const isFilled = FILLED_ICONS.has(Icon)
 
-  return <Icon aria-hidden={title ? undefined : 'true'} aria-label={title} className={className} strokeWidth={strokeWidth} />
+  return (
+    <Icon
+      aria-hidden={title ? undefined : 'true'}
+      aria-label={title}
+      className={className}
+      // Filled react-icons glyphs ignore strokeWidth; only pass it to lucide.
+      {...(isFilled ? {} : { strokeWidth })}
+    />
+  )
 }

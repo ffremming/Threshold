@@ -61,8 +61,7 @@
 
 .th-zone-btn.is-active {
   background: var(--zone-color, var(--th-ink));
-  color: var(--th-on-accent);
+  /* All zone fills are light/pastel, so dark text reads best across the set. */
+  color: var(--th-ink);
   border-color: var(--zone-color, var(--th-ink));
 }
-
-.th-zone-btn.th-zone-3.is-active { color: var(--th-ink); }

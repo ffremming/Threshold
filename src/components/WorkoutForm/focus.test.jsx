@@ -33,18 +33,31 @@ describe('template form focus', () => {
     expect(document.activeElement).toBe(title)
   })
 
-  it('keeps focus in the Exercise name field while typing', async () => {
+  it('lets the user pick a strength exercise from the library', async () => {
     const user = userEvent.setup()
     render(<StrictMode><Harness /></StrictMode>)
     // Default template is an interval session; switch activity to Strength so
-    // a strength "exercise" section with a text input appears.
+    // a strength "exercise" section with the exercise picker appears.
     const strength = [...document.querySelectorAll('.activity-tag-btn')]
       .find(b => /strength/i.test(b.textContent))
     await user.click(strength)
-    const exercise = await screen.findByPlaceholderText('E.g. Squat')
-    await user.click(exercise)
-    await user.keyboard('Squat')
-    expect(exercise).toHaveValue('Squat')
-    expect(document.activeElement).toBe(exercise)
+
+    // The free-text field is gone — there's now a picker trigger.
+    const trigger = await screen.findByText('Choose an exercise…')
+    await user.click(trigger)
+
+    // Picker modal opens with a search box; search and select an exercise.
+    const search = await screen.findByPlaceholderText('Search exercises…')
+    await user.type(search, 'barbell squat')
+    // Several names contain "barbell squat"; double-click the exact match.
+    const matches = await screen.findAllByRole('button', { name: /^Barbell Squat\b/ })
+    const exact = matches.find(b => b.querySelector('.th-exercise-item-name')?.textContent === 'Barbell Squat')
+    await user.dblClick(exact)
+
+    // Selection closes the picker (search box gone) and fills the trigger label.
+    await screen.findByText((_, el) =>
+      el?.classList.contains('th-exercise-trigger') && /Barbell Squat/.test(el.textContent),
+    )
+    expect(screen.queryByPlaceholderText('Search exercises…')).not.toBeInTheDocument()
   })
 })

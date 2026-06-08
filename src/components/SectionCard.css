@@ -12,7 +12,8 @@
 }
 
 .th-block-card--interval,
-.th-block-card--exercise {
+.th-block-card--exercise,
+.th-block-card--sprint {
   border-color: color-mix(in srgb, var(--th-accent) 35%, var(--th-line));
   background: color-mix(in srgb, var(--th-accent) 4%, var(--th-surface));
 }

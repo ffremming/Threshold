@@ -30,8 +30,10 @@ export function WorkoutCard({
   onDragEnd,
 }) {
   const tag = workout.activityTag ? ACTIVITY_TAG_MAP[workout.activityTag] : null
-  const zone = normalizeIntensityZone(workout.type, workout.intensityZone)
   const zoneLabel = getIntensityZoneLabel(workout)
+  // getIntensityZoneLabel returns null for zone-less domains (strength) — keep
+  // the dot in lockstep so strength cards show no zone color at all.
+  const zone = zoneLabel ? normalizeIntensityZone(workout.type, workout.intensityZone) : null
   const scheduleLabel = formatWorkoutTime(workout) || formatWorkoutSchedule(workout, { includeWeekday: false })
 
   const interactive = Boolean(onClick)

@@ -1,0 +1,375 @@
+/* Strength system: exercise picker + muscle map. Uses Electric-Blue tokens. */
+
+/* ── Muscle map ─────────────────────────────────────────────── */
+.th-muscle-map {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  align-items: flex-start;
+}
+.th-muscle-map-figure {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+.th-muscle-map-caption {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--th-ink-muted);
+}
+
+/* ── Exercise picker layout ─────────────────────────────────── */
+.th-exercise-picker {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  gap: 1.25rem;
+  min-height: 420px;
+}
+@media (max-width: 720px) {
+  .th-exercise-picker { grid-template-columns: 1fr; }
+}
+
+.th-exercise-picker-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-height: 0;
+}
+.th-exercise-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.th-exercise-filter-row {
+  display: flex;
+  gap: 0.5rem;
+}
+.th-exercise-select {
+  flex: 1;
+  padding: 0.45rem 0.5rem;
+  border: 1px solid var(--th-border, #E2E8F0);
+  border-radius: 0.5rem;
+  background: var(--th-surface);
+  color: var(--th-ink);
+  font-size: 0.85rem;
+  text-transform: capitalize;
+}
+
+.th-exercise-results {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  max-height: 360px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.th-exercise-item {
+  width: 100%;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  padding: 0.5rem 0.65rem;
+  border: 1px solid transparent;
+  border-radius: 0.5rem;
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s;
+}
+.th-exercise-item:hover { background: var(--th-accent-soft); }
+.th-exercise-item.is-active {
+  background: var(--th-accent-soft);
+  border-color: var(--th-accent);
+}
+.th-exercise-item-name { font-weight: 600; color: var(--th-ink); }
+.th-exercise-item-meta {
+  font-size: 0.75rem;
+  color: var(--th-ink-muted);
+  text-transform: capitalize;
+}
+.th-exercise-empty {
+  color: var(--th-ink-muted);
+  font-size: 0.85rem;
+  padding: 1rem 0;
+}
+
+/* ── Detail panel ───────────────────────────────────────────── */
+.th-exercise-detail { min-width: 0; }
+.th-exercise-detail-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+.th-exercise-detail-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+.th-exercise-detail-name {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--th-ink);
+}
+.th-exercise-choose {
+  flex-shrink: 0;
+  padding: 0.45rem 0.85rem;
+  border: none;
+  border-radius: 0.5rem;
+  background: var(--th-accent);
+  color: var(--th-on-accent);
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+.th-exercise-choose:hover { background: var(--th-accent-hover); }
+
+.th-exercise-muscles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+.th-muscle-tag {
+  font-size: 0.72rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  background: var(--th-bg);
+  border: 1px solid var(--th-border, #E2E8F0);
+  color: var(--th-ink-muted);
+}
+.th-muscle-tag--primary {
+  background: var(--th-accent-soft);
+  border-color: var(--th-accent);
+  color: var(--th-accent);
+  font-weight: 600;
+}
+
+.th-exercise-image {
+  width: 100%;
+  max-height: 220px;
+  object-fit: contain;
+  border-radius: 0.5rem;
+  background: var(--th-bg);
+}
+.th-exercise-instructions {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  font-size: 0.82rem;
+  color: var(--th-ink-muted);
+  max-height: 160px;
+  overflow-y: auto;
+}
+
+/* ── Inline picker trigger in StrengthSliders ───────────────── */
+.th-exercise-trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.5rem 0.65rem;
+  border: 1px solid var(--th-border, #E2E8F0);
+  border-radius: 0.5rem;
+  background: var(--th-surface);
+  color: var(--th-ink);
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+.th-exercise-trigger:hover { border-color: var(--th-accent); }
+.th-exercise-trigger.is-empty { color: var(--th-ink-soft); }
+.th-exercise-trigger-action {
+  font-size: 0.78rem;
+  color: var(--th-accent);
+  font-weight: 600;
+}
+
+/* ── Muscle-group quick-filter chips ────────────────────────── */
+.th-muscle-group-chips {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+.th-muscle-chip {
+  padding: 0.3rem 0.7rem;
+  border: 1px solid var(--th-border, #E2E8F0);
+  border-radius: 999px;
+  background: var(--th-surface);
+  color: var(--th-ink-muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+.th-muscle-chip:hover { border-color: var(--th-accent); }
+.th-muscle-chip.is-active {
+  background: var(--th-accent);
+  border-color: var(--th-accent);
+  color: var(--th-on-accent);
+}
+.th-muscle-chip--fav {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+/* Favorites chip uses an amber accent so it reads as "starred", distinct from
+   the blue muscle-group chips. */
+.th-muscle-chip--fav.is-active {
+  background: #f59e0b;
+  border-color: #f59e0b;
+  color: #fff;
+}
+
+/* Star marking a favorite in the result list. */
+.th-exercise-fav-star {
+  color: #f59e0b;
+  margin-right: 0.3rem;
+  vertical-align: -1px;
+}
+
+/* ── Clickable body filter ──────────────────────────────────── */
+.th-muscle-filter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--th-border, #E2E8F0);
+}
+.th-muscle-filter-foot {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.th-muscle-filter-label {
+  font-size: 0.78rem;
+  color: var(--th-ink-muted);
+  text-transform: capitalize;
+}
+.th-muscle-filter-clear {
+  border: none;
+  background: none;
+  color: var(--th-accent);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+}
+
+/* ── Result row: name button + quick-add ────────────────────── */
+.th-exercise-row {
+  display: flex;
+  align-items: stretch;
+  gap: 0.35rem;
+}
+.th-exercise-row .th-exercise-item { flex: 1; }
+.th-exercise-quick-add {
+  flex-shrink: 0;
+  width: 2.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--th-border, #E2E8F0);
+  border-radius: 0.5rem;
+  background: var(--th-surface);
+  color: var(--th-accent);
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+.th-exercise-quick-add:hover {
+  background: var(--th-accent);
+  border-color: var(--th-accent);
+  color: var(--th-on-accent);
+}
+.th-exercise-quick-add.is-added {
+  background: var(--th-accent-soft);
+  border-color: var(--th-accent);
+  color: var(--th-accent);
+}
+
+/* ── Recently used shortcut ─────────────────────────────────── */
+.th-exercise-recents {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+.th-exercise-recents-title {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--th-ink-muted);
+}
+.th-exercise-recents-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+.th-exercise-recent-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.25rem 0.55rem;
+  border: 1px solid var(--th-border, #E2E8F0);
+  border-radius: 999px;
+  background: var(--th-surface);
+  color: var(--th-ink);
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+.th-exercise-recent-chip:hover {
+  border-color: var(--th-accent);
+  color: var(--th-accent);
+}
+
+/* ── Multi-add footer ───────────────────────────────────────── */
+.th-exercise-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  width: 100%;
+}
+.th-exercise-foot-count {
+  font-size: 0.85rem;
+  color: var(--th-ink-muted);
+}
+
+/* ── "Add exercises" primary button (session editor) ────────── */
+.th-session-add-exercises {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  align-self: flex-start;
+  padding: 0.55rem 1rem;
+  border: none;
+  border-radius: 0.6rem;
+  background: var(--th-accent);
+  color: var(--th-on-accent);
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  box-shadow: var(--shadow-accent, 0 2px 8px rgba(0, 82, 255, 0.25));
+}
+.th-session-add-exercises:hover { background: var(--th-accent-hover); }
+
+/* ── Session-level aggregate map (editor + detail) ──────────── */
+.th-session-muscles {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 0;
+}
+.th-session-muscles-title {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--th-ink-muted);
+}

@@ -1,9 +1,14 @@
+import { getSessionDomain } from '../sessionBlocks/units'
+
+// Intensity-zone palette: white (lightest) → blue → green → yellow → red.
+// Zone 1 is a very light grey so it reads as "white" yet stays visible on
+// white surfaces. `border` is the main accent color used for bars/dots/borders.
 export const ZONE_COLORS = {
-  1: { bg: '#e8f4fd', border: '#90caf9', text: '#1565c0', label: 'Zone 1' },
-  2: { bg: '#e8f8e8', border: '#81c784', text: '#2e7d32', label: 'Zone 2' },
-  3: { bg: '#fffde7', border: '#fff176', text: '#f57f17', label: 'Zone 3' },
-  4: { bg: '#fff3e0', border: '#ffb74d', text: '#e65100', label: 'Zone 4' },
-  5: { bg: '#fce4ec', border: '#f48fb1', text: '#880e4f', label: 'Zone 5' },
+  1: { bg: '#f8fafc', border: '#e2e8f0', text: '#475569', label: 'Zone 1' },
+  2: { bg: '#e8f1fd', border: '#7dabf8', text: '#1e40af', label: 'Zone 2' },
+  3: { bg: '#e8f8ec', border: '#6dd99a', text: '#166534', label: 'Zone 3' },
+  4: { bg: '#fffbe6', border: '#f0c94f', text: '#854d0e', label: 'Zone 4' },
+  5: { bg: '#fde8e8', border: '#f08080', text: '#991b1b', label: 'Zone 5' },
 }
 
 export const TYPE_COLORS = {
@@ -49,6 +54,35 @@ export const ZONE_INFO = {
 
 export function hasIntensityZone(_type) {
   return true
+}
+
+// Strength sessions are sets/reps/load based and have no aerobic intensity
+// zone. This is the single source of truth used by every zone display site to
+// decide whether a workout shows a zone color/label/bar at all.
+export function workoutHasZones(activityTag) {
+  return getSessionDomain(activityTag) !== 'strength'
+}
+
+// Border-colors for a set of zones, in zone order. Falls back to a neutral
+// grey when no zones resolve.
+export function getZoneBorderColors(zones) {
+  const colors = (zones || [])
+    .map(zone => ZONE_COLORS[zone]?.border)
+    .filter(Boolean)
+  return colors.length > 0 ? colors : ['#94a3b8']
+}
+
+// CSS background-image for a session's color accent. Always a gradient so it is
+// a valid `background-image` value (a bare color keyword would not paint). One
+// zone → a solid band of that color; multiple zones → equal hard-stop bands of
+// each zone's color, top-to-bottom.
+export function getZoneBarBackground(zones) {
+  const colors = getZoneBorderColors(zones)
+  const step = 100 / colors.length
+  const stops = colors
+    .map((color, index) => `${color} ${index * step}%, ${color} ${(index + 1) * step}%`)
+    .join(', ')
+  return `linear-gradient(to bottom, ${stops})`
 }
 
 export function getAllowedIntensityZones(type) {

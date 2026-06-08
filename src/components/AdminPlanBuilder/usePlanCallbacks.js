@@ -1,4 +1,3 @@
-import { useMemo, useState } from 'react'
 import { getAdjacentWeek } from '../../utils'
 
 export function usePlanCallbacks({
@@ -7,21 +6,9 @@ export function usePlanCallbacks({
   onWeekChange,
   isThisWeek,
   onAddTemplateToDay,
-  panelOrder,
-  setPanelOrder,
 }) {
-  const [bankWindows, setBankWindows] = useState([])
-
-  // Bank (Session picker) and calendar are always adjacent. The optional extra
-  // panel sits on the outer side; panelOrder is only consulted to remember
-  // which side (left vs right of the bank+calendar pair) the user prefers.
-  const visiblePanelIds = useMemo(() => {
-    if (bankWindows.length === 0) return ['bank', 'calendar']
-    const extraIdx = panelOrder.indexOf('extra')
-    const calIdx = panelOrder.indexOf('calendar')
-    const extraOnLeft = extraIdx >= 0 && calIdx >= 0 && extraIdx < calIdx
-    return extraOnLeft ? ['extra', 'bank', 'calendar'] : ['bank', 'calendar', 'extra']
-  }, [bankWindows.length, panelOrder])
+  // Bank (Session picker) and the week always sit side by side.
+  const visiblePanelIds = ['bank', 'calendar']
 
   function prevWeek() {
     const previous = getAdjacentWeek(currentWeek, currentYear, -1)
@@ -40,37 +27,10 @@ export function usePlanCallbacks({
     return onAddTemplateToDay(template, targetWeekday)
   }
 
-  function handleAddBankWindow() {
-    setBankWindows(prev => [...prev, { id: `bank-window-${Date.now()}-${prev.length + 1}` }])
-  }
-
-  function handleRemoveBankWindow(windowId) {
-    setBankWindows(prev => prev.filter(window => window.id !== windowId))
-  }
-
-  // Only the extra panel can move: bank+calendar are a locked pair.
-  // Moving extra flips it between the left and right side of that pair.
-  function movePanel(panelId, direction) {
-    if (panelId !== 'extra') return
-    setPanelOrder(prev => {
-      const without = prev.filter(id => id !== 'extra')
-      const calIdx = without.indexOf('calendar')
-      const currentExtraIdx = prev.indexOf('extra')
-      const wasOnLeft = currentExtraIdx >= 0 && currentExtraIdx < calIdx
-      if (direction < 0 && !wasOnLeft) return ['extra', ...without]
-      if (direction > 0 && wasOnLeft) return [...without, 'extra']
-      return prev
-    })
-  }
-
   return {
-    bankWindows,
     visiblePanelIds,
     prevWeek,
     nextWeek,
     handleAddTemplateClick,
-    handleAddBankWindow,
-    handleRemoveBankWindow,
-    movePanel,
   }
 }

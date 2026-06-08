@@ -7,7 +7,7 @@ import {
 } from '../../sessionBlocks'
 import SliderRow, { ModeButton, PaceOrSpeedSlider } from './SliderRow'
 import IntervalSliders from './IntervalSliders'
-import { StrengthSliders, DurationSliders } from './StrengthSliders'
+import { StrengthSliders, DurationSliders, SprintSliders } from './StrengthSliders'
 import {
   DISTANCE_MAX,
   DISTANCE_MIN,
@@ -33,6 +33,8 @@ export default function BlockSliders({ block, onChange, activityTag }) {
       return <StrengthSliders block={block} onPatch={patch} />
     case 'effort':
       return <DurationSliders block={block} onPatch={patch} />
+    case 'sprint':
+      return <SprintSliders block={block} onPatch={patch} />
     default:
       // warmup / steady / cooldown — time-based variant has no distanceKm.
       if ((block.kind === 'warmup' || block.kind === 'cooldown') && block.distanceKm == null) {

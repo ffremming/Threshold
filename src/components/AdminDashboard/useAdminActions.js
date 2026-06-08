@@ -30,7 +30,7 @@ function wrapAction(action) {
 
 export function useAdminActions(state) {
   const {
-    selectedAthleteId, currentWeek, currentYear, workouts, isSuperadmin, userProfile, templates,
+    selectedAthleteId, currentWeek, currentYear, workouts, overviewWorkouts, isSuperadmin, userProfile, templates,
     selectedWorkout, setSelectedWorkout,
     replacementTarget, setReplacementTarget,
     customForm, setCustomForm, setShowCustomForm,
@@ -38,20 +38,23 @@ export function useAdminActions(state) {
     draggedWorkoutId, setDraggedWorkoutId, setDropTarget,
     templateForm, setTemplateForm, editingTemplate, setEditingTemplate,
     globalTemplateForm, setGlobalTemplateForm, editingGlobalTemplate, setEditingGlobalTemplate,
+    pushUndo,
     onClose,
   } = state
 
   const crud = createWorkoutCrud({
     selectedAthleteId, currentWeek, currentYear, workouts, selectedWorkout, setSelectedWorkout,
+    pushUndo,
   })
 
   const inserts = createTemplateInsertActions({
-    selectedAthleteId, currentWeek, currentYear, workouts, selectedWorkout, setSelectedWorkout,
+    selectedAthleteId, currentWeek, currentYear, workouts, overviewWorkouts, selectedWorkout, setSelectedWorkout,
     replacementTarget, setReplacementTarget, customForm, setCustomForm, setShowCustomForm,
     setPickingFromBank, setTab, addWorkoutToWeek: crud.addWorkoutToWeek,
+    pushUndo,
   })
 
-  const moves = createMoveActions({ workouts, currentWeek, currentYear })
+  const moves = createMoveActions({ workouts, overviewWorkouts, currentWeek, currentYear, pushUndo })
   const drag = createDragHandlers({
     draggedWorkoutId, setDraggedWorkoutId, setDropTarget, moveWorkoutByDrag: moves.moveWorkoutByDrag,
   })

@@ -155,8 +155,8 @@
 
 .pb-zone-chip:hover { color: var(--th-ink); border-color: var(--th-ink); }
 
-.pb-zone-chip.pb-zone-1.is-active { background: var(--th-zone-1); color: var(--th-on-accent); border-color: var(--th-zone-1); }
-.pb-zone-chip.pb-zone-2.is-active { background: var(--th-zone-2); color: var(--th-on-accent); border-color: var(--th-zone-2); }
+.pb-zone-chip.pb-zone-1.is-active { background: var(--th-zone-1); color: var(--th-ink); border-color: var(--th-line-strong); }
+.pb-zone-chip.pb-zone-2.is-active { background: var(--th-zone-2); color: var(--th-ink); border-color: var(--th-zone-2); }
 .pb-zone-chip.pb-zone-3.is-active { background: var(--th-zone-3); color: var(--th-ink); border-color: var(--th-zone-3); }
-.pb-zone-chip.pb-zone-4.is-active { background: var(--th-zone-4); color: var(--th-on-accent); border-color: var(--th-zone-4); }
-.pb-zone-chip.pb-zone-5.is-active { background: var(--th-danger); color: var(--th-on-accent); border-color: var(--th-danger); }
+.pb-zone-chip.pb-zone-4.is-active { background: var(--th-zone-4); color: var(--th-ink); border-color: var(--th-zone-4); }
+.pb-zone-chip.pb-zone-5.is-active { background: var(--th-zone-5); color: var(--th-ink); border-color: var(--th-zone-5); }

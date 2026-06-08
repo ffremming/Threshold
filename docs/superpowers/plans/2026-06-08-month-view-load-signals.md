@@ -46,7 +46,7 @@ import {
   normalizeIntensityZones,
 } from './index'
 import { computeWeekSummary } from './weekSummary'
-import { averageLastValues, safeDivide } from '../components/AnalysisDashboard/utils'
+import { averageLastValues, safeDivide } from './seriesMath'
 
 // Per-week enriched stats: totals, per-activity, per-zone, daily breakdown.
 // Past weeks count only completed sessions (planned-but-skipped shouldn't
@@ -475,13 +475,6 @@ Create `src/components/AdminPlanBuilder/MonthWeekSignals.jsx`:
 // number comes precomputed from computeWeekSignals; no aggregation lives here.
 // Renders nothing for an empty/zero-load week so quiet weeks add no chrome.
 
-const BAND_LABEL = {
-  undertraining: 'undertraining',
-  safe: 'safe',
-  caution: 'caution',
-  spike: 'spike',
-}
-
 function formatRamp(rampPct) {
   if (rampPct == null || !Number.isFinite(rampPct)) return '—'
   const rounded = Math.round(rampPct)
@@ -511,14 +504,14 @@ export default function MonthWeekSignals({ signal }) {
 
       <span
         className={`pb-signal-acwr pb-band-${band}`}
-        title={settling ? 'Building chronic baseline (needs 6 weeks)' : `Acute:chronic load ratio (${BAND_LABEL[readiness]})`}
+        title={settling ? 'Building chronic baseline (needs 6 weeks)' : `Acute:chronic load ratio (${band})`}
       >
         <span className="pb-signal-dot" aria-hidden="true" />
         {settling ? (
           <span className="pb-signal-acwr-text">settling</span>
         ) : (
           <span className="pb-signal-acwr-text">
-            ACWR {acwr.toFixed(2)} {BAND_LABEL[readiness]}
+            ACWR {acwr.toFixed(2)} {band}
           </span>
         )}
       </span>
@@ -701,64 +694,106 @@ Style the toolbar, toggle, signal bar, ramp chip, and ACWR band pills.
 
 - [ ] **Step 1: Append signal styles**
 
-Append to `src/components/AdminPlanBuilder/styles/month.css`. Use existing app color tokens where present (`--th-surface`, `--th-border`, etc.); the band colors below are explicit fallbacks — replace with semantic tokens if the codebase defines green/amber/red tokens.
+Append to `src/components/AdminPlanBuilder/styles/month.css`. The codebase defines semantic status tokens in `src/styles/tokens.css` (`--th-success`/`--th-warning`/`--th-danger` + `-bg` variants) and structural tokens (`--th-line`, `--th-ink`, `--th-ink-muted`, `--th-ink-soft`, `--th-surface`, `--th-accent`, `--th-accent-soft`, `--th-accent-ring`, `--th-hover`, `--th-text-2xs`, `--th-tracking-wide`). Use these tokens — NOT hardcoded hex. Map readiness bands: safe→success, caution→warning, spike/undertraining→danger, settling→ink-soft. The snippet below reflects what was implemented (token-based).
 
 ```css
-/* Month-view per-week load signals -------------------------------------- */
+/* ── Per-week load signals (load · ramp · ACWR readiness) ─────────────
+ * A toggleable compact bar under each week-row. The toggle lives in a thin
+ * right-aligned strip below the panel header so it adds minimal chrome. */
 .pb-month-toolbar {
   display: flex;
   justify-content: flex-end;
-  padding: 0 0.5rem 0.25rem;
+  padding: 0 2px 4px;
 }
 
 .pb-month-signals-toggle {
-  font-size: 0.72rem;
-  padding: 0.2rem 0.55rem;
-  border: 1px solid var(--th-border, #d4d4d8);
+  font-size: var(--th-text-2xs);
+  font-weight: 600;
+  padding: 3px 10px;
+  border: 1px solid var(--th-line);
   border-radius: 999px;
-  background: var(--th-surface, #fff);
-  color: var(--th-text-muted, #52525b);
+  background: var(--th-surface);
+  color: var(--th-ink-muted);
   cursor: pointer;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+}
+.pb-month-signals-toggle:hover {
+  background: var(--th-hover);
+  color: var(--th-ink);
 }
 .pb-month-signals-toggle.is-on {
-  background: var(--th-accent-soft, #eff6ff);
-  color: var(--th-accent, #2563eb);
-  border-color: var(--th-accent, #2563eb);
+  background: var(--th-accent-soft);
+  color: var(--th-accent);
+  border-color: var(--th-accent-ring);
 }
 
+/* The strip spans the full row width (week-label column + 7 days) below the
+ * day cells. .pb-month-row is a CSS grid, so 1 / -1 stretches edge to edge. */
 .pb-month-signals {
-  grid-column: 1 / -1;            /* span the full week-row width */
+  grid-column: 1 / -1;
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.25rem 0.5rem;
-  margin-top: 0.15rem;
-  font-size: 0.7rem;
-  border-top: 1px dashed var(--th-border, #e4e4e7);
-  color: var(--th-text-muted, #52525b);
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 4px 8px;
+  margin-top: 2px;
+  font-size: var(--th-text-2xs);
+  color: var(--th-ink-muted);
+  border-top: 1px dashed var(--th-line);
 }
 
-.pb-signal-load { display: inline-flex; align-items: baseline; gap: 0.3rem; }
-.pb-signal-label { text-transform: uppercase; letter-spacing: 0.04em; font-size: 0.62rem; opacity: 0.7; }
-.pb-signal-value { font-weight: 600; color: var(--th-text, #18181b); }
+.pb-signal-load {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+}
+.pb-signal-label {
+  text-transform: uppercase;
+  letter-spacing: var(--th-tracking-wide);
+  font-size: var(--th-text-2xs);
+  opacity: 0.7;
+}
+.pb-signal-value {
+  font-weight: 700;
+  color: var(--th-ink);
+  font-variant-numeric: tabular-nums;
+}
 
-.pb-signal-ramp { font-variant-numeric: tabular-nums; }
+.pb-signal-ramp {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+/* A large week-over-week jump (either direction) gets an amber pill. */
 .pb-signal-ramp.is-hot {
-  background: #fef3c7;
-  color: #92400e;
-  padding: 0.05rem 0.35rem;
+  background: var(--th-warning-bg);
+  color: var(--th-warning);
+  padding: 1px 7px;
   border-radius: 999px;
 }
 
-.pb-signal-acwr { display: inline-flex; align-items: center; gap: 0.3rem; }
-.pb-signal-dot { width: 0.5rem; height: 0.5rem; border-radius: 50%; background: currentColor; }
-.pb-signal-acwr-text { font-variant-numeric: tabular-nums; }
+.pb-signal-acwr {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-variant-numeric: tabular-nums;
+}
+.pb-signal-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  flex: none;
+}
+.pb-signal-acwr-text {
+  text-transform: capitalize;
+}
 
-.pb-band-safe { color: #15803d; }
-.pb-band-caution { color: #b45309; }
-.pb-band-spike { color: #b91c1c; }
-.pb-band-undertraining { color: #b91c1c; }
-.pb-band-settling { color: var(--th-text-muted, #71717a); }
+/* Readiness bands map to the app's semantic status colors. */
+.pb-band-safe { color: var(--th-success); }
+.pb-band-caution { color: var(--th-warning); }
+.pb-band-spike { color: var(--th-danger); }
+.pb-band-undertraining { color: var(--th-danger); }
+.pb-band-settling { color: var(--th-ink-soft); }
 ```
 
 Note: `.pb-month-row` is `display: grid` with `grid-template-columns: 196px repeat(7, minmax(0, 1fr))` (confirmed in `month.css`), so `grid-column: 1 / -1` correctly spans the full row width below the cells. No flex fallback needed.

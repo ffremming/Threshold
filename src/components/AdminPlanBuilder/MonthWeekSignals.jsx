@@ -14,9 +14,13 @@ function formatRamp(rampPct) {
 export default function MonthWeekSignals({ signal }) {
   if (!signal || !(signal.load > 0)) return null
 
-  const { load, rampPct, acwr, readiness, settling } = signal
+  const { load, rampPct, acwr, readiness } = signal
   // High-magnitude ramp gets an amber chip regardless of direction.
   const rampHot = rampPct != null && Math.abs(rampPct) > 30
+  // No classified band means there's no usable chronic baseline yet — whether
+  // because the series is still settling (< 6 weeks) or chronic load is zero.
+  // Either way, show the neutral baseline state rather than "ACWR 0.00".
+  const hasBand = Boolean(readiness)
   const band = readiness || 'settling'
 
   return (
@@ -32,15 +36,15 @@ export default function MonthWeekSignals({ signal }) {
 
       <span
         className={`pb-signal-acwr pb-band-${band}`}
-        title={settling ? 'Building chronic baseline (needs 6 weeks)' : `Acute:chronic load ratio (${band})`}
+        title={hasBand ? `Acute:chronic load ratio (${band})` : 'Building chronic baseline (needs 6 weeks)'}
       >
         <span className="pb-signal-dot" aria-hidden="true" />
-        {settling ? (
-          <span className="pb-signal-acwr-text">settling</span>
-        ) : (
+        {hasBand ? (
           <span className="pb-signal-acwr-text">
             ACWR {acwr.toFixed(2)} {band}
           </span>
+        ) : (
+          <span className="pb-signal-acwr-text">settling</span>
         )}
       </span>
     </div>

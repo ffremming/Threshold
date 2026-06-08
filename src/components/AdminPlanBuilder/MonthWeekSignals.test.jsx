@@ -49,6 +49,14 @@ describe('MonthWeekSignals', () => {
     expect(screen.getByText(/settling/i)).toBeInTheDocument()
   })
 
+  it('shows the baseline state (not "ACWR 0.00") when there is no band, even if not settling', () => {
+    render(<MonthWeekSignals signal={{
+      load: 200, rampPct: 5, acwr: 0, readiness: null, settling: false,
+    }} />)
+    expect(screen.getByText(/settling/i)).toBeInTheDocument()
+    expect(screen.queryByText(/ACWR/)).not.toBeInTheDocument()
+  })
+
   it('renders nothing for a null signal or zero-load empty week', () => {
     const { container } = render(<MonthWeekSignals signal={null} />)
     expect(container.firstChild).toBeNull()

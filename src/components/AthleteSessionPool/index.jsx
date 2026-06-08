@@ -10,11 +10,11 @@ import {
   updateAthleteSession,
   deleteAthleteSession,
 } from '../../athleteSessions'
-import { Button, EmptyState } from '../ui'
-import PoolSessionCard from './PoolSessionCard'
+import { Button, EmptyState, TemplateCard } from '../ui'
 import BankPickerModal from './BankPickerModal'
 import SessionEditModal from './SessionEditModal'
 import '../AthleteSessionPool.css'
+import '../LibraryBrowser.css'
 
 export default function AthleteSessionPool({ coachId, athleteId }) {
   const [sessions, setSessions] = useState([])
@@ -98,12 +98,14 @@ export default function AthleteSessionPool({ coachId, athleteId }) {
           description="Pull in sessions from the coach's session bank to build the athlete's personal library."
         />
       ) : (
-        <div className="th-athlete-pool-list">
+        <div className="th-card-grid">
           {sessions.map(session => (
-            <PoolSessionCard
+            <TemplateCard
               key={session.id}
-              session={session}
-              onEdit={() => setEditing(session)}
+              template={session}
+              primaryLabel="Edit"
+              primaryVariant="secondary"
+              onPrimary={() => setEditing(session)}
               onDelete={() => handleDelete(session)}
             />
           ))}

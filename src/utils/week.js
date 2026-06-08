@@ -104,32 +104,3 @@ export function getCellFromDayIndex(dayIndex) {
   }
   return { week: cursor.week, year: cursor.year, weekday }
 }
-
-export function getWeeklyProgressionTarget(
-  week,
-  year,
-  startingDistance = 17,
-  growthFactor = 1.07,
-  anchorWeek = 13,
-  anchorYear = 2026
-) {
-  const weekOffset = getWeekOffsetFromAnchor(week, year, anchorWeek, anchorYear)
-  return Number((startingDistance * Math.pow(growthFactor, weekOffset)).toFixed(2))
-}
-
-export function getWeeklyProgressionTargets(
-  weeks,
-  startingDistance = 17,
-  growthFactor = 1.07,
-  anchorWeek = 13,
-  anchorYear = 2026
-) {
-  const targets = new Map()
-  weeks.forEach(week => {
-    targets.set(
-      week.key,
-      getWeeklyProgressionTarget(week.week, week.year, startingDistance, growthFactor, anchorWeek, anchorYear)
-    )
-  })
-  return targets
-}

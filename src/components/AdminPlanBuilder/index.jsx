@@ -43,7 +43,6 @@ export default function AdminPlanBuilder({
   onMoveMany,
   onCreateTemplate,
 }) {
-  const [showOverview, setShowOverview] = useState(false)
   const [view, setView] = useState('week')
 
   const layout = useBuilderLayout()
@@ -138,12 +137,6 @@ export default function AdminPlanBuilder({
         prevWeek={callbacks.prevWeek}
         nextWeek={callbacks.nextWeek}
         onWeekChange={onWeekChange}
-        showOverview={showOverview}
-        setShowOverview={setShowOverview}
-        loadingOverview={loadingOverview}
-        overviewWeeks={overviewWeeks}
-        overviewWorkoutsByWeekKey={overviewWorkoutsByWeekKey}
-        selectedWeekKey={selectedWeekKey}
       />
 
       <div className={`pb-layout${isDesktopBuilder ? ' is-desktop' : ''}`} style={builderLayoutStyle}>

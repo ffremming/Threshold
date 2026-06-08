@@ -53,7 +53,6 @@ export function TemplateCard({
         <div className="th-template-card-titles">
           <h3 className="th-template-card-title">{template.title}</h3>
           <div className="th-template-card-meta">
-            {template.category && <Pill>{template.category}</Pill>}
             {tag && <ActivityPill tag={tag} />}
           </div>
         </div>
@@ -64,11 +63,10 @@ export function TemplateCard({
         <p className="th-template-card-desc">{template.description}</p>
       )}
 
-      {(zone || template.distance || template.warmup) && (
+      {(zone || template.distance) && (
         <div className="th-template-card-tags">
           {zone && <ZoneBadge zone={zone} label={intensityLabel} />}
           {template.distance && <Pill>{template.distance}</Pill>}
-          {template.warmup && <Pill>Oppv: {template.warmup}</Pill>}
         </div>
       )}
 

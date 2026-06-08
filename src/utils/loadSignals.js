@@ -142,6 +142,7 @@ export function computeWeekSeries(weeks, workoutsByWeekKey, currentWeek, current
       distance: stats.distance,
       duration: stats.duration,
       load: stats.load,
+      activityDistance: stats.activityDistance,
     }
   })
 }

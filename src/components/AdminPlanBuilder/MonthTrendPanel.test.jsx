@@ -11,8 +11,8 @@ vi.mock('react-chartjs-2', () => ({
 import MonthTrendPanel from './MonthTrendPanel'
 
 const SERIES = [
-  { key: '2026-23', label: 'W23', distance: 10, duration: 60, load: 100 },
-  { key: '2026-24', label: 'W24', distance: 20, duration: 90, load: 200 },
+  { key: '2026-23', label: 'W23', distance: 10, duration: 60, load: 100, activityDistance: { run: 10 } },
+  { key: '2026-24', label: 'W24', distance: 20, duration: 90, load: 200, activityDistance: { run: 20 } },
 ]
 
 describe('MonthTrendPanel', () => {

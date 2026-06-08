@@ -1,5 +1,6 @@
 import { averageLastValues } from '../../utils/seriesMath'
 import { formatDurationLabel, formatKmValue } from '../../utils'
+import { ACTIVITY_TAG_MAP } from '../../utils/activity'
 
 // The three metrics the planner trend chart can switch between. `color` is the
 // line color; `unit` drives axis/tooltip formatting.
@@ -13,12 +14,49 @@ function metricColor(metric) {
   return (TREND_METRICS.find(m => m.value === metric) || TREND_METRICS[0]).color
 }
 
-// Build chart.js data for the selected metric: a primary line plus its 3-week
-// trailing moving average. Planner-local — does not depend on dashboard charts.
-// The moving average is computed from raw values and rounded only at the end
-// (so it matches the dashboard's MA), while the plotted points are rounded for
-// a clean tooltip.
+// Distance splits into one line per sport (colored by its canonical activity
+// color) instead of a single total line with a moving average — a coach reads
+// the per-sport mix directly. Sports are ordered by total distance descending
+// so the legend leads with the biggest contributors. A sport plots 0 in weeks
+// it is absent so every line spans the full x-axis.
+function buildDistanceSportData(series) {
+  const totals = {}
+  series.forEach(point => {
+    const byTag = point.activityDistance || {}
+    Object.keys(byTag).forEach(tag => {
+      totals[tag] = (totals[tag] || 0) + (byTag[tag] || 0)
+    })
+  })
+  const tags = Object.keys(totals).sort((a, b) => totals[b] - totals[a])
+
+  return {
+    labels: series.map(point => point.label),
+    datasets: tags.map(tag => {
+      const meta = ACTIVITY_TAG_MAP[tag]
+      const color = meta?.color || '#64748b'
+      return {
+        label: meta?.label || tag,
+        data: series.map(point =>
+          Number(((point.activityDistance || {})[tag] || 0).toFixed(1))),
+        borderColor: color,
+        backgroundColor: color,
+        pointBackgroundColor: color,
+        pointRadius: 3,
+        tension: 0.32,
+      }
+    }),
+  }
+}
+
+// Build chart.js data for the selected metric. Distance fans out into per-sport
+// lines (see buildDistanceSportData); duration and load keep a primary line
+// plus a 3-week trailing moving average. Planner-local — does not depend on
+// dashboard charts. The moving average is computed from raw values and rounded
+// only at the end (so it matches the dashboard's MA), while the plotted points
+// are rounded for a clean tooltip.
 export function buildTrendChartData(series, metric) {
+  if (metric === 'distance') return buildDistanceSportData(series)
+
   const raw = series.map(point => point[metric] || 0)
   const values = raw.map(value => Number(value.toFixed(1)))
   const movingAverage = series.map((_, index) =>

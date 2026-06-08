@@ -1,6 +1,16 @@
 import AdminDashboard from '../components/AdminDashboard'
 import UserManagement from '../components/UserManagement'
 import AthleteOverview from '../components/AthleteOverview'
+import MyCoaches from '../components/MyCoaches'
+
+export function MyAccountScreen({ userProfile, setShowMyAccount }) {
+  return (
+    <MyCoaches
+      currentUser={userProfile}
+      onBack={() => setShowMyAccount(false)}
+    />
+  )
+}
 
 export function UserManagementScreen({ userProfile, setShowUserManagement }) {
   return (

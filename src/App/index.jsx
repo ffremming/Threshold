@@ -27,6 +27,7 @@ export default function App() {
   const [showLogin, setShowLogin] = useState(false)
   const [showAdmin, setShowAdmin] = useState(false)
   const [showUserManagement, setShowUserManagement] = useState(false)
+  const [showMyAccount, setShowMyAccount] = useState(false)
   const [showAthleteOverview, setShowAthleteOverview] = useState(false)
   const [showOverview, setShowOverview] = useState(false)
   const [selectedWorkout, setSelectedWorkout] = useState(null)
@@ -122,6 +123,7 @@ export default function App() {
     showLogin ||
     showAdmin ||
     showUserManagement ||
+    showMyAccount ||
     showAthleteOverview
   )
 
@@ -190,6 +192,8 @@ export default function App() {
       setShowAthleteOverview={setShowAthleteOverview}
       setShowAdmin={setShowAdmin}
       setShowUserManagement={setShowUserManagement}
+      setShowMyAccount={setShowMyAccount}
+      isAthlete={isAthlete}
       handleLogout={handlers.handleLogout}
       userProfile={userProfile}
       athletes={athletes}
@@ -203,12 +207,15 @@ export default function App() {
         profileError={profileError}
         isSuperadmin={isSuperadmin}
         canManageWorkouts={canManageWorkouts}
+        isAthlete={isAthlete}
         showUserManagement={showUserManagement}
         showAthleteOverview={showAthleteOverview}
         showAdmin={showAdmin}
+        showMyAccount={showMyAccount}
         setShowUserManagement={setShowUserManagement}
         setShowAthleteOverview={setShowAthleteOverview}
         setShowAdmin={setShowAdmin}
+        setShowMyAccount={setShowMyAccount}
         handlers={handlers}
         adminScreenProps={adminScreenProps}
         mainShellProps={mainShellProps}

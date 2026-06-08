@@ -6,6 +6,7 @@ import {
   UserManagementScreen,
   AthleteOverviewScreen,
   AdminDashboardScreen,
+  MyAccountScreen,
 } from './AdminScreens'
 import { getUserStatus, isActiveUserProfile } from '../roles'
 
@@ -19,12 +20,15 @@ export default function AppRoutes({
   profileError,
   isSuperadmin,
   canManageWorkouts,
+  isAthlete,
   showUserManagement,
   showAthleteOverview,
   showAdmin,
+  showMyAccount,
   setShowUserManagement,
   setShowAthleteOverview,
   setShowAdmin,
+  setShowMyAccount,
   handlers,
   adminScreenProps,
   mainShellProps,
@@ -58,6 +62,15 @@ export default function AppRoutes({
         userProfile={userProfile}
         athletes={adminScreenProps.athletes}
         setShowAthleteOverview={setShowAthleteOverview}
+      />
+    )
+  }
+
+  if (showMyAccount && isAthlete) {
+    return (
+      <MyAccountScreen
+        userProfile={userProfile}
+        setShowMyAccount={setShowMyAccount}
       />
     )
   }

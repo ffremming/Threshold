@@ -127,3 +127,21 @@ export function computeWeekSignals(weeks, workoutsByWeekKey, currentWeek, curren
 
   return signals
 }
+
+// Per-week series for the planner trend chart: one ordered entry per week with
+// the metrics the chart can switch between. Same source of truth as the badges
+// (buildWeekStats) so the chart and the per-week signals never disagree.
+export function computeWeekSeries(weeks, workoutsByWeekKey, currentWeek, currentYear) {
+  return weeks.map(week => {
+    const stats = buildWeekStats(week, workoutsByWeekKey, currentWeek, currentYear)
+    return {
+      key: week.key,
+      week: week.week,
+      year: week.year,
+      label: `W${week.week}`,
+      distance: stats.distance,
+      duration: stats.duration,
+      load: stats.load,
+    }
+  })
+}

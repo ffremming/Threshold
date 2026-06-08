@@ -90,3 +90,37 @@ describe('computeWeekSignals', () => {
     expect(w8.readiness).toBe('spike')
   })
 })
+
+import { computeWeekSeries } from './loadSignals'
+
+describe('computeWeekSeries', () => {
+  const run = (mins, km) => [{
+    activityTag: 'run', type: 'rolig', intensityZone: [2], completed: true,
+    notes: `${mins} min`, distance: `${km} km`,
+  }]
+
+  it('returns one ordered entry per week with key/label/distance/duration/load', () => {
+    const weeks = [
+      { week: 23, year: 2026, key: '2026-23' },
+      { week: 24, year: 2026, key: '2026-24' },
+    ]
+    const byKey = { '2026-23': run(60, 10), '2026-24': run(90, 15) }
+    const series = computeWeekSeries(weeks, byKey, 99, 2026)
+
+    expect(series).toHaveLength(2)
+    expect(series[0]).toMatchObject({ key: '2026-23', week: 23, year: 2026, label: 'W23' })
+    expect(series[1].key).toBe('2026-24')
+    expect(series[0].distance).toBeCloseTo(10, 5)
+    expect(series[1].distance).toBeCloseTo(15, 5)
+    expect(series[0].duration).toBeCloseTo(60, 5)
+    expect(series[1].duration).toBeCloseTo(90, 5)
+    expect(series[0].load).toBeGreaterThan(0)
+    expect(series[1].load).toBeGreaterThan(series[0].load)
+  })
+
+  it('emits a zero-filled entry for an empty week', () => {
+    const weeks = [{ week: 23, year: 2026, key: '2026-23' }]
+    const series = computeWeekSeries(weeks, { '2026-23': [] }, 99, 2026)
+    expect(series[0]).toMatchObject({ key: '2026-23', distance: 0, duration: 0, load: 0 })
+  })
+})

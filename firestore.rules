@@ -101,7 +101,9 @@ service cloud.firestore {
       allow read: if signedIn() && (
         request.auth.uid == userId ||
         isSuperadmin() ||
-        (hasRole('coach') && isCoachOf(userId))
+        (hasRole('coach') && isCoachOf(userId)) ||
+        // Athletes browse the coach directory to pick their own coaches.
+        (isActiveUser() && 'coach' in resource.data.roles)
       );
       // New users may only self-create as pending athletes. A superadmin must
       // activate the profile before it can read or write training data.
@@ -122,11 +124,14 @@ service cloud.firestore {
         resource.data.coachId == request.auth.uid ||
         resource.data.athleteId == request.auth.uid
       );
-      allow create, update: if isSuperadmin()
+      // Superadmins manage any link; athletes manage links where they are the athlete.
+      allow create, update: if isActiveUser()
+        && (isSuperadmin() || request.auth.uid == request.resource.data.athleteId)
         && request.resource.data.coachId is string
         && request.resource.data.athleteId is string
         && relationshipId == request.resource.data.coachId + '_' + request.resource.data.athleteId;
-      allow delete: if isSuperadmin();
+      allow delete: if isActiveUser()
+        && (isSuperadmin() || resource.data.athleteId == request.auth.uid);
     }
 
     // Workouts

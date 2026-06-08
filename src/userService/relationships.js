@@ -25,6 +25,20 @@ export function onRelationshipsSnapshot(callback) {
   })
 }
 
+// Live list of active coaches, for athletes browsing who to link to.
+// Firestore rules permit any active user to read docs whose roles include 'coach'.
+export function onCoachesSnapshot(callback) {
+  return onSnapshot(
+    query(collection(db, 'users'), where('roles', 'array-contains', 'coach')),
+    snap => {
+      const coaches = snap.docs
+        .map(normalizeUserDoc)
+        .filter(u => (u.status || 'active') === 'active')
+      callback(coaches)
+    }
+  )
+}
+
 // Subscribe to each athlete individually so Firestore rules can enforce that
 // a coach only reads users they actually coach (avoids a broad collection read).
 export function onCoachAthletesSnapshot(coachId, callback) {

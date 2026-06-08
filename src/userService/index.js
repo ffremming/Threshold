@@ -24,4 +24,5 @@ export {
   removeRelationship,
   onRelationshipsSnapshot,
   onCoachAthletesSnapshot,
+  onCoachesSnapshot,
 } from './relationships'

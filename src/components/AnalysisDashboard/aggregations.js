@@ -1,12 +1,4 @@
 import {
-  estimateMechanicalLoad,
-  estimateWorkoutDuration,
-  estimateWorkoutLoad,
-  getWorkoutDistance,
-  isHardWorkout,
-  normalizeIntensityZones,
-} from '../../utils'
-import {
   average,
   averageLastValues,
   getStandardDeviation,
@@ -14,74 +6,7 @@ import {
   safeDivide,
   sumLastValues,
 } from './utils'
-import { computeWeekSummary } from '../../utils/weekSummary'
-
-function buildWeekStats(week, workoutsByWeekKey, currentWeek, currentYear, activeTagFilter) {
-  let weekWorkouts = workoutsByWeekKey[week.key] || []
-
-  const isPastWeek = week.year < currentYear || (week.year === currentYear && week.week < currentWeek)
-  if (isPastWeek) {
-    weekWorkouts = weekWorkouts.filter(workout => workout.completed)
-  }
-
-  if (activeTagFilter) {
-    weekWorkouts = weekWorkouts.filter(workout => workout.activityTag === activeTagFilter)
-  }
-
-  // Shared totals / per-activity / per-zone breakdown (one source of truth).
-  const summary = computeWeekSummary(weekWorkouts)
-
-  const dailyLoads = Array(7).fill(0)
-  const dailyDurations = Array(7).fill(0)
-  const tags = {}
-  const zoneLoads = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
-
-  const workouts = weekWorkouts.map(workout => {
-    const duration = estimateWorkoutDuration(workout)
-    const load = estimateWorkoutLoad(workout)
-    const distance = getWorkoutDistance(workout) || 0
-    const mechanicalLoad = estimateMechanicalLoad(workout)
-    const normalizedZones = normalizeIntensityZones(workout.type, workout.intensityZone)
-    const weekdayIndex = Math.max(0, Math.min(6, Number(workout.weekday || 1) - 1))
-    const activityTag = workout.activityTag || 'unknown'
-
-    dailyLoads[weekdayIndex] += load
-    dailyDurations[weekdayIndex] += duration
-    tags[activityTag] = (tags[activityTag] || 0) + 1
-
-    if (normalizedZones.length > 0 && duration > 0) {
-      const zoneLoadShare = load / normalizedZones.length
-      normalizedZones.forEach(zone => {
-        zoneLoads[zone] += zoneLoadShare
-      })
-    }
-
-    return { ...workout, duration, load, distance, mechanicalLoad, normalizedZones, activityTag }
-  })
-
-  const hardSessions = workouts.filter(isHardWorkout).length
-  const mechanicalLoad = workouts.reduce((sum, w) => sum + w.mechanicalLoad, 0)
-  const longestSession = workouts.reduce((longest, workout) => {
-    if (!longest || workout.duration > longest.duration) return workout
-    return longest
-  }, null)
-
-  return {
-    week, workouts, count: workouts.length,
-    distance: summary.totalDistance,
-    duration: summary.totalDuration,
-    load: summary.totalLoad,
-    mechanicalLoad,
-    hardSessions, easySessions: Math.max(0, workouts.length - hardSessions),
-    zones: summary.zones,
-    zoneLoads,
-    tags,
-    activityLoad: summary.activityLoad,
-    activityDuration: summary.activityDuration,
-    activityDistance: summary.activityDistance,
-    dailyLoads, dailyDurations, longestSession,
-  }
-}
+import { buildWeekStats } from '../../utils/loadSignals'
 
 function reduceTotals(weeklyStats) {
   return weeklyStats.reduce((acc, week) => {

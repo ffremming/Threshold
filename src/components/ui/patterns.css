@@ -408,6 +408,25 @@
   min-width: 0;
 }
 
+button.th-account-meta-button {
+  width: 100%;
+  background: none;
+  border: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  border-radius: var(--th-radius-md);
+}
+
+button.th-account-meta-button:hover {
+  background: var(--th-surface-2);
+}
+
+button.th-account-meta-button:hover .th-account-name {
+  text-decoration: underline;
+}
+
 .th-account-avatar {
   width: 2rem;
   height: 2rem;

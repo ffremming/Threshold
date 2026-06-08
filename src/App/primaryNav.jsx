@@ -131,6 +131,8 @@ export function NavProvider({
   setShowAthleteOverview,
   setShowAdmin,
   setShowUserManagement,
+  setShowMyAccount,
+  isAthlete,
   handleLogout,
   userProfile,
   athletes,
@@ -179,17 +181,36 @@ export function NavProvider({
     const initials = (userProfile?.displayName || userProfile?.email || '?').slice(0, 1).toUpperCase()
     const account = (
       <div className="th-account">
-        <div className="th-account-meta">
-          <span className="th-account-avatar" aria-hidden="true">{initials}</span>
-          <div className="th-account-info">
-            <span className="th-account-name">
-              {userProfile?.displayName || userProfile?.email || 'User'}
-            </span>
-            {userProfile?.email && userProfile?.displayName && (
-              <span className="th-account-email">{userProfile.email}</span>
-            )}
+        {isAthlete ? (
+          <button
+            type="button"
+            className="th-account-meta th-account-meta-button"
+            onClick={() => setShowMyAccount(true)}
+            aria-label="Open my coaches"
+          >
+            <span className="th-account-avatar" aria-hidden="true">{initials}</span>
+            <div className="th-account-info">
+              <span className="th-account-name">
+                {userProfile?.displayName || userProfile?.email || 'User'}
+              </span>
+              {userProfile?.email && userProfile?.displayName && (
+                <span className="th-account-email">{userProfile.email}</span>
+              )}
+            </div>
+          </button>
+        ) : (
+          <div className="th-account-meta">
+            <span className="th-account-avatar" aria-hidden="true">{initials}</span>
+            <div className="th-account-info">
+              <span className="th-account-name">
+                {userProfile?.displayName || userProfile?.email || 'User'}
+              </span>
+              {userProfile?.email && userProfile?.displayName && (
+                <span className="th-account-email">{userProfile.email}</span>
+              )}
+            </div>
           </div>
-        </div>
+        )}
         <Button
           variant="ghost"
           size="sm"
@@ -221,6 +242,8 @@ export function NavProvider({
     setShowAthleteOverview,
     setShowAdmin,
     setShowUserManagement,
+    setShowMyAccount,
+    isAthlete,
     handleLogout,
     userProfile,
     athletes,

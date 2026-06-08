@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { classifyAcwr, computeWeekSignals } from './loadSignals'
+import { classifyAcwr, computeWeekSignals, buildWeekStats } from './loadSignals'
 
 describe('classifyAcwr', () => {
   it('classifies the band boundaries on the lower-risk side', () => {
@@ -27,6 +27,42 @@ function weeksWithKeys(n) {
     week: i + 1, year: 2026, key: `2026-${i + 1}`,
   }))
 }
+
+describe('buildWeekStats past-week boundary', () => {
+  // A week holding one planned-but-not-yet-completed session.
+  const planned = [{ activityTag: 'run', type: 'rolig', intensityZone: [2], completed: false, notes: '60 min' }]
+
+  it('counts planned sessions for the current and future weeks', () => {
+    const week = { week: 20, year: 2026, key: '2026-20' }
+    const byKey = { '2026-20': planned }
+    // Today is week 20: week 20 is the current week, not past → planned counts.
+    const stats = buildWeekStats(week, byKey, 20, 2026)
+    expect(stats.count).toBe(1)
+    expect(stats.load).toBeGreaterThan(0)
+  })
+
+  it('drops planned sessions only for weeks strictly before today, regardless of the navigation cursor', () => {
+    const week = { week: 20, year: 2026, key: '2026-20' }
+    const byKey = { '2026-20': planned }
+    // Bug repro: the user navigated the cursor forward to week 30, but today is
+    // still week 20. Week 20 must NOT be treated as past just because the cursor
+    // moved past it — planned sessions there should still count.
+    const todayWeek = 20
+    const todayYear = 2026
+    const stats = buildWeekStats(week, byKey, 30, 2026, null, todayWeek, todayYear)
+    expect(stats.count).toBe(1)
+    expect(stats.load).toBeGreaterThan(0)
+  })
+
+  it('still drops planned sessions for genuinely past weeks', () => {
+    const week = { week: 10, year: 2026, key: '2026-10' }
+    const byKey = { '2026-10': planned }
+    // Today is week 20; week 10 is genuinely past → planned dropped.
+    const stats = buildWeekStats(week, byKey, 30, 2026, null, 20, 2026)
+    expect(stats.count).toBe(0)
+    expect(stats.load).toBe(0)
+  })
+})
 
 describe('computeWeekSignals', () => {
   it('returns a map keyed by week.key with a signal entry per week', () => {

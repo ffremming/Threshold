@@ -3,7 +3,7 @@ import { Plus, X } from 'lucide-react'
 import {
   ACTIVITY_TAG_MAP, WEEKDAY_OPTIONS, groupWorkoutsByWeekday,
   normalizeIntensityZones, getZoneBarBackground, workoutHasZones,
-  formatDurationLabel, formatKmValue, ZONE_COLORS,
+  formatDurationLabel, formatKmValue, ZONE_COLORS, getWeekNumber,
 } from '../../utils'
 import { sessionDuration, sessionDistance } from '../../utils/weekSummary'
 import ActivityIcon from '../ActivityIcon'
@@ -131,16 +131,25 @@ export default function MonthGridPanel({
     modalOpen,
   })
 
+  // The past-week boundary (completed-only filter) is keyed off today's actual
+  // week, NOT the navigation cursor (currentWeek/currentYear). Navigating the
+  // month view forward must not reclassify still-upcoming weeks as past and zero
+  // out their planned sessions.
+  const todayWeek = useMemo(() => {
+    const now = new Date()
+    return { week: getWeekNumber(now), year: now.getFullYear() }
+  }, [])
+
   const { showSignals, setShowSignals } = useMonthSignalsToggle()
   const signalMap = useMemo(
-    () => computeWeekSignals(overviewWeeks, overviewWorkoutsByWeekKey, currentWeek, currentYear),
-    [overviewWeeks, overviewWorkoutsByWeekKey, currentWeek, currentYear]
+    () => computeWeekSignals(overviewWeeks, overviewWorkoutsByWeekKey, currentWeek, currentYear, todayWeek.week, todayWeek.year),
+    [overviewWeeks, overviewWorkoutsByWeekKey, currentWeek, currentYear, todayWeek]
   )
 
   const { showTrends, setShowTrends } = useMonthTrendsToggle()
   const weekSeries = useMemo(
-    () => computeWeekSeries(overviewWeeks, overviewWorkoutsByWeekKey, currentWeek, currentYear),
-    [overviewWeeks, overviewWorkoutsByWeekKey, currentWeek, currentYear]
+    () => computeWeekSeries(overviewWeeks, overviewWorkoutsByWeekKey, currentWeek, currentYear, todayWeek.week, todayWeek.year),
+    [overviewWeeks, overviewWorkoutsByWeekKey, currentWeek, currentYear, todayWeek]
   )
 
   const cellDrag = { onDragStart: handleWorkoutDragStart, onDragEnd: handleDragEnd }

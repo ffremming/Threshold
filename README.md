@@ -8,44 +8,29 @@ I've been writing training plans for myself and my girlfriend for a while. The e
 
 Threshold gives you a session bank, a calendar you can drag plans onto, and an analysis view that surfaces load and trends without a spreadsheet. It's the tool I wanted when I was the one doing the planning.
 
-## Hosted
+## Features
 
-<https://trainingplanner-53081.web.app>
+### Coach panel — week overview
 
-## Development
+A dashboard summarising the selected athlete's week: total time, distance, sessions, and load up top, a Mon–Sun strip of planned sessions, and three breakdown charts — **Hours by activity**, **Intensity zones** (minutes in each zone), and **Distance by activity**. Switch the active athlete from the left sidebar.
 
-```bash
-npm install
-npm run dev
-```
+![Coach panel week overview](docs/screenshots/coach-panel.png)
 
-## Strava integration
+### Plan builder — calendar
 
-Athletes can link Strava to auto-import completed activities, which feed the
-Analysis dashboard (intensity distribution, threshold/VO2max, speed work,
-muscular load, specificity). HR/stream data is fetched on demand and cached for
-the session, never stored. Setup:
+A drag-and-drop calendar of training weeks. The left rail is a searchable **session bank**, filterable by activity (Running, Walking, Strength, Cross-country skiing, …) and intensity zone (Z1–Z5). Drag sessions onto any day; each week row shows a rolled-up summary — total duration, a zone-distribution bar, and per-zone/per-activity totals.
 
-1. Create a Strava API app (<https://www.strava.com/settings/api>); set the
-   authorization callback domain to your Cloud Functions host and `localhost` for dev.
-2. Set Functions secrets:
-   `firebase functions:secrets:set STRAVA_CLIENT_ID`
-   `firebase functions:secrets:set STRAVA_CLIENT_SECRET`
-   `firebase functions:secrets:set STRAVA_VERIFY_TOKEN`
-3. Set frontend env (`.env`): `VITE_STRAVA_CLIENT_ID`, `VITE_STRAVA_CALLBACK_URL`
-   (the deployed `stravaCallback` URL).
-4. `firebase deploy --only functions,firestore:rules`
-5. Register the webhook once (see `docs/superpowers/plans/2026-06-03-strava-integration.md`, Task 8).
+![Plan builder calendar](docs/screenshots/plan-builder.png)
 
-Note: a new Strava app authenticates 1 athlete; self-service upgrade to 10 in the
-API dashboard; beyond 10 requires Strava app review.
+### Library — templates
 
-## Security
+Reusable session templates organised across **My bank**, **Library**, and **Athlete** tabs. Search and filter by sport and category (Easy / Hard), create new templates, and edit or delete existing ones. Each card shows the sport and target zone at a glance.
 
-The app now uses three layers for abuse control:
+![Template library](docs/screenshots/library.png)
 
-- Login/register attempts are locally throttled and persist across refreshes.
-- New self-registered accounts are created as `pending`; a superadmin must activate them in User administration before they can read or write training data.
-- Firestore rules require an active user profile, preserve ownership fields, and block pending/disabled users from workouts, templates, tests, relationships, and athlete session banks.
+### Strength sessions — exercise picker
 
-For production, keep App Check enabled with `VITE_FIREBASE_APPCHECK_RECAPTCHA_KEY` and turn on App Check enforcement for Firestore in Firebase Console. The UI limiter helps normal traffic, but Firestore rules and App Check are the enforceable controls for direct API access.
+Build strength sessions from an exercise database with search, muscle-group filters (Push / Pull / Legs / Core), equipment and category filters, and favourites. Each exercise shows the targeted muscles on front/back body diagrams plus a demonstration and step-by-step instructions.
+
+![Strength exercise picker](docs/screenshots/strength-picker.png)
+

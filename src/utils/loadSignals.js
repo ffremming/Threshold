@@ -13,10 +13,19 @@ import { averageLastValues, safeDivide } from './seriesMath'
 // Past weeks count only completed sessions (planned-but-skipped shouldn't
 // inflate historical load). One source of truth shared by the AnalysisDashboard
 // and the month-view load signals.
-export function buildWeekStats(week, workoutsByWeekKey, currentWeek, currentYear, activeTagFilter = null) {
+//
+// "Past" is measured against TODAY's actual week (todayWeek/todayYear), not the
+// navigation cursor (currentWeek/currentYear). Navigating the cursor forward
+// must not reclassify still-upcoming weeks as past and silently drop their
+// planned sessions. todayWeek/todayYear default to the cursor for callers that
+// don't navigate independently of today.
+export function buildWeekStats(
+  week, workoutsByWeekKey, currentWeek, currentYear, activeTagFilter = null,
+  todayWeek = currentWeek, todayYear = currentYear,
+) {
   let weekWorkouts = workoutsByWeekKey[week.key] || []
 
-  const isPastWeek = week.year < currentYear || (week.year === currentYear && week.week < currentWeek)
+  const isPastWeek = week.year < todayYear || (week.year === todayYear && week.week < todayWeek)
   if (isPastWeek) {
     weekWorkouts = weekWorkouts.filter(workout => workout.completed)
   }
@@ -103,9 +112,9 @@ export function classifyAcwr(acwr) {
 const CHRONIC_WEEKS = 6
 const ACUTE_WEEKS = 3
 
-export function computeWeekSignals(weeks, workoutsByWeekKey, currentWeek, currentYear) {
+export function computeWeekSignals(weeks, workoutsByWeekKey, currentWeek, currentYear, todayWeek = currentWeek, todayYear = currentYear) {
   const stats = weeks.map(week =>
-    buildWeekStats(week, workoutsByWeekKey, currentWeek, currentYear))
+    buildWeekStats(week, workoutsByWeekKey, currentWeek, currentYear, null, todayWeek, todayYear))
   const loadSeries = stats.map(s => s.load)
 
   const signals = {}
@@ -131,9 +140,9 @@ export function computeWeekSignals(weeks, workoutsByWeekKey, currentWeek, curren
 // Per-week series for the planner trend chart: one ordered entry per week with
 // the metrics the chart can switch between. Same source of truth as the badges
 // (buildWeekStats) so the chart and the per-week signals never disagree.
-export function computeWeekSeries(weeks, workoutsByWeekKey, currentWeek, currentYear) {
+export function computeWeekSeries(weeks, workoutsByWeekKey, currentWeek, currentYear, todayWeek = currentWeek, todayYear = currentYear) {
   return weeks.map(week => {
-    const stats = buildWeekStats(week, workoutsByWeekKey, currentWeek, currentYear)
+    const stats = buildWeekStats(week, workoutsByWeekKey, currentWeek, currentYear, null, todayWeek, todayYear)
     return {
       key: week.key,
       week: week.week,

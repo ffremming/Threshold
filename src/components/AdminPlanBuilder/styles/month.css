@@ -1,0 +1,504 @@
+/* ────────────────────────────────────────────────────────────────────
+ * AdminPlanBuilder — Month view (ISO-week-row calendar grid)
+ * ──────────────────────────────────────────────────────────────────── */
+
+.pb-month-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* week-label column + 7 day columns */
+.pb-month-head,
+.pb-month-row {
+  display: grid;
+  grid-template-columns: 196px repeat(7, minmax(0, 1fr));
+  gap: 4px;
+}
+
+/* Day cells share the row's full height with the (taller) week summary column. */
+.pb-month-row { align-items: stretch; }
+
+.pb-month-head-day {
+  font-size: var(--th-text-2xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--th-tracking-wide);
+  color: var(--th-ink-muted);
+  text-align: center;
+  padding: 2px 0;
+}
+
+.pb-month-corner { display: block; }
+
+.pb-month-row {
+  border-radius: var(--th-radius-sm);
+}
+
+.pb-month-row.is-selected {
+  outline: 2px solid var(--th-accent, #2563eb);
+  outline-offset: 1px;
+}
+
+/* Left column: jump-to-week button stacked above the week summary. */
+.pb-month-week-col {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.pb-month-week-label {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 1px;
+  padding: 6px 8px;
+  border: 1px solid var(--th-line);
+  border-radius: var(--th-radius-sm);
+  background: var(--th-hover);
+  cursor: pointer;
+  text-align: left;
+}
+
+.pb-month-week-label:hover {
+  border-color: var(--th-accent, #2563eb);
+  color: var(--th-accent, #2563eb);
+}
+
+.pb-month-week-num {
+  font-size: var(--th-text-sm);
+  font-weight: 700;
+  color: var(--th-ink);
+}
+
+.pb-month-week-range {
+  font-size: var(--th-text-2xs);
+  color: var(--th-ink-muted);
+  white-space: nowrap;
+}
+
+.pb-month-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-height: 64px;
+  padding: 4px;
+  border: 1px solid var(--th-line);
+  border-radius: var(--th-radius-sm);
+  background: var(--th-surface);
+}
+
+.pb-month-cell.is-target {
+  border-color: var(--th-accent, #2563eb);
+  background: var(--th-accent-soft, #eff6ff);
+}
+
+/* Today's day cell — a subtle gray ring and tinted fill (no accent color). */
+.pb-month-cell.is-today {
+  border-color: var(--th-ink-muted, #64748b);
+  box-shadow: inset 0 0 0 2px var(--th-ink-muted, #64748b);
+  background: color-mix(in srgb, var(--th-ink-muted, #64748b) 6%, var(--th-surface));
+}
+
+/* Marquee-selected day cells (Excel-style range selection). The whole cell is a
+ * drag handle for moving the selection, so show a grab cursor. */
+.pb-month-cell.is-selected-cell {
+  border-color: var(--th-accent, #2563eb);
+  background: color-mix(in srgb, var(--th-accent, #2563eb) 8%, var(--th-surface));
+  box-shadow: inset 0 0 0 1px var(--th-accent, #2563eb);
+  cursor: grab;
+}
+.pb-month-cell.is-selected-cell:active { cursor: grabbing; }
+
+/* The drag rectangle itself, positioned in viewport coordinates. */
+.pb-month-marquee {
+  position: fixed;
+  z-index: 30;
+  pointer-events: none;
+  border: 1px solid var(--th-accent, #2563eb);
+  background: color-mix(in srgb, var(--th-accent, #2563eb) 12%, transparent);
+  border-radius: 2px;
+}
+
+/* While marquee-selecting, suppress the browser text/element selection so the
+ * drag reads as a rectangle, not a text highlight. */
+.pb-month-grid { user-select: none; }
+
+.pb-month-chip-wrap { position: relative; }
+
+.pb-month-chip {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 44px;
+  text-align: left;
+  font: inherit;
+  padding: 6px 18px 6px 13px;
+  border: 1px solid var(--th-line);
+  border-radius: 4px;
+  /* Whole chip filled with the light intensity-zone color; the zone accent bar
+   * sits on the left edge over that fill. */
+  background-color: var(--pb-zone-fill, var(--th-surface));
+  background-image: var(--pb-zone-bar, linear-gradient(#94a3b8, #94a3b8));
+  background-repeat: no-repeat;
+  background-position: left center;
+  background-size: 6px 100%;
+  cursor: pointer;
+  min-width: 0;
+}
+
+/* Original sessions being dragged in a multi-move — dimmed while their ghosts
+ * show at the destination. */
+.pb-month-chip.is-ghosting { opacity: 0.4; }
+
+/* Destination preview ghost + cursor-follower cards: dashed, faded, inert. */
+.pb-month-chip--ghost {
+  opacity: 0.45;
+  border-style: dashed;
+  cursor: default;
+  pointer-events: none;
+}
+
+.pb-month-chip:hover {
+  filter: brightness(0.97);
+}
+.pb-month-chip.is-drag { opacity: 0.4; }
+.pb-month-chip.is-target { box-shadow: inset 0 2px 0 var(--th-accent, #2563eb); }
+
+.pb-month-chip-line {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  width: 100%;
+}
+.pb-month-chip-icon {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  color: var(--th-text-muted, #475569);
+}
+.pb-month-chip-title {
+  flex: 1 1 auto;
+  font-size: var(--th-text-2xs);
+  font-weight: 600;
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pb-month-chip-remove {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  padding: 0;
+  border: none;
+  border-radius: 3px;
+  background: transparent;
+  color: #94a3b8;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.12s ease, background-color 0.12s ease, color 0.12s ease;
+}
+
+.pb-month-chip-remove svg { width: 11px; height: 11px; }
+
+.pb-month-chip-wrap:hover .pb-month-chip-remove,
+.pb-month-chip-remove:focus-visible { opacity: 1; }
+
+.pb-month-chip-remove:hover { background: #fee2e2; color: #dc2626; }
+
+@media (hover: none) {
+  .pb-month-chip-remove { opacity: 1; }
+}
+
+.pb-month-add {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 18px;
+  padding: 0;
+  border: 1px dashed transparent;
+  border-radius: 3px;
+  background: transparent;
+  color: #cbd5e1;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.12s ease, border-color 0.12s ease, color 0.12s ease, background-color 0.12s ease;
+}
+
+.pb-month-add svg { width: 13px; height: 13px; }
+
+/* While a drag is in progress, the per-day "+" button must not intercept the
+ * drop — let drag events fall through to the cell's drop zone. */
+.pb-month-grid.is-dragging .pb-month-add { pointer-events: none; }
+
+/* Only reveal the "+" when hovering the day cell. */
+.pb-month-cell:hover .pb-month-add,
+.pb-month-add:focus-visible {
+  opacity: 1;
+  border-color: #cbd5e1;
+  color: #94a3b8;
+}
+
+@media (hover: none) {
+  .pb-month-add { opacity: 1; }
+}
+
+/* Empty day: the "+" fills the whole cell so the entire slot is one add target. */
+.pb-month-cell.is-empty .pb-month-add {
+  flex: 1 1 auto;
+  height: auto;
+  margin-top: 0;
+}
+
+.pb-month-add:hover {
+  border-color: var(--th-accent, #2563eb) !important;
+  color: var(--th-accent, #2563eb) !important;
+  background: var(--th-accent-soft, #eff6ff);
+}
+
+/* Per-day totals pinned to the bottom of each day cell. */
+.pb-month-cell-foot {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1px 6px;
+  margin-top: auto;
+  padding-top: 3px;
+  border-top: 1px solid var(--th-line);
+  font-size: var(--th-text-2xs);
+  font-weight: 600;
+  color: var(--th-ink-muted);
+}
+
+/* ── Per-week summary (left column) ───────────────────────────────── */
+/* Stands out as a distinct card so the week's totals read as a unit. */
+.pb-month-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 7px 8px;
+  border: 1px solid var(--th-line);
+  border-left: 3px solid var(--th-accent, #2563eb);
+  border-radius: var(--th-radius-sm);
+  background: color-mix(in srgb, var(--th-accent, #2563eb) 5%, var(--th-surface));
+  box-shadow: var(--th-shadow-sm, 0 1px 2px rgba(15, 23, 42, 0.06));
+}
+
+.pb-month-summary-dur {
+  font-size: var(--th-text-sm);
+  font-weight: 700;
+  color: var(--th-ink);
+  line-height: 1.1;
+}
+
+.pb-month-zones {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Proportional zone-distribution bar; segment widths set inline (∝ minutes). */
+.pb-month-zonebar {
+  display: flex;
+  width: 100%;
+  height: 10px;
+  border-radius: 3px;
+  overflow: hidden;
+  border: 1px solid var(--th-line);
+  cursor: help;
+}
+
+.pb-month-zonebar-seg {
+  height: 100%;
+  flex: none;
+  min-width: 2px;
+}
+/* Hairline divider between adjacent zone bands so colors read distinctly. */
+.pb-month-zonebar-seg + .pb-month-zonebar-seg {
+  box-shadow: inset 1px 0 0 rgba(255, 255, 255, 0.7);
+}
+
+/* Per-zone legend: dot · label · minutes, so each zone is named and quantified. */
+.pb-month-zonelist {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1px 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pb-month-zonelist-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: var(--th-text-2xs);
+  white-space: nowrap;
+}
+
+.pb-month-zonelist-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  border: 1px solid var(--th-line);
+  flex: none;
+}
+
+.pb-month-zonelist-label {
+  font-weight: 700;
+  color: var(--th-ink);
+}
+
+.pb-month-zonelist-mins {
+  color: var(--th-ink-muted);
+}
+
+.pb-month-km {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pb-month-km-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: var(--th-text-2xs);
+  font-weight: 600;
+  color: var(--th-ink-muted);
+  white-space: nowrap;
+}
+
+.pb-month-km-icon {
+  width: 11px;
+  height: 11px;
+  color: var(--th-text-muted, #475569);
+  flex: none;
+}
+
+/* ── Multi-move cursor follower ───────────────────────────────────── */
+/* A small stack of ghost cards pinned to the cursor while a selection drag is
+ * between slots. Hidden once the pointer is over a destination cell (where the
+ * in-cell destination ghosts take over). */
+.pb-month-follower {
+  position: fixed;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: 160px;
+  pointer-events: none;
+  filter: drop-shadow(0 4px 10px rgba(15, 23, 42, 0.18));
+}
+
+/* ── Per-week load signals (load · ramp · ACWR readiness) ─────────────
+ * A toggleable compact bar under each week-row. The toggle lives in a thin
+ * right-aligned strip below the panel header so it adds minimal chrome. */
+.pb-month-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0 2px 4px;
+}
+
+.pb-month-signals-toggle {
+  font-size: var(--th-text-2xs);
+  font-weight: 600;
+  padding: 3px 10px;
+  border: 1px solid var(--th-line);
+  border-radius: 999px;
+  background: var(--th-surface);
+  color: var(--th-ink-muted);
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+}
+.pb-month-signals-toggle:hover {
+  background: var(--th-hover);
+  color: var(--th-ink);
+}
+.pb-month-signals-toggle.is-on {
+  background: var(--th-accent-soft);
+  color: var(--th-accent);
+  border-color: var(--th-accent-ring);
+}
+
+/* The strip spans the full row width (week-label column + 7 days) below the
+ * day cells. .pb-month-row is a CSS grid, so 1 / -1 stretches edge to edge. */
+.pb-month-signals {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 4px 8px;
+  margin-top: 2px;
+  font-size: var(--th-text-2xs);
+  color: var(--th-ink-muted);
+  border-top: 1px dashed var(--th-line);
+}
+
+.pb-signal-load {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+}
+.pb-signal-label {
+  text-transform: uppercase;
+  letter-spacing: var(--th-tracking-wide);
+  font-size: var(--th-text-2xs);
+  opacity: 0.7;
+}
+.pb-signal-value {
+  font-weight: 700;
+  color: var(--th-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.pb-signal-ramp {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+/* A large week-over-week jump (either direction) gets an amber pill. */
+.pb-signal-ramp.is-hot {
+  background: var(--th-warning-bg);
+  color: var(--th-warning);
+  padding: 1px 7px;
+  border-radius: 999px;
+}
+
+.pb-signal-acwr {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-variant-numeric: tabular-nums;
+}
+.pb-signal-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  flex: none;
+}
+.pb-signal-acwr-text {
+  text-transform: capitalize;
+}
+
+/* Readiness bands map to the app's semantic status colors. */
+.pb-band-safe { color: var(--th-success); }
+.pb-band-caution { color: var(--th-warning); }
+.pb-band-spike { color: var(--th-danger); }
+.pb-band-undertraining { color: var(--th-danger); }
+.pb-band-settling { color: var(--th-ink-soft); }

@@ -11,6 +11,7 @@ export default function RelationshipSection({
   addLabel,
   assignTitle,
   noneLeftLabel,
+  hideEmail = false,
   onAdd,
   onRemove,
 }) {
@@ -34,7 +35,7 @@ export default function RelationshipSection({
             <div key={member.uid} className="th-rel-row">
               <span className="th-rel-meta">
                 <span className="th-rel-name">{member.displayName || 'No name'}</span>
-                <span className="th-rel-email">{member.email}</span>
+                {!hideEmail && <span className="th-rel-email">{member.email}</span>}
               </span>
               <IconButton
                 ariaLabel={`Remove link to ${member.displayName || member.email}`}
@@ -67,7 +68,7 @@ export default function RelationshipSection({
                 >
                   <span className="th-rel-meta">
                     <span className="th-rel-name">{person.displayName || 'Uten navn'}</span>
-                    <span className="th-rel-email">{person.email}</span>
+                    {!hideEmail && <span className="th-rel-email">{person.email}</span>}
                   </span>
                   <Plus size={16} aria-hidden="true" style={{ color: 'var(--th-accent)' }} />
                 </button>

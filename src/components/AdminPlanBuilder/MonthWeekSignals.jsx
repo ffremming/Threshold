@@ -1,0 +1,55 @@
+// Compact per-week load-signal bar for the month grid: training load, the
+// week-over-week ramp %, and an ACWR readiness pill. Pure presentation — every
+// number comes precomputed from computeWeekSignals; no aggregation lives here.
+// Renders nothing for an empty/zero-load week so quiet weeks add no chrome.
+
+const BAND_LABEL = {
+  undertraining: 'undertraining',
+  safe: 'safe',
+  caution: 'caution',
+  spike: 'spike',
+}
+
+function formatRamp(rampPct) {
+  if (rampPct == null || !Number.isFinite(rampPct)) return '—'
+  const rounded = Math.round(rampPct)
+  const arrow = rounded > 0 ? '↑' : rounded < 0 ? '↓' : ''
+  const sign = rounded > 0 ? '+' : ''
+  return `${arrow}${sign}${rounded}%`
+}
+
+export default function MonthWeekSignals({ signal }) {
+  if (!signal || !(signal.load > 0)) return null
+
+  const { load, rampPct, acwr, readiness, settling } = signal
+  // High-magnitude ramp gets an amber chip regardless of direction.
+  const rampHot = rampPct != null && Math.abs(rampPct) > 30
+  const band = readiness || 'settling'
+
+  return (
+    <div className="pb-month-signals" aria-label="Weekly load signals">
+      <span className="pb-signal-load">
+        <span className="pb-signal-label">Load</span>
+        <span className="pb-signal-value">{Math.round(load)}</span>
+      </span>
+
+      <span className={`pb-signal-ramp${rampHot ? ' is-hot' : ''}`} title="Week-over-week load change">
+        {formatRamp(rampPct)}
+      </span>
+
+      <span
+        className={`pb-signal-acwr pb-band-${band}`}
+        title={settling ? 'Building chronic baseline (needs 6 weeks)' : `Acute:chronic load ratio (${BAND_LABEL[readiness]})`}
+      >
+        <span className="pb-signal-dot" aria-hidden="true" />
+        {settling ? (
+          <span className="pb-signal-acwr-text">settling</span>
+        ) : (
+          <span className="pb-signal-acwr-text">
+            ACWR {acwr.toFixed(2)} {BAND_LABEL[readiness]}
+          </span>
+        )}
+      </span>
+    </div>
+  )
+}

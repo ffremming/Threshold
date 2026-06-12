@@ -9,26 +9,6 @@ import {
   normalizeWeekday,
 } from './weekday'
 
-export function getDefaultWarmup(_type, activityTag = '') {
-  if (activityTag === 'run') return '10-15 min easy jog + 3-4 strides'
-  if (activityTag === 'walking') return '10-15 min easy walk with gradual progression'
-  if (activityTag === 'bike') return '10-15 min easy cycling with gradual progression'
-  if (activityTag === 'swim') return '200-400 m easy swim-in + technique'
-  if (activityTag === 'xc_skiing') return '10-15 min easy diagonal/skating + drills'
-  if (activityTag === 'strength') return '10-15 min general warmup + activation'
-  return '10-15 min easy warmup'
-}
-
-export function getDefaultCooldown(_type, activityTag = '') {
-  if (activityTag === 'run') return '5-10 min easy jog or walk'
-  if (activityTag === 'walking') return '5-10 min easy walk and light mobility'
-  if (activityTag === 'bike') return '10 min easy cycling'
-  if (activityTag === 'swim') return '100-200 m easy swim-out'
-  if (activityTag === 'xc_skiing') return '5-10 min easy cooldown'
-  if (activityTag === 'strength') return '5-10 min easy cooldown and light mobility'
-  return '5-10 min easy cooldown'
-}
-
 export function normalizeWorkout(workout) {
   const intensityZones = normalizeIntensityZones(workout.type, workout.intensityZone)
   const activityTag = inferActivityTag(workout)
@@ -39,10 +19,8 @@ export function normalizeWorkout(workout) {
     ...workout,
     activityTag,
     date,
-    cooldown: workout.cooldown?.trim?.() || getDefaultCooldown(workout.type, activityTag),
     time: workout.time || '',
     loadTag: normalizeLoadTag(workout.type, intensityZones, workout.loadTag),
-    warmup: workout.warmup?.trim?.() || getDefaultWarmup(workout.type, activityTag),
     weekday: normalizedWeekday,
     intensityZone: intensityZones,
     userComment: workout.userComment || '',

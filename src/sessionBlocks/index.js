@@ -4,6 +4,7 @@ export {
   STRENGTH_ACTIVITIES,
   paceToSpeed,
   speedToPace,
+  estimatedSpeedKmh,
 } from './units'
 
 export {

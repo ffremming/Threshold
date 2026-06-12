@@ -3,10 +3,8 @@ import {
   LOAD_TAGS,
   WORKOUT_TYPES,
   getAllowedIntensityZones,
-  getDefaultCooldown,
   getDefaultIntensityZones,
   getDefaultLoadTag,
-  getDefaultWarmup,
   hasIntensityZone,
   normalizeIntensityZones,
 } from '../utils'
@@ -19,8 +17,6 @@ const DEFAULT_FORM = {
   description: '',
   distance: '',
   sessionDetails: '',
-  warmup: getDefaultWarmup('interval'),
-  cooldown: getDefaultCooldown('interval'),
   exercises: '',
   rest: '',
   notes: '',
@@ -45,8 +41,6 @@ export default function AddWorkout({ onSave, onClose, initialDate }) {
       type,
       intensityZone,
       loadTag: getDefaultLoadTag(type, intensityZone),
-      warmup: f.warmup || getDefaultWarmup(type),
-      cooldown: f.cooldown || getDefaultCooldown(type),
     }))
   }
 
@@ -144,28 +138,6 @@ export default function AddWorkout({ onSave, onClose, initialDate }) {
               value={form.description}
               onChange={e => set('description', e.target.value)}
               rows={3}
-            />
-          </label>
-
-          <label>
-            Warmup
-            <input
-              type="text"
-              placeholder="E.g. 2 km easy"
-              value={form.warmup}
-              onChange={e => set('warmup', e.target.value)}
-              required
-            />
-          </label>
-
-          <label>
-            Cooldown
-            <input
-              type="text"
-              placeholder="E.g. 1 km easy"
-              value={form.cooldown}
-              onChange={e => set('cooldown', e.target.value)}
-              required
             />
           </label>
 

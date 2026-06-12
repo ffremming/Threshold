@@ -61,9 +61,6 @@ export default function WorkoutDetailSections({
         </Section>
       )}
 
-      {workout.warmup && <Section label="Warmup">{workout.warmup}</Section>}
-      {workout.cooldown && <Section label="Cooldown">{workout.cooldown}</Section>}
-
       {workout.notes && (
         <Section label="Notes" preLine>{workout.notes}</Section>
       )}

@@ -111,22 +111,28 @@ export function blocksToSummary(blocks, activityTag) {
     if (s.kind === 'sprint') {
       return `${label}: ${s.reps} × ${formatSeconds(s.sprintSec)}`
     }
-    if (s.kind === 'effort' || (s.distanceKm === 0 && s.durationMin != null && s.paceSecPerKm == null)) {
+    // Effort blocks and time-defined warmup/steady/cooldown read as a duration.
+    // (Time-mode distance blocks now carry an estimated distance, so key off the
+    // paceMode rather than a zero distance.)
+    if (s.kind === 'effort' ||
+        (s.kind !== 'interval' && s.paceMode === 'time') ||
+        (s.distanceKm === 0 && s.durationMin != null && s.paceSecPerKm == null)) {
       return `${label}: ${formatDuration(s.durationMin)}`
     }
     if (s.kind === 'interval') {
       const tail = []
-      const mode = s.paceMode || 'pace'
-      if (mode === 'time') {
-        tail.push(`${s.reps} × ${formatSeconds(s.dragSec)}`)
-      } else if (mode === 'length') {
-        tail.push(`${s.reps} × ${formatDistance(s.dragKm)}`)
-      } else {
-        tail.push(`${s.reps} × ${formatDistance(s.dragKm)} @ ${fmtSpeed(s.paceSecPerKm)}`)
-      }
+      const hasPace = Number(s.paceSecPerKm) > 0
+      const repLabel = s.paceMode === 'time'
+        ? `${s.reps} × ${formatSeconds(s.dragSec)}`
+        : `${s.reps} × ${formatDistance(s.dragKm)}`
+      // Pace is an optional target; only append it when the coach set one.
+      tail.push(hasPace ? `${repLabel} @ ${fmtSpeed(s.paceSecPerKm)}` : repLabel)
       if (s.pauseSec > 0) tail.push(formatPauseLabel(s.pauseSec))
       return `${label}: ${tail.join(', ')}`
     }
-    return `${label}: ${formatDistance(s.distanceKm)} @ ${fmtSpeed(s.paceSecPerKm)}`
+    const hasPace = Number(s.paceSecPerKm) > 0
+    return hasPace
+      ? `${label}: ${formatDistance(s.distanceKm)} @ ${fmtSpeed(s.paceSecPerKm)}`
+      : `${label}: ${formatDistance(s.distanceKm)}`
   }).join('\n')
 }

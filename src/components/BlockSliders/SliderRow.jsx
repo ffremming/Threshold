@@ -52,6 +52,25 @@ export function ModeButton({ current, value, label, onSelect }) {
   )
 }
 
+// Optional "Set pace" control. When unchecked, the block carries no pace and
+// the athlete never sees one; checking it reveals the pace/speed slider.
+// Rendered as a compact pill switch so the global modal-input sizing (which
+// blows native checkboxes up to a full-width 3rem box) never touches it.
+export function SetPaceToggle({ checked, onToggle, label = 'Set pace' }) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      className={`th-toggle${checked ? ' is-on' : ''}`}
+      onClick={() => onToggle(!checked)}
+    >
+      <span className="th-toggle-track"><span className="th-toggle-thumb" /></span>
+      <span className="th-toggle-label">{label}</span>
+    </button>
+  )
+}
+
 export function PaceOrSpeedSlider({ unit, paceSecPerKm, speedKmh, onPatch }) {
   if (unit === 'pace') {
     return (

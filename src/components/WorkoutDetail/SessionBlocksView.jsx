@@ -105,15 +105,13 @@ function SectionRow({ section, activityTag }) {
   }
 
   if (section.kind === 'interval') {
-    const mode = section.paceMode || 'pace'
+    const mode = section.paceMode === 'time' ? 'time' : 'length'
     const reps = Math.max(1, Number(section.reps) || 1)
-    let dragLabel
-    if (mode === 'time') {
-      dragLabel = formatSeconds(section.dragSec)
-    } else {
-      dragLabel = formatDistance(section.dragKm)
-    }
-    const showSpeed = mode === 'pace' && speedLabel
+    const dragLabel = mode === 'time'
+      ? formatSeconds(section.dragSec)
+      : formatDistance(section.dragKm)
+    // Pace is an optional target — show it only when the coach set one.
+    const showSpeed = Boolean(speedLabel)
     return (
       <li className="session-block-row">
         <div className="session-block-row-head">
@@ -131,20 +129,22 @@ function SectionRow({ section, activityTag }) {
     )
   }
 
+  // Distance blocks (warmup / steady / cooldown). In time mode the duration is
+  // the prescribed metric; in length mode the distance is. Pace is shown only
+  // when the coach set a target.
+  const isTimeMode = section.paceMode === 'time'
+  const mainMetric = isTimeMode
+    ? formatDuration(section.durationMin)
+    : formatDistance(section.distanceKm)
   return (
     <li className="session-block-row">
       <div className="session-block-row-head">
         <span className="session-block-row-label">{label}</span>
         <span className="session-block-row-main">
-          {formatDistance(section.distanceKm)}
+          {mainMetric}
           {speedLabel && <> @ {speedLabel}</>}
         </span>
       </div>
-      {section.durationMin > 0 && (
-        <div className="session-block-row-meta">
-          <span>{formatDuration(section.durationMin)}</span>
-        </div>
-      )}
     </li>
   )
 }

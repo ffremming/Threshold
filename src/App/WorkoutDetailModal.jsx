@@ -3,8 +3,6 @@ import { db } from '../firebase'
 import { isRateLimitError, withDatabaseWriteLimit } from '../security/rateLimits'
 import {
   getDateStringForWeekday,
-  getDefaultCooldown,
-  getDefaultWarmup,
   normalizeLoadTag,
   normalizeIntensityZones,
 } from '../utils'
@@ -49,8 +47,6 @@ export default function WorkoutDetailModal({
             date: getDateStringForWeekday(updated.week, updated.year, fields.weekday),
             intensityZone,
             loadTag: normalizeLoadTag(fields.type, intensityZone, fields.loadTag),
-            warmup: fields.warmup?.trim() || getDefaultWarmup(fields.type, fields.activityTag),
-            cooldown: fields.cooldown?.trim() || getDefaultCooldown(fields.type, fields.activityTag),
             updatedAt: serverTimestamp(),
           }))
           setSelectedWorkout(null)

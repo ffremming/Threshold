@@ -3,9 +3,7 @@ import {
   LOAD_TAGS,
   WORKOUT_TYPES,
   getAllowedIntensityZones,
-  getDefaultCooldown,
   getDefaultLoadTag,
-  getDefaultWarmup,
   hasIntensityZone,
   normalizeIntensityZones,
 } from '../utils'
@@ -19,8 +17,6 @@ export default function AddFromTemplate({ template, initialDate, onSave, onClose
     description: template.description || '',
     distance: template.distance || '',
     sessionDetails: template.sessionDetails || '',
-    warmup: template.warmup || getDefaultWarmup(template.type, template.activityTag),
-    cooldown: template.cooldown || getDefaultCooldown(template.type, template.activityTag),
     exercises: template.exercises || '',
     rest: template.rest || '',
     notes: template.notes || '',
@@ -39,8 +35,6 @@ export default function AddFromTemplate({ template, initialDate, onSave, onClose
       type,
       intensityZone,
       loadTag: getDefaultLoadTag(type, intensityZone),
-      warmup: f.warmup || getDefaultWarmup(type),
-      cooldown: f.cooldown || getDefaultCooldown(type),
     }))
   }
 
@@ -137,30 +131,6 @@ export default function AddFromTemplate({ template, initialDate, onSave, onClose
               rows={4}
             />
           </label>
-
-          {(form.warmup !== undefined) && (
-            <label>
-              Warmup
-              <input
-                type="text"
-                value={form.warmup}
-                onChange={e => set('warmup', e.target.value)}
-                required
-              />
-            </label>
-          )}
-
-          {(form.cooldown !== undefined) && (
-            <label>
-              Cooldown
-              <input
-                type="text"
-                value={form.cooldown}
-                onChange={e => set('cooldown', e.target.value)}
-                required
-              />
-            </label>
-          )}
 
           <label>
             Notes

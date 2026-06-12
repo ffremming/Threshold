@@ -1,7 +1,5 @@
 import { TEMPLATE_CATEGORIES, WORKOUT_TEMPLATES } from './workoutTemplates'
 import {
-  getDefaultCooldown,
-  getDefaultWarmup,
   normalizeIntensityZones,
   normalizeLoadTag,
   normalizeWorkout,
@@ -21,10 +19,8 @@ function toBuiltinTemplate(template) {
     ...fields,
     templateId: id,
     source: 'builtin',
-    cooldown: fields.cooldown || getDefaultCooldown(fields.type, fields.activityTag),
     intensityZone: normalizeIntensityZones(fields.type, fields.intensityZone),
     loadTag: normalizeLoadTag(fields.type, fields.intensityZone, fields.loadTag),
-    warmup: fields.warmup || getDefaultWarmup(fields.type, fields.activityTag),
   })
 }
 

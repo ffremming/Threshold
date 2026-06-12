@@ -1,4 +1,5 @@
 import {
+  estimatedSpeedKmh,
   formatDistance,
   formatDuration,
   formatPaceLabel,
@@ -7,7 +8,7 @@ import {
   paceToSpeed,
   speedToPace,
 } from '../../sessionBlocks'
-import SliderRow, { EstimatedDistanceRow, ModeButton } from './SliderRow'
+import SliderRow, { EstimatedDistanceRow, ModeButton, SetPaceToggle } from './SliderRow'
 import {
   DRAG_MAX,
   DRAG_MIN,
@@ -37,7 +38,9 @@ export default function IntervalSliders({ block, unit, activityTag, onPatch }) {
   const dragSec = Math.max(0, Math.round(Number(block.dragSec) || 0))
   const pace = Number(block.paceSecPerKm) || 0
   const speedKmh = paceToSpeed(pace)
-  const paceMode = block.paceMode || 'pace'
+  // Rep is defined by length or time; pace is an optional target on top.
+  const paceMode = block.paceMode === 'time' ? 'time' : 'length'
+  const hasPace = pace > 0
 
   function setMode(nextMode) {
     if (nextMode === paceMode) return
@@ -50,7 +53,8 @@ export default function IntervalSliders({ block, unit, activityTag, onPatch }) {
 
   function setDragKm(value) {
     const next = Math.max(0, Number(value.toFixed(3)))
-    if (paceMode === 'pace') {
+    // Keep the target pace constant when set: recompute the rep's seconds.
+    if (hasPace) {
       onPatch({ dragKm: next, dragSec: Math.round(next * pace) })
     } else {
       onPatch({ dragKm: next })
@@ -58,18 +62,7 @@ export default function IntervalSliders({ block, unit, activityTag, onPatch }) {
   }
 
   function setDragTime(seconds) {
-    const safeSec = Math.max(0, Math.round(seconds))
-    if (paceMode === 'pace') {
-      const safeKm = dragKm > 0 ? dragKm : 0.1
-      const newPace = clampPace(Math.round(safeSec / safeKm))
-      onPatch({
-        ...(dragKm > 0 ? {} : { dragKm: 0.1 }),
-        dragSec: safeSec,
-        paceSecPerKm: newPace,
-      })
-    } else {
-      onPatch({ dragSec: safeSec })
-    }
+    onPatch({ dragSec: Math.max(0, Math.round(seconds)) })
   }
 
   function setPaceSec(newPace) {
@@ -80,6 +73,10 @@ export default function IntervalSliders({ block, unit, activityTag, onPatch }) {
     onPatch({ paceSecPerKm: clampPace(speedToPace(newSpeed)) })
   }
 
+  function toggleSetPace(checked) {
+    onPatch({ paceSecPerKm: checked ? speedToPace(estimatedSpeedKmh(activityTag)) : 0 })
+  }
+
   function setEstimatedDragKm(value) {
     onPatch({ estimatedDragKm: Math.max(0, Number(value.toFixed(3))) })
   }
@@ -87,7 +84,6 @@ export default function IntervalSliders({ block, unit, activityTag, onPatch }) {
   return (
     <div className="th-block-sliders">
       <div className="th-block-mode-toggle" role="tablist" aria-label="Define interval by">
-        <ModeButton current={paceMode} value="pace" label="Pace" onSelect={setMode} />
         <ModeButton current={paceMode} value="length" label="Length" onSelect={setMode} />
         <ModeButton current={paceMode} value="time" label="Time" onSelect={setMode} />
       </div>
@@ -102,7 +98,7 @@ export default function IntervalSliders({ block, unit, activityTag, onPatch }) {
         onChange={setReps}
       />
 
-      {(paceMode === 'pace' || paceMode === 'length') && (
+      {paceMode === 'length' && (
         <SliderRow
           label="Rep length"
           value={dragKm}
@@ -114,7 +110,7 @@ export default function IntervalSliders({ block, unit, activityTag, onPatch }) {
         />
       )}
 
-      {(paceMode === 'pace' || paceMode === 'time') && (
+      {paceMode === 'time' && (
         <SliderRow
           label="Rep time"
           value={Math.min(DRAG_TIME_MAX, Math.max(DRAG_TIME_MIN, dragSec || 60))}
@@ -126,7 +122,8 @@ export default function IntervalSliders({ block, unit, activityTag, onPatch }) {
         />
       )}
 
-      {paceMode === 'pace' && (
+      <SetPaceToggle checked={hasPace} onToggle={toggleSetPace} />
+      {hasPace && (
         unit === 'pace' ? (
           <SliderRow
             label="Pace"

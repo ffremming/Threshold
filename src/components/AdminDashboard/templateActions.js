@@ -4,8 +4,6 @@ import {
 import { db } from '../../firebase'
 import { withDatabaseWriteLimit } from '../../security/rateLimits'
 import {
-  getDefaultCooldown,
-  getDefaultWarmup,
   normalizeIntensityZones,
   normalizeLoadTag,
 } from '../../utils'
@@ -37,8 +35,6 @@ export function createTemplateActions(ctx) {
         ownerId: userProfile.uid,
         intensityZone: normalizeIntensityZones(templateForm.type, templateForm.intensityZone),
         loadTag: normalizeLoadTag(templateForm.type, templateForm.intensityZone, templateForm.loadTag),
-        warmup: templateForm.warmup?.trim() || getDefaultWarmup(templateForm.type, templateForm.activityTag),
-        cooldown: templateForm.cooldown?.trim() || getDefaultCooldown(templateForm.type, templateForm.activityTag),
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       }))
@@ -48,8 +44,6 @@ export function createTemplateActions(ctx) {
         ...fields,
         intensityZone: normalizeIntensityZones(fields.type, fields.intensityZone),
         loadTag: normalizeLoadTag(fields.type, fields.intensityZone, fields.loadTag),
-        warmup: fields.warmup?.trim() || getDefaultWarmup(fields.type, fields.activityTag),
-        cooldown: fields.cooldown?.trim() || getDefaultCooldown(fields.type, fields.activityTag),
         updatedAt: serverTimestamp(),
       }))
     }
@@ -71,8 +65,6 @@ export function createTemplateActions(ctx) {
       libraryId: id,
       intensityZone: normalizeIntensityZones(fields.type, fields.intensityZone),
       loadTag: normalizeLoadTag(fields.type, fields.intensityZone, fields.loadTag),
-      warmup: fields.warmup?.trim() || getDefaultWarmup(fields.type, fields.activityTag),
-      cooldown: fields.cooldown?.trim() || getDefaultCooldown(fields.type, fields.activityTag),
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     }))
@@ -121,8 +113,6 @@ export function createGlobalTemplateActions(ctx) {
       ...globalTemplateForm,
       intensityZone: normalizeIntensityZones(globalTemplateForm.type, globalTemplateForm.intensityZone),
       loadTag: normalizeLoadTag(globalTemplateForm.type, globalTemplateForm.intensityZone, globalTemplateForm.loadTag),
-      warmup: globalTemplateForm.warmup?.trim() || getDefaultWarmup(globalTemplateForm.type, globalTemplateForm.activityTag),
-      cooldown: globalTemplateForm.cooldown?.trim() || getDefaultCooldown(globalTemplateForm.type, globalTemplateForm.activityTag),
       updatedAt: serverTimestamp(),
     }
 

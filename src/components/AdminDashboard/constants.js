@@ -1,8 +1,6 @@
 import {
-  getDefaultCooldown,
   getDefaultIntensityZones,
   getDefaultLoadTag,
-  getDefaultWarmup,
 } from '../../utils'
 
 export const EMPTY_TEMPLATE = {
@@ -12,8 +10,6 @@ export const EMPTY_TEMPLATE = {
   description: '',
   distance: '',
   sessionDetails: '',
-  warmup: getDefaultWarmup('interval'),
-  cooldown: getDefaultCooldown('interval'),
   exercises: '',
   rest: '',
   notes: '',

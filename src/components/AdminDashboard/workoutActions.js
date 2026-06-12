@@ -5,8 +5,6 @@ import { db } from '../../firebase'
 import { withDatabaseWriteLimit } from '../../security/rateLimits'
 import {
   getDateStringForWeekday,
-  getDefaultCooldown,
-  getDefaultWarmup,
   normalizeIntensityZones,
   normalizeLoadTag,
 } from '../../utils'
@@ -27,8 +25,6 @@ export function createWorkoutCrud(ctx) {
       ...fields,
       intensityZone,
       loadTag: normalizeLoadTag(fields.type, intensityZone, fields.loadTag),
-      warmup: fields.warmup?.trim() || getDefaultWarmup(fields.type, fields.activityTag),
-      cooldown: fields.cooldown?.trim() || getDefaultCooldown(fields.type, fields.activityTag),
       athleteId: selectedAthleteId,
       week: currentWeek,
       year: currentYear,
@@ -55,8 +51,6 @@ export function createWorkoutCrud(ctx) {
       date: getDateStringForWeekday(updated.week, updated.year, fields.weekday),
       intensityZone,
       loadTag: normalizeLoadTag(fields.type, intensityZone, fields.loadTag),
-      warmup: fields.warmup?.trim() || getDefaultWarmup(fields.type, fields.activityTag),
-      cooldown: fields.cooldown?.trim() || getDefaultCooldown(fields.type, fields.activityTag),
       updatedAt: serverTimestamp(),
     }))
     setSelectedWorkout(null)

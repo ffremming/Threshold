@@ -7,8 +7,6 @@ import { isRateLimitError, withDatabaseWriteLimit } from '../security/rateLimits
 import {
   getAdjacentWeek,
   getDateStringForWeekday,
-  getDefaultCooldown,
-  getDefaultWarmup,
   normalizeLoadTag,
   normalizeIntensityZones,
   normalizeWeekday,
@@ -107,8 +105,6 @@ export function createHandlers({
         ...fields,
         intensityZone,
         loadTag: normalizeLoadTag(fields.type, intensityZone, fields.loadTag),
-        warmup: fields.warmup?.trim() || getDefaultWarmup(fields.type, fields.activityTag),
-        cooldown: fields.cooldown?.trim() || getDefaultCooldown(fields.type, fields.activityTag),
         week: replacementTarget.week,
         year: replacementTarget.year,
         weekday: replacementTarget.weekday,

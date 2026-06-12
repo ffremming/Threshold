@@ -1,0 +1,34 @@
+.q-widget-title {
+  margin: 0 0 var(--th-space-3, 0.75rem);
+  font-size: var(--th-text-md, 0.9375rem);
+  font-weight: 700;
+  color: var(--th-ink, #0f172a);
+}
+
+.q-widget-body {
+  display: flex;
+  align-items: center;
+  gap: var(--th-space-5, 1.5rem);
+}
+
+.q-widget-radar {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: center;
+}
+
+.q-widget-bars {
+  flex: 1;
+  min-width: 0;
+}
+
+@media (max-width: 560px) {
+  .q-widget-body {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--th-space-4, 1rem);
+  }
+  .q-widget-bars {
+    width: 100%;
+  }
+}

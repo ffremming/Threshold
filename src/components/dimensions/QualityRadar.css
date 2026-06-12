@@ -1,0 +1,27 @@
+.q-radar {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+.q-radar-ring {
+  fill: none;
+  stroke: var(--th-surface-2, #e2e8f0);
+  stroke-width: 1;
+}
+
+.q-radar-axis {
+  stroke: var(--th-surface-2, #e2e8f0);
+  stroke-width: 1;
+}
+
+.q-radar-area {
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+  transition: all var(--th-dur-base, 200ms) var(--th-ease, ease);
+}
+
+.q-radar-label {
+  font-size: 0.625rem;
+  font-weight: 700;
+}

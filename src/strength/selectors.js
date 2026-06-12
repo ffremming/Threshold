@@ -58,7 +58,15 @@ function loadToTiers(load) {
 // One entry per highlighter region key, carrying its intensity tier as
 // `frequency`. Pass the result straight to <Model data={...} />.
 export function buildHighlighterData(sections = []) {
-  const tiers = loadToTiers(aggregateMuscleLoad(sections))
+  return muscleLoadToHighlighterData(aggregateMuscleLoad(sections))
+}
+
+// Build highlighter `data` from a plain { datasetMuscle: weight } map (e.g. the
+// dimensions engine's musclesWorked = { muscle: totalSets }). Weights are scaled
+// to the busiest muscle, then mapped to highlighter regions. Same tiering as
+// buildHighlighterData so every body figure in the app reads consistently.
+export function muscleLoadToHighlighterData(load = {}) {
+  const tiers = loadToTiers(load)
   const byRegion = {}
   for (const [datasetMuscle, tier] of Object.entries(tiers)) {
     for (const region of DATASET_TO_HIGHLIGHTER[datasetMuscle] || []) {

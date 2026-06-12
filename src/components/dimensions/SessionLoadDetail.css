@@ -1,0 +1,67 @@
+.sld {
+  margin-top: var(--th-space-4, 1rem);
+  padding-top: var(--th-space-4, 1rem);
+  border-top: 1px dashed var(--th-surface-2, #e2e8f0);
+}
+
+.sld-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.sld-label {
+  font-size: var(--th-text-2xs, 0.6875rem);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  font-weight: 700;
+  color: var(--th-ink-muted, #64748b);
+}
+
+.sld-value {
+  font-size: var(--th-text-2xl, 1.625rem);
+  font-weight: 700;
+  color: var(--th-accent, #0052ff);
+  line-height: 1;
+}
+
+.sld-bar {
+  display: flex;
+  height: 0.5625rem;
+  margin-top: var(--th-space-2, 0.5rem);
+  border-radius: var(--th-radius-pill, 999px);
+  background: var(--th-surface-2, #f1f5f9);
+  overflow: hidden;
+}
+
+.sld-seg {
+  height: 100%;
+}
+
+.sld-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--th-space-1, 0.25rem) var(--th-space-3, 0.75rem);
+  margin-top: var(--th-space-2, 0.5rem);
+}
+
+.sld-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: var(--th-text-xs, 0.75rem);
+  color: var(--th-ink-muted, #475569);
+}
+
+.sld-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.sld-hint {
+  margin: var(--th-space-2, 0.5rem) 0 0;
+  font-size: var(--th-text-2xs, 0.6875rem);
+  color: var(--th-ink-soft, #94a3b8);
+}

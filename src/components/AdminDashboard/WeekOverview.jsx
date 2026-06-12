@@ -10,8 +10,15 @@ import {
   ACTIVITY_TAG_MAP, formatDurationLabel, formatKmValue,
   groupWorkoutsByWeekday, getIntensityZoneLabel,
   normalizeIntensityZones, getZoneBarBackground, workoutHasZones,
+  scoreWeek,
 } from '../../utils'
+import QualityWidget from '../dimensions/QualityWidget'
+import MuscleHeatmap from '../dimensions/MuscleHeatmap'
+import { makeMuscleResolver } from '../dimensions/useMuscleResolver'
 import './WeekOverview.css'
+
+// Stable across renders — the resolver only reads the static exercise library.
+const resolveMuscles = makeMuscleResolver()
 
 // Draws each slice's value at the segment centroid. Scoped to this file's
 // charts via the `plugins` prop so the analysis-dashboard doughnuts are untouched.
@@ -137,6 +144,7 @@ function SessionCell({ workout, onSelect, drag, dropProps, isDragging, isDropTar
 export default function WeekOverview({ workouts, onSelectWorkout, dnd }) {
   const summary = computeWeekSummary(workouts)
   const days = groupWorkoutsByWeekday(workouts || [])
+  const weekQuality = scoreWeek(workouts || [], { resolveMuscles })
 
   if (summary.count === 0) {
     return (
@@ -258,6 +266,11 @@ export default function WeekOverview({ workouts, onSelectWorkout, dnd }) {
             </ul>
           )}
         </ChartCard>
+      </div>
+
+      <div className="wo-quality">
+        <QualityWidget dims={weekQuality.dims} title="Training quality this week" />
+        <MuscleHeatmap musclesWorked={weekQuality.musclesWorked} title="Muscles worked this week" />
       </div>
     </div>
   )

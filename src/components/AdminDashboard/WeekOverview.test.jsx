@@ -6,12 +6,24 @@ import '@testing-library/jest-dom'
 // Charts rely on a real canvas, which jsdom does not provide. Stub them so the
 // timetable (the part under test) renders without a canvas context.
 vi.mock('react-chartjs-2', () => ({ Doughnut: () => null }))
+// Stub the body figure so the heatmap's show/hide is testable without the lib.
+vi.mock('react-body-highlighter', () => ({
+  default: ({ data }) => <div data-testid="body-model" data-regions={(data || []).length} />,
+}))
 
 import WeekOverview from './WeekOverview'
 
 const WORKOUTS = [
   { id: 'w1', title: 'Morning run', type: 'easy', weekday: 1, activityTag: 'run', durationMinutes: 45 },
 ]
+
+const STRENGTH_WORKOUT = {
+  id: 's1',
+  title: 'Leg day',
+  weekday: 2,
+  activityTag: 'strength',
+  blocks: { sections: [{ kind: 'exercise', exerciseId: 'Barbell_Full_Squat', exerciseName: 'Squat', sets: 5, reps: 5 }] },
+}
 
 describe('WeekOverview drag/drop opt-in', () => {
   it('renders view-only (no draggable cells) without the dnd prop', () => {
@@ -110,5 +122,25 @@ describe('WeekOverview drag/drop opt-in', () => {
     const cell = screen.getByText('Morning run').closest('.wo-cell')
     expect(cell).toHaveAttribute('draggable', 'true')
     expect(cell.className).toContain('wo-cell--draggable')
+  })
+})
+
+describe('WeekOverview training-quality widget + muscle heatmap', () => {
+  it('renders the training-quality widget for the week', () => {
+    const { container } = render(<WeekOverview workouts={WORKOUTS} onSelectWorkout={() => {}} />)
+    expect(screen.getByText('Training quality this week')).toBeInTheDocument()
+    expect(container.querySelector('svg.q-radar')).toBeTruthy()
+  })
+
+  it('hides the muscle heatmap on a pure-cardio week', () => {
+    render(<WeekOverview workouts={WORKOUTS} onSelectWorkout={() => {}} />)
+    expect(screen.queryByText('Muscles worked this week')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('body-model')).not.toBeInTheDocument()
+  })
+
+  it('shows the muscle heatmap when the week contains strength work', () => {
+    render(<WeekOverview workouts={[...WORKOUTS, STRENGTH_WORKOUT]} onSelectWorkout={() => {}} />)
+    expect(screen.getByText('Muscles worked this week')).toBeInTheDocument()
+    expect(screen.getAllByTestId('body-model').length).toBeGreaterThan(0)
   })
 })

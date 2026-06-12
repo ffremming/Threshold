@@ -12,6 +12,25 @@
   gap: 1rem;
 }
 
+.wo-quality {
+  display: flex;
+  gap: 1rem;
+  align-items: stretch;
+}
+.wo-quality > :first-child {
+  flex: 1;
+  min-width: 0;
+}
+.wo-quality .muscle-heatmap {
+  flex-shrink: 0;
+  justify-content: center;
+}
+@media (max-width: 720px) {
+  .wo-quality {
+    flex-direction: column;
+  }
+}
+
 .wo-km-list {
   list-style: none; margin: 0; padding: 0;
   display: flex; flex-direction: column; gap: 0.5rem;

@@ -10,7 +10,9 @@ Threshold already measures training in terms of **load, distance, intensity, and
 
 > **Strength · Endurance · Muscular endurance · VO2max · Speed · Threshold**
 
-> **Revision (2026-06-12, post-build):** Added a sixth quality, **Muscular endurance** (long sustained work), split out from aerobic Endurance. Recalibrated reference doses so qualities are not too easy to max: **threshold 100 = ~240 min Zone 3/week**, **endurance 100 = ~750 min (12.5 h) Zone 1/2/week**. Steepened the per-session **load curve** so interval/high-zone work costs far more than easy Zone 1 time. See the Engine section for the exact constants.
+> **Revision (2026-06-12, post-build):** Added a sixth quality, **Muscular endurance** (long sustained work), split out from aerobic Endurance. Steepened the per-session **load curve** so interval/high-zone work costs far more than easy Zone 1 time.
+>
+> **Revision 2 (2026-06-12):** Muscular endurance reworked to an **S-curve on duration past a trigger** — nothing below the trigger, a baseline step at it, a linear ramp, then diminishing returns. Triggers: **continuous session > 2 h**, or **interval session > 40 min total interval work time** (per-session total, not per-rep). So a 3 h session scores *far* higher than 2 h 10, and 3 h 30 only modestly above 3 h. Recalibrated references so qualities are hard to max: **threshold 100 = ~240 min Z3/week**, **aerobic endurance 100 = ~900 min (15 h) Z1/2/week**, **muscular endurance 100 ≈ three 3 h long sessions + two long threshold sessions/week**. Constants (`ME_*`, `REFERENCE_DOSE`) in `constants.js` are the tuning dials.
 
 Each dimension is scored **0–100 per week** so a coach can answer, for any point in a plan, "this week is 81/100 threshold, 34/100 VO2max, 40/100 speed, 25/100 strength, 72/100 endurance" — and watch those numbers build or recede week over week. Every session also gets a single **Load** number derived from all its parts.
 

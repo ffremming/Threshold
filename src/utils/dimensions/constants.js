@@ -53,13 +53,25 @@ export const LOAD_EXP = 1.6
 
 // ── Muscular endurance ───────────────────────────────────────────────────────
 // Driven only by LONG sustained work, weighted by intensity (long hard > long
-// easy). A continuous block counts when it runs at/over LONG_SESSION_MIN; an
-// interval rep counts when each rep is at/over LONG_INTERVAL_REP_MIN.
-export const LONG_SESSION_MIN = 90 // minutes; a continuous session this long is "long"
-export const LONG_INTERVAL_REP_MIN = 8 // minutes per rep to count as long intervals
-// Per-qualifying-minute muscular-endurance dose by zone: 0.6 + 0.15*zone.
-export const ME_BASE = 0.6
-export const ME_ZONE_SCALE = 0.15
+// easy), with an S-curve on duration PAST a threshold:
+//   below threshold        -> 0
+//   at threshold           -> ME_BASELINE (a step up, not from 0)
+//   threshold .. +ME_KNEE  -> linear, +ME_SLOPE per excess minute
+//   past +ME_KNEE          -> diminishing returns (saturating tail, asymptote +ME_TAIL)
+//
+// Triggers:
+//   - continuous session: total duration >= ME_CONT_THRESHOLD_MIN (2 h)
+//   - interval session:   total interval WORK time >= ME_INTERVAL_THRESHOLD_MIN (40 min)
+export const ME_CONT_THRESHOLD_MIN = 120 // 2 h continuous before muscular endurance starts
+export const ME_INTERVAL_THRESHOLD_MIN = 40 // 40 min total interval work before it starts
+export const ME_BASELINE = 20 // value the instant you cross the threshold
+export const ME_SLOPE = 1.0 // per excess-minute in the linear region
+export const ME_KNEE = 60 // excess minutes where linear gives way to diminishing (e.g. 3 h continuous)
+export const ME_TAIL = 25 // extra gain available in the diminishing region (asymptotic)
+export const ME_TAIL_KNEE = 45 // decay constant of the diminishing tail
+// Intensity weighting: long hard work counts more (0.7 + 0.15*zone).
+export const ME_INTENSITY_BASE = 0.7
+export const ME_INTENSITY_ZONE_SCALE = 0.15
 
 // Weekly raw-dose that equals a score of 100 for each quality. Calibrated:
 //  - threshold: 100 = ~240 min of Zone 3 work/week (240 * 0.55 ≈ 132)
@@ -68,8 +80,8 @@ export const ME_ZONE_SCALE = 0.15
 export const REFERENCE_DOSE = {
   threshold: 132, // ~240 min Zone 3/week
   vo2max: 28, // ~2 VO2 interval sessions/wk
-  endurance: 712, // ~750 min Zone 1/2/week (aerobic base only)
-  muscular_endurance: 150, // strong week of long sessions + long intervals
+  endurance: 855, // ~900 min (15 h) Zone 1/2/week — elite base; a 10 h week ≈ 67
+  muscular_endurance: 355, // ~3 × 3 h long sessions + 2 long threshold sessions/week
   speed: 18, // regular sprint/strides exposure (quality-minutes)
   strength: 55, // full-body strength ~2x/wk via the saturation model
 }

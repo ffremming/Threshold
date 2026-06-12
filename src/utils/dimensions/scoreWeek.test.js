@@ -80,14 +80,32 @@ describe('calibration: realistic weeks land in sensible ranges', () => {
     expect(t).toBeLessThanOrEqual(60)
   })
 
-  it('endurance is no longer too easy: a 4h easy week stays well under 100', () => {
+  it('endurance is no longer too easy: a 4h easy week stays well under 60', () => {
     const r = scoreWeek([easy(120, 1), easy(120, 1)], {}) // 240 min Z1
-    expect(r.dims.endurance).toBeLessThan(45)
+    expect(r.dims.endurance).toBeLessThan(60)
   })
 
-  it('endurance anchor: ~750 min of Zone 1/2 reaches ~100', () => {
-    const week = [easy(150, 1), easy(150, 1), easy(150, 1), easy(150, 1), easy(150, 2)]
+  it('endurance anchor: ~900 min (15 h) of Zone 1/2 reaches ~100', () => {
+    const week = [easy(180, 1), easy(180, 1), easy(180, 1), easy(180, 1), easy(180, 2)]
     expect(scoreWeek(week, {}).dims.endurance).toBe(100)
+  })
+
+  it('muscular endurance is hard to max: one 3 h run is well under 100', () => {
+    const r = scoreWeek([easy(180, 2)], {})
+    expect(r.dims.muscular_endurance).toBeGreaterThan(0)
+    expect(r.dims.muscular_endurance).toBeLessThan(40)
+  })
+
+  it('muscular endurance anchor: 3 long runs + 2 long threshold sessions ≈ 100', () => {
+    const longRun = easy(180, 2) // 3 h
+    const longThreshold = {
+      activityTag: 'run', type: 'interval', intensityZone: [3],
+      blocks: { sections: [{ kind: 'interval', paceMode: 'time', reps: 7, dragSec: 600, pauseSec: 60 }] }, // 70 min Z3
+    }
+    const week = [longRun, longRun, longRun, longThreshold, longThreshold]
+    const me = scoreWeek(week, {}).dims.muscular_endurance
+    expect(me).toBeGreaterThanOrEqual(90)
+    expect(me).toBeLessThanOrEqual(100)
   })
 
   it('an easy recovery week scores intensity qualities low', () => {

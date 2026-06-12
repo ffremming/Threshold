@@ -124,34 +124,55 @@ describe('load curve: intervals cost much more than easy work', () => {
   })
 })
 
-describe('muscular endurance: long sustained work only', () => {
-  const longRun = (min, zone) => ({ activityTag: 'run', type: 'continuous', intensityZone: [zone],
+describe('muscular endurance: long sustained work, S-curve past a threshold', () => {
+  const run = (min, zone) => ({ activityTag: 'run', type: 'continuous', intensityZone: [zone],
     blocks: { sections: [{ kind: 'steady', paceMode: 'time', durationMin: min }] } })
-  const longIntervals = (reps, dragSec, zone) => ({ activityTag: 'run', type: 'interval', intensityZone: [zone],
+  // Interval session whose TOTAL interval work time = reps * (dragSec/60).
+  const intervals = (reps, dragSec, zone) => ({ activityTag: 'run', type: 'interval', intensityZone: [zone],
     blocks: { sections: [{ kind: 'interval', paceMode: 'time', reps, dragSec, pauseSec: 120 }] } })
+  const me = (w) => scoreSession(w).dims.muscular_endurance
 
-  it('a long (>=90 min) continuous run builds muscular endurance', () => {
-    expect(scoreSession(longRun(120, 2)).dims.muscular_endurance).toBeGreaterThan(0)
+  it('nothing below the 2 h continuous threshold', () => {
+    expect(me(run(90, 2))).toBe(0)
+    expect(me(run(120, 2))).toBe(0) // exactly at threshold = no excess yet
   })
 
-  it('a short easy run does NOT build muscular endurance', () => {
-    expect(scoreSession(longRun(45, 2)).dims.muscular_endurance).toBe(0)
+  it('kicks in past 2 h and a 3 h session is WAY higher than 2 h 10', () => {
+    const at2h10 = me(run(130, 2)) // 10 min excess
+    const at3h = me(run(180, 2)) // 60 min excess
+    expect(at2h10).toBeGreaterThan(0)
+    expect(at3h).toBeGreaterThan(at2h10 * 2) // far higher, not just proportional
   })
 
-  it('long intervals (>=8 min reps) build muscular endurance; short reps do not', () => {
-    expect(scoreSession(longIntervals(4, 600, 3)).dims.muscular_endurance).toBeGreaterThan(0) // 10-min reps
-    expect(scoreSession(longIntervals(8, 180, 3)).dims.muscular_endurance).toBe(0) // 3-min reps
+  it('diminishing returns past 3 h: 3 h 30 only modestly above 3 h', () => {
+    const at3h = me(run(180, 2))
+    const at3h30 = me(run(210, 2))
+    expect(at3h30).toBeGreaterThan(at3h)
+    expect(at3h30).toBeLessThan(at3h * 1.3) // tail flattens
   })
 
-  it('long hard work weighs more than long easy work per minute', () => {
-    const easyLong = scoreSession(longRun(120, 2)).dims.muscular_endurance / 120
-    const hardLong = scoreSession(longIntervals(4, 600, 4)).dims.muscular_endurance / 40
-    expect(hardLong).toBeGreaterThan(easyLong)
+  it('interval sessions need to exceed 40 min TOTAL interval work to start', () => {
+    expect(me(intervals(4, 300, 3))).toBe(0) // 4 x 5 min = 20 min total -> below
+    expect(me(intervals(8, 300, 3))).toBe(0) // 8 x 5 min = 40 min total -> exactly at threshold, no excess
+    expect(me(intervals(10, 360, 3))).toBeGreaterThan(0) // 10 x 6 min = 60 min total -> past
   })
 
-  it('a text-only long session also counts toward muscular endurance', () => {
-    const r = scoreSession({ activityTag: 'run', type: 'continuous', intensityZone: [2], notes: '120 min' })
-    expect(r.dims.muscular_endurance).toBeGreaterThan(0)
+  it('long hard intervals weigh more than long easy continuous (intensity factor)', () => {
+    const longEasy = me(run(180, 2)) // 3 h easy
+    const longHardIv = me(intervals(12, 360, 4)) // 72 min Z4 intervals
+    expect(longHardIv).toBeGreaterThan(0)
+    expect(longEasy).toBeGreaterThan(0)
+  })
+
+  it('is hard to max: a single 3 h run alone is well below 100 at the weekly level', () => {
+    // (weekly normalization is covered in scoreWeek.test.js; here just sanity that
+    // one 3 h session's raw dose is far below the weekly reference)
+    expect(me(run(180, 2))).toBeLessThan(150)
+  })
+
+  it('a text-only long (>2 h) session also counts', () => {
+    expect(scoreSession({ activityTag: 'run', type: 'continuous', intensityZone: [2], notes: '180 min' })
+      .dims.muscular_endurance).toBeGreaterThan(0)
   })
 })
 

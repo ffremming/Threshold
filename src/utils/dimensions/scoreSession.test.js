@@ -124,55 +124,52 @@ describe('load curve: intervals cost much more than easy work', () => {
   })
 })
 
-describe('muscular endurance: long sustained work, S-curve past a threshold', () => {
+describe('muscular endurance: continuous, grows with session length (no cliff)', () => {
   const run = (min, zone) => ({ activityTag: 'run', type: 'continuous', intensityZone: [zone],
     blocks: { sections: [{ kind: 'steady', paceMode: 'time', durationMin: min }] } })
-  // Interval session whose TOTAL interval work time = reps * (dragSec/60).
-  const intervals = (reps, dragSec, zone) => ({ activityTag: 'run', type: 'interval', intensityZone: [zone],
-    blocks: { sections: [{ kind: 'interval', paceMode: 'time', reps, dragSec, pauseSec: 120 }] } })
   const me = (w) => scoreSession(w).dims.muscular_endurance
 
-  it('nothing below the 2 h continuous threshold', () => {
-    expect(me(run(90, 2))).toBe(0)
-    expect(me(run(120, 2))).toBe(0) // exactly at threshold = no excess yet
+  it('accrues continuously — even a short session contributes a little (no trigger)', () => {
+    expect(me(run(45, 2))).toBeGreaterThan(0)
+    expect(me(run(20, 2))).toBeGreaterThan(0)
   })
 
-  it('kicks in past 2 h and a 3 h session is WAY higher than 2 h 10', () => {
-    const at2h10 = me(run(130, 2)) // 10 min excess
-    const at3h = me(run(180, 2)) // 60 min excess
-    expect(at2h10).toBeGreaterThan(0)
-    expect(at3h).toBeGreaterThan(at2h10 * 2) // far higher, not just proportional
-  })
-
-  it('diminishing returns past 3 h: 3 h 30 only modestly above 3 h', () => {
+  it('grows super-linearly with duration: a 3 h session ≫ a 1 h session', () => {
+    const at1h = me(run(60, 2))
     const at3h = me(run(180, 2))
-    const at3h30 = me(run(210, 2))
-    expect(at3h30).toBeGreaterThan(at3h)
-    expect(at3h30).toBeLessThan(at3h * 1.3) // tail flattens
+    // quadratic in duration -> ~9x for 3x the time, far more than linear
+    expect(at3h).toBeGreaterThan(at1h * 6)
   })
 
-  it('interval sessions need to exceed 40 min TOTAL interval work to start', () => {
-    expect(me(intervals(4, 300, 3))).toBe(0) // 4 x 5 min = 20 min total -> below
-    expect(me(intervals(8, 300, 3))).toBe(0) // 8 x 5 min = 40 min total -> exactly at threshold, no excess
-    expect(me(intervals(10, 360, 3))).toBeGreaterThan(0) // 10 x 6 min = 60 min total -> past
+  it('a longer session beats the same total time split into shorter ones', () => {
+    const one3h = me(run(180, 2))
+    const three1h = 3 * me(run(60, 2)) // same 3 h total, split
+    expect(one3h).toBeGreaterThan(three1h * 2)
   })
 
-  it('long hard intervals weigh more than long easy continuous (intensity factor)', () => {
-    const longEasy = me(run(180, 2)) // 3 h easy
-    const longHardIv = me(intervals(12, 360, 4)) // 72 min Z4 intervals
-    expect(longHardIv).toBeGreaterThan(0)
-    expect(longEasy).toBeGreaterThan(0)
+  it('long hard work weighs more per minute than long easy work', () => {
+    const easyPerMin = me(run(180, 2)) / 180
+    const hardPerMin = me(run(180, 4)) / 180
+    expect(hardPerMin).toBeGreaterThan(easyPerMin)
   })
 
-  it('is hard to max: a single 3 h run alone is well below 100 at the weekly level', () => {
-    // (weekly normalization is covered in scoreWeek.test.js; here just sanity that
-    // one 3 h session's raw dose is far below the weekly reference)
-    expect(me(run(180, 2))).toBeLessThan(150)
-  })
-
-  it('a text-only long (>2 h) session also counts', () => {
+  it('a text-only long session also accrues muscular endurance', () => {
     expect(scoreSession({ activityTag: 'run', type: 'continuous', intensityZone: [2], notes: '180 min' })
       .dims.muscular_endurance).toBeGreaterThan(0)
+  })
+})
+
+describe('speed: per-sprint, continuous (no minimum-count gate)', () => {
+  const sprintSession = (reps) => ({ activityTag: 'run', type: 'continuous', intensityZone: [2],
+    blocks: { sections: [{ kind: 'sprint', reps, sprintSec: 20 }] } })
+  const sp = (w) => scoreSession(w).dims.speed
+
+  it('every sprint rep adds speed — even a single sprint counts', () => {
+    expect(sp(sprintSession(1))).toBeGreaterThan(0)
+  })
+
+  it('more sprints, more speed (linear in rep count)', () => {
+    expect(sp(sprintSession(8))).toBeCloseTo(sp(sprintSession(4)) * 2, 1)
   })
 })
 

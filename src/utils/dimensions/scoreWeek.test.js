@@ -80,39 +80,53 @@ describe('calibration: realistic weeks land in sensible ranges', () => {
     expect(t).toBeLessThanOrEqual(60)
   })
 
-  it('endurance is no longer too easy: a 4h easy week stays well under 60', () => {
-    const r = scoreWeek([easy(120, 1), easy(120, 1)], {}) // 240 min Z1
-    expect(r.dims.endurance).toBeLessThan(60)
+  it('endurance is much harder now: a ~6h easy week is only mid-range', () => {
+    // 3 x 120 min Z1 = 360 min of a 1500-min (25 h) reference
+    const r = scoreWeek([easy(120, 1), easy(120, 1), easy(120, 1)], {})
+    expect(r.dims.endurance).toBeLessThan(45)
   })
 
-  it('endurance anchor: ~900 min (15 h) of Zone 1/2 reaches ~100', () => {
-    const week = [easy(180, 1), easy(180, 1), easy(180, 1), easy(180, 1), easy(180, 2)]
+  it('endurance anchor: ~25 h (1500 min) of Zone 1/2 reaches ~100', () => {
+    // 10 x 150 min Z1 = 1500 min
+    const week = Array.from({ length: 10 }, () => easy(150, 1))
     expect(scoreWeek(week, {}).dims.endurance).toBe(100)
   })
 
-  it('muscular endurance is hard to max: one 3 h run is well under 100', () => {
-    const r = scoreWeek([easy(180, 2)], {})
-    expect(r.dims.muscular_endurance).toBeGreaterThan(0)
-    expect(r.dims.muscular_endurance).toBeLessThan(40)
+  it('vo2max is hard now: 60 min of Zone 4 lands well under 60', () => {
+    const z4 = (reps, dragSec) => ({ activityTag: 'run', type: 'interval', intensityZone: [4],
+      blocks: { sections: [{ kind: 'interval', paceMode: 'time', reps, dragSec, pauseSec: 60 }] } })
+    const r = scoreWeek([z4(6, 600)], {}) // 60 min Z4
+    expect(r.dims.vo2max).toBeGreaterThan(0)
+    expect(r.dims.vo2max).toBeLessThan(60)
   })
 
-  it('muscular endurance anchor: 3 long runs + 2 long threshold sessions ≈ 100', () => {
-    const longRun = easy(180, 2) // 3 h
-    const longThreshold = {
-      activityTag: 'run', type: 'interval', intensityZone: [3],
-      blocks: { sections: [{ kind: 'interval', paceMode: 'time', reps: 7, dragSec: 600, pauseSec: 60 }] }, // 70 min Z3
-    }
-    const week = [longRun, longRun, longRun, longThreshold, longThreshold]
-    const me = scoreWeek(week, {}).dims.muscular_endurance
-    expect(me).toBeGreaterThanOrEqual(90)
-    expect(me).toBeLessThanOrEqual(100)
+  it('vo2max anchor: ~120 min of Zone 4/5 reaches ~100', () => {
+    const z5 = (reps, dragSec) => ({ activityTag: 'run', type: 'interval', intensityZone: [5],
+      blocks: { sections: [{ kind: 'interval', paceMode: 'time', reps, dragSec, pauseSec: 60 }] } })
+    // 120 min of Z5 work (vo2max weight 0.75 -> raw 90, ref 66 -> clamps to 100)
+    const week = [z5(10, 720)] // 120 min Z5
+    expect(scoreWeek(week, {}).dims.vo2max).toBe(100)
+  })
+
+  it('speed anchor: ~12 sprints (3 sessions × 4) approaches 100', () => {
+    const sprintSession = (reps) => ({ activityTag: 'run', type: 'continuous', intensityZone: [2],
+      blocks: { sections: [{ kind: 'sprint', reps, sprintSec: 20 }] } })
+    const week = [sprintSession(4), sprintSession(4), sprintSession(4)] // 12 sprints
+    expect(scoreWeek(week, {}).dims.speed).toBeGreaterThanOrEqual(95)
+  })
+
+  it('muscular endurance accrues continuously and rewards long weeks', () => {
+    const oneLong = scoreWeek([easy(180, 2)], {}).dims.muscular_endurance // one 3 h
+    const fourLong = scoreWeek([easy(180, 2), easy(180, 2), easy(180, 2), easy(180, 2)], {}).dims.muscular_endurance
+    expect(oneLong).toBeGreaterThan(0)
+    expect(oneLong).toBeLessThan(40) // one 3 h run is far from maxed
+    expect(fourLong).toBeGreaterThanOrEqual(95) // ~12 h of long work ≈ max
   })
 
   it('an easy recovery week scores intensity qualities low', () => {
     const r = scoreWeek([easy(40, 1), easy(35, 1)], {})
     expect(r.dims.threshold).toBeLessThan(20)
     expect(r.dims.vo2max).toBeLessThan(20)
-    expect(r.dims.muscular_endurance).toBe(0) // sessions are short
   })
 })
 

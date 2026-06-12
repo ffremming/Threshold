@@ -52,37 +52,36 @@ export const LOAD_SCALE = 0.25
 export const LOAD_EXP = 1.6
 
 // ── Muscular endurance ───────────────────────────────────────────────────────
-// Driven only by LONG sustained work, weighted by intensity (long hard > long
-// easy), with an S-curve on duration PAST a threshold:
-//   below threshold        -> 0
-//   at threshold           -> ME_BASELINE (a step up, not from 0)
-//   threshold .. +ME_KNEE  -> linear, +ME_SLOPE per excess minute
-//   past +ME_KNEE          -> diminishing returns (saturating tail, asymptote +ME_TAIL)
-//
-// Triggers:
-//   - continuous session: total duration >= ME_CONT_THRESHOLD_MIN (2 h)
-//   - interval session:   total interval WORK time >= ME_INTERVAL_THRESHOLD_MIN (40 min)
-export const ME_CONT_THRESHOLD_MIN = 120 // 2 h continuous before muscular endurance starts
-export const ME_INTERVAL_THRESHOLD_MIN = 40 // 40 min total interval work before it starts
-export const ME_BASELINE = 20 // value the instant you cross the threshold
-export const ME_SLOPE = 1.0 // per excess-minute in the linear region
-export const ME_KNEE = 60 // excess minutes where linear gives way to diminishing (e.g. 3 h continuous)
-export const ME_TAIL = 25 // extra gain available in the diminishing region (asymptotic)
-export const ME_TAIL_KNEE = 45 // decay constant of the diminishing tail
-// Intensity weighting: long hard work counts more (0.7 + 0.15*zone).
+// Load-based and continuous (no triggers/cliffs). Every endurance minute
+// contributes, but minutes in LONGER sessions are worth more — the per-minute
+// weight grows with session duration, so a session of D minutes contributes
+//   dose = ME_K * D^2 * intensityFactor(zone)
+// (quadratic in duration → long efforts dominate smoothly). A 1 h session still
+// contributes a little; a 3 h session contributes far more than 3×1 h.
+export const ME_K = 0.0011
+// Intensity weighting: long hard work counts a bit more (0.7 + 0.15*zone).
 export const ME_INTENSITY_BASE = 0.7
 export const ME_INTENSITY_ZONE_SCALE = 0.15
 
-// Weekly raw-dose that equals a score of 100 for each quality. Calibrated:
-//  - threshold: 100 = ~240 min of Zone 3 work/week (240 * 0.55 ≈ 132)
-//  - endurance: 100 = ~750 min (12.5 h) of Zone 1/2 aerobic work/week
-//  - muscular_endurance: 100 = a big long-work week (~120-min long run + long Z3 intervals)
+// ── Speed ────────────────────────────────────────────────────────────────────
+// Load-based: each sprint rep contributes a fixed dose (continuous, no minimum
+// sprint-count gate). Reference is set so ~12 sprints/week (≈ 3 sessions × 4)
+// approaches the top of the scale.
+export const SPEED_PER_SPRINT = 8
+
+// Weekly raw-dose that equals a score of 100 for each quality. Anchors only set
+// the reference; scoring is continuous (clamped to [0,100]). Calibrated to:
+//  - endurance: 100 = ~25 h (1500 min) of Zone 1/2 aerobic work/week
+//  - vo2max:    100 = ~120 min of Zone 4/5 work/week
+//  - threshold: 100 = ~240 min of Zone 3 work/week
+//  - speed:     100 = ~12 sprint reps/week (≈ 3 sessions × 4 sprints)
+//  - muscular_endurance: 100 = ~12 h/week of long work (e.g. 4 × 3 h sessions)
 export const REFERENCE_DOSE = {
   threshold: 132, // ~240 min Zone 3/week
-  vo2max: 28, // ~2 VO2 interval sessions/wk
-  endurance: 855, // ~900 min (15 h) Zone 1/2/week — elite base; a 10 h week ≈ 67
-  muscular_endurance: 355, // ~3 × 3 h long sessions + 2 long threshold sessions/week
-  speed: 18, // regular sprint/strides exposure (quality-minutes)
+  vo2max: 66, // ~120 min Zone 4/5/week
+  endurance: 1425, // ~25 h Zone 1/2/week
+  muscular_endurance: 143, // ~12 h/week of long work (4 × 3 h)
+  speed: 96, // ~12 sprint reps/week
   strength: 55, // full-body strength ~2x/wk via the saturation model
 }
 

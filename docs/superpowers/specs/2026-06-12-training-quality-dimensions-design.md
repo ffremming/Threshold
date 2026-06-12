@@ -12,7 +12,14 @@ Threshold already measures training in terms of **load, distance, intensity, and
 
 > **Revision (2026-06-12, post-build):** Added a sixth quality, **Muscular endurance** (long sustained work), split out from aerobic Endurance. Steepened the per-session **load curve** so interval/high-zone work costs far more than easy Zone 1 time.
 >
-> **Revision 2 (2026-06-12):** Muscular endurance reworked to an **S-curve on duration past a trigger** — nothing below the trigger, a baseline step at it, a linear ramp, then diminishing returns. Triggers: **continuous session > 2 h**, or **interval session > 40 min total interval work time** (per-session total, not per-rep). So a 3 h session scores *far* higher than 2 h 10, and 3 h 30 only modestly above 3 h. Recalibrated references so qualities are hard to max: **threshold 100 = ~240 min Z3/week**, **aerobic endurance 100 = ~900 min (15 h) Z1/2/week**, **muscular endurance 100 ≈ three 3 h long sessions + two long threshold sessions/week**. Constants (`ME_*`, `REFERENCE_DOSE`) in `constants.js` are the tuning dials.
+> **Revision 2 (2026-06-12):** Muscular endurance reworked to an S-curve past a trigger (superseded by Revision 3).
+>
+> **Revision 3 (2026-06-12) — load-based, no gates:** Per the principle "scores should be load-based, not rule-based," **all hard gates/triggers were removed**; every quality accrues continuously and anchors only set the reference (load ≈ max), clamped to [0,100]. Changes:
+> - **Muscular endurance:** no 2 h cliff. Continuous, **quadratic in session duration** (`ME_K · minutes² · intensity`), so longer sessions are worth disproportionately more per minute but a 45-min session still contributes. Ref = ~12 h/week of long work (≈ 4 × 3 h); one 3 h run ≈ 25, not maxed.
+> - **Speed:** no "≥4 sprints" gate. Each sprint rep adds a fixed dose (`SPEED_PER_SPRINT`); ref ≈ 12 sprints/week (≈ 3 × 4).
+> - **VO2max** much harder: ref = ~120 min Zone 4/5/week (a 60-min Z4 session ≈ 35).
+> - **Aerobic endurance:** ref = ~25 h (1500 min) Zone 1/2/week.
+> - Threshold unchanged (ref ≈ 240 min Z3). Constants (`REFERENCE_DOSE`, `ME_K`, `SPEED_PER_SPRINT`) in `constants.js` are the tuning dials.
 
 Each dimension is scored **0–100 per week** so a coach can answer, for any point in a plan, "this week is 81/100 threshold, 34/100 VO2max, 40/100 speed, 25/100 strength, 72/100 endurance" — and watch those numbers build or recede week over week. Every session also gets a single **Load** number derived from all its parts.
 

@@ -18,15 +18,10 @@ import {
   LOAD_BASE,
   LOAD_SCALE,
   LOAD_EXP,
-  ME_CONT_THRESHOLD_MIN,
-  ME_INTERVAL_THRESHOLD_MIN,
-  ME_BASELINE,
-  ME_SLOPE,
-  ME_KNEE,
-  ME_TAIL,
-  ME_TAIL_KNEE,
+  ME_K,
   ME_INTENSITY_BASE,
   ME_INTENSITY_ZONE_SCALE,
+  SPEED_PER_SPRINT,
 } from './constants'
 import { strengthDose, musclesWorkedFromSession } from './strength'
 
@@ -68,21 +63,12 @@ function meIntensityFactor(zone) {
   return ME_INTENSITY_BASE + ME_INTENSITY_ZONE_SCALE * zone
 }
 
-// S-curve on duration past a threshold: 0 below threshold, a baseline step at
-// the threshold, a linear ramp to +ME_KNEE excess minutes, then diminishing.
-// `durationMin` is the qualifying duration (continuous total, or interval-work
-// total); `thresholdMin` is the trigger; `zone` weights intensity.
-function muscularEnduranceDose(durationMin, thresholdMin, zone) {
-  const excess = durationMin - thresholdMin
-  if (excess <= 0) return 0
-  let val
-  if (excess <= ME_KNEE) {
-    val = ME_BASELINE + ME_SLOPE * excess
-  } else {
-    const past = excess - ME_KNEE
-    val = ME_BASELINE + ME_SLOPE * ME_KNEE + ME_TAIL * (1 - Math.exp(-past / ME_TAIL_KNEE))
-  }
-  return val * meIntensityFactor(zone)
+// Continuous muscular-endurance dose for a session of total duration D minutes:
+// quadratic in duration so each minute of a longer session is worth more, with
+// no trigger/cliff. `zone` weights intensity.
+function muscularEnduranceDose(durationMin, zone) {
+  if (durationMin <= 0) return 0
+  return ME_K * durationMin * durationMin * meIntensityFactor(zone)
 }
 
 // Resolve the intensity zone for a section. Sections do not carry their own
@@ -103,12 +89,10 @@ export function scoreSession(workout, opts = {}) {
 
   const dims = emptyDims()
   let load = 0
-  // Muscular endurance is computed per-session from accumulated long work, so
-  // we tally the qualifying durations here and apply the S-curve after the walk.
-  let continuousMin = 0 // total time-on-feet of continuous (non-interval) work
-  let intervalWorkMin = 0 // total interval work time across the session
-  let continuousZoneWeighted = 0 // for an intensity estimate of the continuous work
-  let intervalZoneWeighted = 0
+  // Muscular endurance grows with total session duration (continuous, quadratic),
+  // so tally the session's total work minutes and a zone-weighted average here.
+  let sessionMin = 0
+  let sessionZoneWeighted = 0
 
   for (const section of sections) {
     if (section.kind === 'exercise') {
@@ -118,8 +102,14 @@ export function scoreSession(workout, opts = {}) {
 
     if (section.kind === 'sprint') {
       const minutes = computeSectionWorkMinutes(section, workout?.activityTag) || 0
-      for (const q of Object.keys(SPRINT_WEIGHT)) dims[q] += minutes * SPRINT_WEIGHT[q]
+      const reps = Math.max(0, Number(section.reps) || 0)
+      // Sprint reps drive speed directly (continuous, no minimum-count gate).
+      dims.speed += reps * SPEED_PER_SPRINT
+      // Plus the small aerobic/vo2 share of the sprint minutes.
+      dims.vo2max += minutes * SPRINT_WEIGHT.vo2max
       load += cardioBlockLoad(minutes, 5)
+      sessionMin += minutes
+      sessionZoneWeighted += minutes * 5
       continue
     }
 
@@ -128,26 +118,14 @@ export function scoreSession(workout, opts = {}) {
     const zone = sectionZone(section, workout)
     addDims(dims, doseFromMinutesInZone(minutes, zone))
     load += cardioBlockLoad(minutes, zone)
-
-    if (section.kind === 'interval') {
-      intervalWorkMin += minutes
-      intervalZoneWeighted += minutes * zone
-    } else {
-      // steady / effort / warmup / cooldown all count as continuous time-on-feet
-      continuousMin += minutes
-      continuousZoneWeighted += minutes * zone
-    }
+    sessionMin += minutes
+    sessionZoneWeighted += minutes * zone
   }
 
-  // Muscular endurance: S-curve on long continuous duration and on long total
-  // interval-work time (each only past its trigger).
-  if (continuousMin >= ME_CONT_THRESHOLD_MIN) {
-    const z = continuousMin > 0 ? continuousZoneWeighted / continuousMin : 2
-    dims.muscular_endurance += muscularEnduranceDose(continuousMin, ME_CONT_THRESHOLD_MIN, z)
-  }
-  if (intervalWorkMin >= ME_INTERVAL_THRESHOLD_MIN) {
-    const z = intervalWorkMin > 0 ? intervalZoneWeighted / intervalWorkMin : 3
-    dims.muscular_endurance += muscularEnduranceDose(intervalWorkMin, ME_INTERVAL_THRESHOLD_MIN, z)
+  // Muscular endurance: continuous, quadratic in the whole session's duration.
+  if (sessionMin > 0) {
+    const z = sessionZoneWeighted / sessionMin
+    dims.muscular_endurance += muscularEnduranceDose(sessionMin, z)
   }
 
   // Strength aggregate (from structured exercise sections + muscle resolver).
@@ -181,12 +159,10 @@ export function scoreSessionFallback(workout) {
       addDims(dims, doseFromMinutesInZone(per, z))
       load += cardioBlockLoad(per, z)
     }
-    // A long continuous text-only session also builds muscular endurance
-    // (same 2 h trigger + S-curve as structured sessions).
-    if (minutes >= ME_CONT_THRESHOLD_MIN) {
-      const z = list.length ? list.reduce((a, b) => a + b, 0) / list.length : 2
-      dims.muscular_endurance += muscularEnduranceDose(minutes, ME_CONT_THRESHOLD_MIN, z)
-    }
+    // Continuous muscular-endurance accrual (quadratic in duration), same as
+    // structured sessions — long text-only sessions count proportionally more.
+    const meZone = list.length ? list.reduce((a, b) => a + b, 0) / list.length : 2
+    dims.muscular_endurance += muscularEnduranceDose(minutes, meZone)
     return { load: Math.round(load), dims, musclesWorked: {}, fidelity: 'estimated' }
   }
 

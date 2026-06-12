@@ -29,27 +29,34 @@ export const QUALITY_LABELS = {
 // How a single work-minute in a given intensity zone distributes across the
 // intensity qualities (endurance / threshold / vo2max / speed). Muscular
 // endurance and strength are handled separately (duration- and set-based).
-// Rows are endurance-heavy at low zones, intensity-heavy at high zones.
+// Each zone credits the quality it actually trains:
+//   Z1/Z2 are sub-threshold aerobic base — pure endurance, no threshold.
+//   Z3 is the threshold zone (mostly threshold, some aerobic carryover).
+//   Z4 straddles threshold and VO2max.
+//   Z5 is VO2max work with a touch of neuromuscular speed.
 export const ZONE_WEIGHTS = {
   1: { endurance: 1.0, threshold: 0.0, vo2max: 0.0, speed: 0.0 },
-  2: { endurance: 0.9, threshold: 0.1, vo2max: 0.0, speed: 0.0 },
-  3: { endurance: 0.45, threshold: 0.55, vo2max: 0.05, speed: 0.0 },
-  4: { endurance: 0.15, threshold: 0.55, vo2max: 0.4, speed: 0.0 },
-  5: { endurance: 0.05, threshold: 0.2, vo2max: 0.75, speed: 0.05 },
+  2: { endurance: 1.0, threshold: 0.0, vo2max: 0.0, speed: 0.0 },
+  3: { endurance: 0.35, threshold: 0.6, vo2max: 0.05, speed: 0.0 },
+  4: { endurance: 0.1, threshold: 0.55, vo2max: 0.35, speed: 0.0 },
+  5: { endurance: 0.0, threshold: 0.2, vo2max: 0.75, speed: 0.05 },
 }
 
 // Sprint / maximal short reps feed mostly the neuromuscular (speed) quality.
 export const SPRINT_WEIGHT = { speed: 0.85, vo2max: 0.15, endurance: 0, threshold: 0 }
 
-// ── Load curve ─────────────────────────────────────────────────────────────
-// Load per work-minute as a function of intensity zone. Deliberately steep so
-// interval / high-zone work costs far more than easy Zone 1 time:
-//   loadPerMinute(z) = LOAD_BASE + LOAD_SCALE * z^LOAD_EXP
-// Z1 ≈ 0.85/min, Z5 ≈ 3.9/min (~4.6× Z1). A 40-min Z4 interval session then
-// out-loads a 60-min easy run, matching how much harder intervals actually are.
-export const LOAD_BASE = 0.6
-export const LOAD_SCALE = 0.25
-export const LOAD_EXP = 1.6
+// ── Load: Edwards' summated heart-rate-zone TRIMP ────────────────────────────
+// Per-session cardio load = Σ (minutes in a zone × that zone's weight), using
+// Edwards' canonical zone weights (1–5). This is the most widely cited HR-zone
+// load method; it is validated as a load proxy (cross-validates with Banister
+// TRIMP r≈0.89 and session-RPE r≈0.67–0.72), though the integer weights
+// themselves are acknowledged in the literature to be linear/arbitrary rather
+// than physiologically derived.
+//   Edwards S. (1993), The Heart Rate Monitor Book. Fleet Feet Press.
+//   Foster C et al. (2001), J Strength Cond Res 15:109–115 (validation).
+// (A lactate-derived non-linear alternative is Stagno's TRIMPMOD 2007,
+//  weights 1.25/1.71/2.54/3.61/5.16 — kept here as a documented option.)
+export const EDWARDS_ZONE_WEIGHTS = { 1: 1, 2: 2, 3: 3, 4: 4, 5: 5 }
 
 // ── Muscular endurance ───────────────────────────────────────────────────────
 // Load-based and continuous (no triggers/cliffs). Every endurance minute
@@ -77,7 +84,7 @@ export const SPEED_PER_SPRINT = 8
 //  - speed:     100 = ~12 sprint reps/week (≈ 3 sessions × 4 sprints)
 //  - muscular_endurance: 100 = ~12 h/week of long work (e.g. 4 × 3 h sessions)
 export const REFERENCE_DOSE = {
-  threshold: 132, // ~240 min Zone 3/week
+  threshold: 144, // ~240 min Zone 3/week (240 × 0.6 threshold-weight)
   vo2max: 66, // ~120 min Zone 4/5/week
   endurance: 1425, // ~25 h Zone 1/2/week
   muscular_endurance: 143, // ~12 h/week of long work (4 × 3 h)

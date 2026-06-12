@@ -15,9 +15,7 @@ import {
   ZONE_WEIGHTS,
   SPRINT_WEIGHT,
   STRENGTH_ACTIVITIES,
-  LOAD_BASE,
-  LOAD_SCALE,
-  LOAD_EXP,
+  EDWARDS_ZONE_WEIGHTS,
   ME_K,
   ME_INTENSITY_BASE,
   ME_INTENSITY_ZONE_SCALE,
@@ -25,7 +23,12 @@ import {
 } from './constants'
 import { strengthDose, musclesWorkedFromSession } from './strength'
 
-// Strength dose -> load scaling so strength load is comparable to cardio load.
+// Strength dose -> load scaling, to add strength sessions onto the same load
+// total as Edwards cardio TRIMP. NOTE: the literature has no validated method to
+// merge resistance volume-load with HR-zone TRIMP into one number (session-RPE ×
+// duration is the only modality-agnostic metric). This scale is therefore a
+// pragmatic composite chosen so a full strength session reads comparably to a
+// moderate cardio session — not a validated equivalence.
 const STRENGTH_LOAD_SCALE = 0.9
 // Strength minutes -> dose for text-only strength sessions (no structured sets).
 const STRENGTH_PROXY_PER_MIN = 1.1
@@ -42,20 +45,36 @@ export function addDims(target, add) {
 }
 
 // Split N work-minutes in an intensity zone across the intensity qualities.
+// `zone` may be fractional (e.g. a "Zone 1–2" session averages to 1.5); the
+// quality split is then interpolated between the two adjacent zone rows.
+// An out-of-range zone falls back to the Zone 2 split.
 export function doseFromMinutesInZone(minutes, zone) {
-  const w = ZONE_WEIGHTS[zone] || ZONE_WEIGHTS[2]
+  if (!(zone >= 1 && zone <= 5)) {
+    const w = ZONE_WEIGHTS[2]
+    const out = emptyDims()
+    for (const q of QUALITIES) out[q] += minutes * (w[q] || 0)
+    return out
+  }
+  const lo = Math.floor(zone)
+  const hi = Math.ceil(zone)
+  const frac = zone - lo
+  const wlo = ZONE_WEIGHTS[lo]
+  const whi = ZONE_WEIGHTS[hi]
   const out = emptyDims()
-  for (const q of Object.keys(w)) out[q] += minutes * w[q]
+  for (const q of QUALITIES) {
+    const a = wlo[q] || 0
+    const b = whi[q] || 0
+    out[q] += minutes * (a + (b - a) * frac)
+  }
   return out
 }
 
-// Steep load-per-minute curve: high zones cost much more than easy Zone 1.
-function loadPerMinute(zone) {
-  return LOAD_BASE + LOAD_SCALE * Math.pow(zone, LOAD_EXP)
-}
-
+// Edwards' summated-HR-zone TRIMP: load = minutes × the zone's weight. The
+// Edwards weights equal the zone number, so a fractional zone (e.g. 1.5 for a
+// Zone 1–2 session) weights linearly: 1.5/min.
 function cardioBlockLoad(minutes, zone) {
-  return minutes * loadPerMinute(zone)
+  const weight = Math.max(1, Math.min(5, zone))
+  return minutes * weight
 }
 
 // Muscular-endurance intensity weighting (long hard counts more than long easy).
@@ -73,9 +92,15 @@ function muscularEnduranceDose(durationMin, zone) {
 
 // Resolve the intensity zone for a section. Sections do not carry their own
 // zone; warm-ups/cooldowns are Zone 1, everything else inherits the workout's
-// normalized intensity zone.
+// intensity. A multi-zone tag (e.g. "Zone 1–2") is AVERAGED — a Z1–2 jog uses
+// 1.5, not the top zone — so an easy session isn't over-loaded and structured
+// and text-only scoring agree.
 function sectionZone(section, workout) {
   if (section.kind === 'warmup' || section.kind === 'cooldown') return 1
+  const zones = normalizeIntensityZones(workout?.type, workout?.intensityZone)
+  if (zones && zones.length > 0) {
+    return zones.reduce((a, b) => a + b, 0) / zones.length
+  }
   return normalizeIntensityZone(workout?.type, workout?.intensityZone) || 2
 }
 

@@ -102,6 +102,34 @@ describe('WeekOverview drag/drop opt-in', () => {
     expect(onAddSessionToDay).toHaveBeenCalledWith(1)
   })
 
+  it('dragging a session does not also start a whole-day drag', () => {
+    // The session cell sits inside the day body, which is itself draggable
+    // (whole-day move). dragstart bubbles, so without stopPropagation the day
+    // handler clobbers the session drag and you can only ever move the day.
+    const onWorkoutDragStart = vi.fn()
+    const onDayDragStart = vi.fn()
+    render(
+      <WeekOverview
+        workouts={WORKOUTS}
+        onSelectWorkout={() => {}}
+        dnd={{
+          onWorkoutDragStart,
+          onWorkoutDragEnd: () => {},
+          onDayDragStart,
+          getDayDropZoneProps: () => ({}),
+          getCellDropZoneProps: () => ({}),
+          isWorkoutDragging: () => false,
+          isCellDropTarget: () => false,
+          isDayDropTarget: () => false,
+        }}
+      />
+    )
+    const cell = screen.getByText('Morning run').closest('.wo-cell')
+    cell.dispatchEvent(new Event('dragstart', { bubbles: true }))
+    expect(onWorkoutDragStart).toHaveBeenCalledTimes(1)
+    expect(onDayDragStart).not.toHaveBeenCalled()
+  })
+
   it('makes cells draggable when dnd is provided', () => {
     const onWorkoutDragStart = vi.fn()
     render(
@@ -130,6 +158,16 @@ describe('WeekOverview training-quality widget + muscle heatmap', () => {
     const { container } = render(<WeekOverview workouts={WORKOUTS} onSelectWorkout={() => {}} />)
     expect(screen.getByText('Training quality this week')).toBeInTheDocument()
     expect(container.querySelector('svg.q-radar')).toBeTruthy()
+  })
+
+  it('renders the daily load chart above the week view', () => {
+    // A session with a parseable duration so it produces a nonzero Edwards load.
+    const withLoad = [
+      { id: 'r1', title: 'Z2 run', type: 'continuous', weekday: 1, activityTag: 'run', intensityZone: [2], notes: '60 min' },
+    ]
+    const { container } = render(<WeekOverview workouts={withLoad} onSelectWorkout={() => {}} />)
+    expect(screen.getByText('Daily load')).toBeInTheDocument()
+    expect(container.querySelector('.dlc')).toBeTruthy()
   })
 
   it('hides the muscle heatmap on a pure-cardio week', () => {

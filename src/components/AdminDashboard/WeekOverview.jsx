@@ -14,6 +14,7 @@ import {
 } from '../../utils'
 import QualityWidget from '../dimensions/QualityWidget'
 import MuscleHeatmap from '../dimensions/MuscleHeatmap'
+import DailyLoadChart from '../dimensions/DailyLoadChart'
 import { makeMuscleResolver } from '../dimensions/useMuscleResolver'
 import './WeekOverview.css'
 
@@ -99,7 +100,13 @@ function SessionCell({ workout, onSelect, drag, dropProps, isDragging, isDropTar
         onClick={() => onSelect?.(workout)}
         disabled={!onSelect}
         draggable={draggable}
-        onDragStart={draggable ? event => drag.onDragStart(workout, event) : undefined}
+        onDragStart={draggable ? event => {
+          // The day body is itself draggable (whole-day move) and dragstart
+          // bubbles — without this the day handler clobbers the session drag,
+          // so a single session can never be moved on its own.
+          event.stopPropagation()
+          drag.onDragStart(workout, event)
+        } : undefined}
         onDragEnd={draggable ? drag.onDragEnd : undefined}
       >
         <span className="wo-cell-title-row">
@@ -170,6 +177,8 @@ export default function WeekOverview({ workouts, onSelectWorkout, dnd }) {
         <Stat label="Sessions" value={summary.count} />
         <Stat label="Total load" value={Math.round(summary.totalLoad)} />
       </div>
+
+      <DailyLoadChart days={days} resolveMuscles={resolveMuscles} />
 
       <div className={`wo-timetable${dnd ? ' wo-timetable--dnd' : ''}`}>
         {days.map(day => {

@@ -25,8 +25,8 @@ describe('dose helpers', () => {
   it('doseFromMinutesInZone splits a Z4 minute toward threshold+vo2max', () => {
     const d = doseFromMinutesInZone(10, 4)
     expect(d.threshold).toBeCloseTo(5.5)
-    expect(d.vo2max).toBeCloseTo(4.0)
-    expect(d.endurance).toBeCloseTo(1.5)
+    expect(d.vo2max).toBeCloseTo(3.5)
+    expect(d.endurance).toBeCloseTo(1.0)
     expect(d.speed).toBe(0)
   })
 
@@ -34,10 +34,17 @@ describe('dose helpers', () => {
     expect(doseFromMinutesInZone(30, 1)).toMatchObject({ endurance: 30, threshold: 0, vo2max: 0 })
   })
 
-  it('unknown zone falls back to a sane (zone 2) split', () => {
+  it('zone 2 is pure aerobic endurance — no threshold load', () => {
+    const d = doseFromMinutesInZone(60, 2)
+    expect(d.threshold).toBe(0)
+    expect(d.vo2max).toBe(0)
+    expect(d.endurance).toBeGreaterThan(0)
+  })
+
+  it('unknown zone falls back to a sane (zone 2) split — pure endurance', () => {
     const d = doseFromMinutesInZone(10, 99)
-    expect(d.endurance).toBeCloseTo(9)
-    expect(d.threshold).toBeCloseTo(1)
+    expect(d.endurance).toBeCloseTo(10)
+    expect(d.threshold).toBe(0)
   })
 })
 
@@ -97,30 +104,47 @@ describe('scoreSession (structured)', () => {
   })
 })
 
-describe('load curve: intervals cost much more than easy work', () => {
-  const easyRun = (min) => ({ activityTag: 'run', type: 'continuous', intensityZone: [1],
+describe("load: Edwards summated-HR-zone TRIMP (minutes × zone weight)", () => {
+  // Continuous sessions are valid for Z1–Z2; Z3+ must be tagged interval (the
+  // engine reuses the app's zone normalization, which clamps invalid pairs).
+  const contRun = (min, zone) => ({ activityTag: 'run', type: 'continuous', intensityZone: [zone],
     blocks: { sections: [{ kind: 'steady', paceMode: 'time', durationMin: min }] } })
-  const intervalSession = (reps, dragSec, zone) => ({ activityTag: 'run', type: 'interval', intensityZone: [zone],
-    blocks: { sections: [
-      { kind: 'warmup', paceMode: 'time', durationMin: 12 },
-      { kind: 'interval', paceMode: 'time', reps, dragSec, pauseSec: 120 },
-      { kind: 'cooldown', paceMode: 'time', durationMin: 8 },
-    ] } })
+  const ivRun = (min, zone) => ({ activityTag: 'run', type: 'interval', intensityZone: [zone],
+    blocks: { sections: [{ kind: 'interval', paceMode: 'time', reps: 1, dragSec: min * 60, pauseSec: 0 }] } })
+  const load = (w) => scoreSession(w).load
 
-  it('a 40-min Z4 interval session out-loads a longer 60-min easy run', () => {
-    const easy = scoreSession(easyRun(60)).load
-    const intervals = scoreSession(intervalSession(5, 240, 4)).load // 5x4min Z4
-    expect(intervals).toBeGreaterThan(easy)
+  it('a pure-zone session loads minutes × the Edwards weight', () => {
+    expect(load(contRun(60, 1))).toBe(60) // Z1 weight 1
+    expect(load(contRun(60, 2))).toBe(120) // Z2 weight 2
+    expect(load(ivRun(60, 3))).toBe(180) // Z3 weight 3
   })
 
-  it('per-minute, a Z5 minute loads several times a Z1 minute', () => {
-    const z1 = scoreSession(easyRun(60)).load / 60
-    // a pure Z5 block
-    const z5session = { activityTag: 'run', type: 'interval', intensityZone: [5],
-      blocks: { sections: [{ kind: 'interval', paceMode: 'time', reps: 5, dragSec: 180, pauseSec: 120 }] } }
-    const z5mins = (5 * 180) / 60
-    const z5 = scoreSession(z5session).load / z5mins
-    expect(z5 / z1).toBeGreaterThan(3)
+  it('a Z5 minute loads exactly 5× a Z1 minute (Edwards ×1..×5)', () => {
+    const z1 = load(contRun(60, 1)) / 60
+    const z5 = load(ivRun(60, 5)) / 60
+    expect(z5 / z1).toBeCloseTo(5, 5)
+  })
+
+  it('a multi-zone tag (Zone 1–2) averages, and structured == text-only', () => {
+    const structured = { activityTag: 'run', type: 'continuous', intensityZone: [1, 2],
+      blocks: { sections: [{ kind: 'steady', paceMode: 'time', durationMin: 55 }] } }
+    const text = { activityTag: 'run', type: 'continuous', intensityZone: [1, 2], notes: '55 min' }
+    // 55 min at the average zone 1.5 -> Edwards weight 1.5 -> ~83, NOT 55×2=110.
+    expect(scoreSession(structured).load).toBe(83)
+    expect(scoreSession(structured).load).toBe(scoreSession(text).load)
+    // a genuine pure-Zone-2 session is still the full 55×2 = 110.
+    expect(load(contRun(55, 2))).toBe(110)
+  })
+
+  it('a 40-min Z4 interval session out-loads a longer 60-min easy run', () => {
+    const easy = load(contRun(60, 1)) // 60
+    const intervals = load({ activityTag: 'run', type: 'interval', intensityZone: [4],
+      blocks: { sections: [
+        { kind: 'warmup', paceMode: 'time', durationMin: 12 },
+        { kind: 'interval', paceMode: 'time', reps: 5, dragSec: 240, pauseSec: 120 },
+        { kind: 'cooldown', paceMode: 'time', durationMin: 8 },
+      ] } })
+    expect(intervals).toBeGreaterThan(easy)
   })
 })
 

@@ -1,0 +1,72 @@
+.dlc {
+  display: flex;
+  flex-direction: column;
+  gap: var(--th-space-2, 0.5rem);
+}
+
+.dlc-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.dlc-title {
+  font-size: var(--th-text-2xs, 0.6875rem);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  font-weight: 700;
+  color: var(--th-ink-muted, #64748b);
+}
+
+.dlc-total {
+  font-size: var(--th-text-md, 0.9375rem);
+  font-weight: 700;
+  color: var(--th-ink, #0f172a);
+}
+
+/* 7 equal columns, matching the timetable grid above which it sits. */
+.dlc-row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: var(--th-space-2, 0.5rem);
+  align-items: end;
+}
+
+.dlc-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.dlc-value {
+  font-size: var(--th-text-2xs, 0.6875rem);
+  color: var(--th-ink-muted, #64748b);
+  min-height: 0.85rem;
+  line-height: 1;
+}
+.dlc-value.is-zero {
+  color: transparent;
+}
+
+.dlc-track {
+  width: 100%;
+  height: 60px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.dlc-bar {
+  width: 58%;
+  min-height: 3px;
+  border-radius: var(--th-radius-sm, 0.5rem) var(--th-radius-sm, 0.5rem) 2px 2px;
+  transition: height var(--th-dur-base, 200ms) var(--th-ease, ease),
+    background var(--th-dur-base, 200ms) var(--th-ease, ease);
+}
+
+.dlc-day {
+  font-size: var(--th-text-2xs, 0.6875rem);
+  font-weight: 600;
+  color: var(--th-ink-soft, #94a3b8);
+}

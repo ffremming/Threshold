@@ -54,15 +54,16 @@ export function muscularShare(activityLoad) {
   return pct(muscular, total)
 }
 
-const ENDURANCE_TAGS = new Set(
-  Object.values(ACTIVITY_TAG_MAP).filter(t => t.group === 'endurance').map(t => t.value)
-)
-
+// Specificity = how concentrated training is in the single dominant discipline,
+// as a share of TOTAL training load across every activity (run, swim, ski,
+// strength, everything). Using total load — not an endurance-only subset — is
+// what makes the share meaningful: a runner who also swims and skis should not
+// read 100%.
 export function specificityShare(activityLoad) {
-  const endurance = Object.entries(activityLoad || {}).filter(([tag]) => ENDURANCE_TAGS.has(tag))
-  const total = endurance.reduce((s, [, v]) => s + v, 0)
+  const entries = Object.entries(activityLoad || {}).filter(([, v]) => v > 0)
+  const total = entries.reduce((s, [, v]) => s + v, 0)
   if (total === 0) return { primary: null, pct: 0 }
-  const primary = endurance.sort((a, b) => b[1] - a[1])[0]
+  const primary = entries.sort((a, b) => b[1] - a[1])[0]
   return { primary: primary[0], pct: pct(primary[1], total) }
 }
 

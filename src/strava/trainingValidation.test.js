@@ -63,11 +63,24 @@ describe('muscularShare', () => {
 })
 
 describe('specificityShare', () => {
-  it('share of endurance load in the dominant discipline', () => {
+  it('share of total training load in the dominant discipline', () => {
     const activityLoad = { run: 700, bike: 200, strength: 100 }
     const r = specificityShare(activityLoad)
     expect(r.primary).toBe('run')
-    expect(r.pct).toBe(78) // 700 / (700+200) endurance, rounded
+    expect(r.pct).toBe(70) // 700 / 1000 total load, rounded
+  })
+
+  it('counts non-endurance disciplines in the denominator', () => {
+    // A runner who also swims and skis should not read 100%.
+    const activityLoad = { run: 500, swim: 300, xc_skiing: 200 }
+    const r = specificityShare(activityLoad)
+    expect(r.primary).toBe('run')
+    expect(r.pct).toBe(50) // 500 / 1000, not 100% of an endurance-only subset
+  })
+
+  it('returns null primary when there is no load', () => {
+    expect(specificityShare({})).toEqual({ primary: null, pct: 0 })
+    expect(specificityShare({ run: 0 })).toEqual({ primary: null, pct: 0 })
   })
 })
 

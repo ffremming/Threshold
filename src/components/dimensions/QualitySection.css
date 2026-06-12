@@ -1,0 +1,19 @@
+.an-quality {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 1rem;
+  align-items: start;
+}
+
+.an-quality .muscle-heatmap {
+  padding: 1rem;
+  border: 1px solid var(--th-surface-2, #e2e8f0);
+  border-radius: var(--th-radius-lg, 0.875rem);
+  background: var(--th-surface, #fff);
+}
+
+@media (max-width: 860px) {
+  .an-quality {
+    grid-template-columns: 1fr;
+  }
+}

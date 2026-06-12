@@ -12,6 +12,7 @@ import SummaryRow from './sections/SummaryRow'
 import InsightGrid from './sections/InsightGrid'
 import ChartGrid from './sections/ChartGrid'
 import ValidationGrid from './sections/ValidationGrid'
+import QualitySection from '../dimensions/QualitySection'
 
 export default function AnalysisDashboard({ weeks, workoutsByWeekKey, currentWeek, currentYear }) {
   const { range, setRange, activeTagFilter, setActiveTagFilter, primaryMetric, setPrimaryMetric } = usePersistedFilters()
@@ -99,6 +100,12 @@ export default function AnalysisDashboard({ weeks, workoutsByWeekKey, currentWee
             zoneTotals={zoneTotals}
             zoneLoadTotals={zoneLoadTotals}
             topActivityEntries={topActivityEntries}
+            currentVisibleIndex={currentVisibleIndex}
+          />
+
+          <QualitySection
+            weeklyStats={weeklyStats}
+            labels={labels}
             currentVisibleIndex={currentVisibleIndex}
           />
 

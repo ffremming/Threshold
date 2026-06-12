@@ -1,0 +1,32 @@
+.qtc-toggle {
+  display: inline-flex;
+  gap: 0.25rem;
+  padding: 0.1875rem;
+  margin-bottom: 0.75rem;
+  border-radius: var(--th-radius-md, 0.625rem);
+  background: var(--th-surface-2, #eef2f7);
+}
+
+.qtc-toggle-btn {
+  border: 0;
+  background: transparent;
+  font-family: inherit;
+  font-size: var(--th-text-xs, 0.75rem);
+  font-weight: 600;
+  color: var(--th-ink-muted, #64748b);
+  padding: 0.4375rem 0.875rem;
+  border-radius: var(--th-radius-sm, 0.5rem);
+  cursor: pointer;
+  transition: all var(--th-dur-fast, 150ms) var(--th-ease, ease);
+}
+
+.qtc-toggle-btn.is-active {
+  background: var(--th-surface, #fff);
+  color: var(--th-ink, #0f172a);
+  box-shadow: var(--th-shadow-xs, 0 1px 3px rgba(15, 23, 42, 0.12));
+}
+
+.qtc-canvas {
+  position: relative;
+  height: 320px;
+}

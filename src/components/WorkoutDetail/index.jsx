@@ -10,6 +10,7 @@ import {
   formatWorkoutSchedule,
   normalizeIntensityZone,
   normalizeIntensityZones,
+  scoreSession,
 } from '../../utils'
 import { getSessionDomain } from '../../sessionBlocks'
 import { inferActivityTag } from '../../utils'
@@ -19,7 +20,12 @@ import SystemIcon from '../SystemIcon'
 import WorkoutDetailHeader from './WorkoutDetailHeader'
 import WorkoutDetailSections from './WorkoutDetailSections'
 import ZoneSummary from './ZoneSummary'
+import SessionLoadDetail from '../dimensions/SessionLoadDetail'
+import { makeMuscleResolver } from '../dimensions/useMuscleResolver'
 import '../WorkoutDetail.css'
+
+// Stable resolver — reads only the static exercise library.
+const resolveMuscles = makeMuscleResolver()
 
 export default function WorkoutDetail({ workout, onClose, canEdit, onDelete, onToggleComplete, onEdit, onSaveComment, onReplace, onDuplicate }) {
   const [editing, setEditing] = useState(false)
@@ -176,6 +182,10 @@ export default function WorkoutDetail({ workout, onClose, canEdit, onDelete, onT
         )}
 
         {zone && showScale && <IntensityScaleModal onClose={() => setShowScale(false)} />}
+
+        <div className="modal-section">
+          <SessionLoadDetail score={scoreSession(workout, { resolveMuscles })} />
+        </div>
 
         <div className="modal-actions">
           <button

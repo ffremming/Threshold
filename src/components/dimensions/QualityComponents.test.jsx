@@ -6,7 +6,7 @@ import QualityBars from './QualityBars'
 import QualityRadar from './QualityRadar'
 import QualityWidget from './QualityWidget'
 
-const DIMS = { threshold: 81, endurance: 72, speed: 40, vo2max: 34, strength: 25 }
+const DIMS = { threshold: 81, endurance: 72, muscular_endurance: 58, speed: 40, vo2max: 34, strength: 25 }
 
 describe('QualityBars', () => {
   it('renders every quality label and its rounded value', () => {
@@ -20,17 +20,17 @@ describe('QualityBars', () => {
 
   it('treats missing dims as zero', () => {
     render(<QualityBars dims={{}} />)
-    // five bars, all zero
-    expect(screen.getAllByText('0')).toHaveLength(5)
+    // six bars, all zero
+    expect(screen.getAllByText('0')).toHaveLength(6)
   })
 })
 
 describe('QualityRadar', () => {
-  it('renders an svg with a 5-point data polygon', () => {
+  it('renders an svg with a 6-point data polygon', () => {
     const { container } = render(<QualityRadar dims={DIMS} />)
     const area = container.querySelector('svg polygon.q-radar-area')
     expect(area).toBeTruthy()
-    expect(area.getAttribute('points').trim().split(/\s+/)).toHaveLength(5)
+    expect(area.getAttribute('points').trim().split(/\s+/)).toHaveLength(6)
   })
 })
 

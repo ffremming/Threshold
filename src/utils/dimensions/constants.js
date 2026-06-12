@@ -1,16 +1,17 @@
 // Training-quality dimensions engine — shared constants.
 //
-// Five physiological qualities scored 0–100 per week from the plan itself.
+// Six physiological qualities scored 0–100 per week from the plan itself.
 // See docs/superpowers/specs/2026-06-12-training-quality-dimensions-design.md
 
-export const QUALITIES = ['strength', 'endurance', 'vo2max', 'speed', 'threshold']
+export const QUALITIES = ['strength', 'endurance', 'muscular_endurance', 'vo2max', 'speed', 'threshold']
 
 // Fixed display order for the radar axes and bars (stable week-to-week).
-export const QUALITY_ORDER = ['threshold', 'endurance', 'speed', 'vo2max', 'strength']
+export const QUALITY_ORDER = ['threshold', 'vo2max', 'speed', 'strength', 'muscular_endurance', 'endurance']
 
 export const QUALITY_COLORS = {
   threshold: '#2563eb',
   endurance: '#10b981',
+  muscular_endurance: '#0d9488', // teal — adjacent to endurance, distinct
   vo2max: '#f97316',
   speed: '#8b5cf6',
   strength: '#ec4899',
@@ -19,13 +20,16 @@ export const QUALITY_COLORS = {
 export const QUALITY_LABELS = {
   strength: 'Strength',
   endurance: 'Endurance',
+  muscular_endurance: 'Musc. endurance',
   vo2max: 'VO2max',
   speed: 'Speed',
   threshold: 'Threshold',
 }
 
-// How a single work-minute in a given intensity zone distributes across qualities.
-// Rows are intentionally endurance-heavy at low zones and intensity-heavy at high zones.
+// How a single work-minute in a given intensity zone distributes across the
+// intensity qualities (endurance / threshold / vo2max / speed). Muscular
+// endurance and strength are handled separately (duration- and set-based).
+// Rows are endurance-heavy at low zones, intensity-heavy at high zones.
 export const ZONE_WEIGHTS = {
   1: { endurance: 1.0, threshold: 0.0, vo2max: 0.0, speed: 0.0 },
   2: { endurance: 0.9, threshold: 0.1, vo2max: 0.0, speed: 0.0 },
@@ -37,20 +41,49 @@ export const ZONE_WEIGHTS = {
 // Sprint / maximal short reps feed mostly the neuromuscular (speed) quality.
 export const SPRINT_WEIGHT = { speed: 0.85, vo2max: 0.15, endurance: 0, threshold: 0 }
 
-// Weekly raw-dose that equals a score of 100 for each quality.
-// Calibrated (Task 8) so a hard-but-sustainable week lands ~80–90 on its
-// dominant quality and an easy/recovery week stays low.
+// ── Load curve ─────────────────────────────────────────────────────────────
+// Load per work-minute as a function of intensity zone. Deliberately steep so
+// interval / high-zone work costs far more than easy Zone 1 time:
+//   loadPerMinute(z) = LOAD_BASE + LOAD_SCALE * z^LOAD_EXP
+// Z1 ≈ 0.85/min, Z5 ≈ 3.9/min (~4.6× Z1). A 40-min Z4 interval session then
+// out-loads a 60-min easy run, matching how much harder intervals actually are.
+export const LOAD_BASE = 0.6
+export const LOAD_SCALE = 0.25
+export const LOAD_EXP = 1.6
+
+// ── Muscular endurance ───────────────────────────────────────────────────────
+// Driven only by LONG sustained work, weighted by intensity (long hard > long
+// easy). A continuous block counts when it runs at/over LONG_SESSION_MIN; an
+// interval rep counts when each rep is at/over LONG_INTERVAL_REP_MIN.
+export const LONG_SESSION_MIN = 90 // minutes; a continuous session this long is "long"
+export const LONG_INTERVAL_REP_MIN = 8 // minutes per rep to count as long intervals
+// Per-qualifying-minute muscular-endurance dose by zone: 0.6 + 0.15*zone.
+export const ME_BASE = 0.6
+export const ME_ZONE_SCALE = 0.15
+
+// Weekly raw-dose that equals a score of 100 for each quality. Calibrated:
+//  - threshold: 100 = ~240 min of Zone 3 work/week (240 * 0.55 ≈ 132)
+//  - endurance: 100 = ~750 min (12.5 h) of Zone 1/2 aerobic work/week
+//  - muscular_endurance: 100 = a big long-work week (~120-min long run + long Z3 intervals)
 export const REFERENCE_DOSE = {
-  threshold: 66, // ~3 hard threshold sessions/wk lands ~85 (calibrated against the hard-week test)
+  threshold: 132, // ~240 min Zone 3/week
   vo2max: 28, // ~2 VO2 interval sessions/wk
-  endurance: 300, // weekly aerobic-base minutes; easy week ~25, big-volume week ~70+
+  endurance: 712, // ~750 min Zone 1/2/week (aerobic base only)
+  muscular_endurance: 150, // strong week of long sessions + long intervals
   speed: 18, // regular sprint/strides exposure (quality-minutes)
   strength: 55, // full-body strength ~2x/wk via the saturation model
 }
 
 // Decay time constants (weeks) for the analysis "buildup" view only.
 // Fast qualities build and fade quickly; base qualities are durable.
-export const TAU = { speed: 2, vo2max: 3, threshold: 4, endurance: 6, strength: 7 }
+export const TAU = {
+  speed: 2,
+  vo2max: 3,
+  threshold: 4,
+  endurance: 6,
+  muscular_endurance: 6,
+  strength: 7,
+}
 
 // Strength saturation tuning.
 // muscleScore(sets) = 100 * (1 - e^(-STRENGTH_K * sets)); fitted to 3->50, 6->80, 9->90.

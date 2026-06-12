@@ -6,9 +6,11 @@
 
 ## Purpose
 
-Threshold already measures training in terms of **load, distance, intensity, and duration**. This feature adds a second, orthogonal lens: **what kind of training quality** a plan delivers, across five physiological dimensions:
+Threshold already measures training in terms of **load, distance, intensity, and duration**. This feature adds a second, orthogonal lens: **what kind of training quality** a plan delivers, across six physiological dimensions:
 
-> **Strength · Endurance · VO2max · Speed · Threshold**
+> **Strength · Endurance · Muscular endurance · VO2max · Speed · Threshold**
+
+> **Revision (2026-06-12, post-build):** Added a sixth quality, **Muscular endurance** (long sustained work), split out from aerobic Endurance. Recalibrated reference doses so qualities are not too easy to max: **threshold 100 = ~240 min Zone 3/week**, **endurance 100 = ~750 min (12.5 h) Zone 1/2/week**. Steepened the per-session **load curve** so interval/high-zone work costs far more than easy Zone 1 time. See the Engine section for the exact constants.
 
 Each dimension is scored **0–100 per week** so a coach can answer, for any point in a plan, "this week is 81/100 threshold, 34/100 VO2max, 40/100 speed, 25/100 strength, 72/100 endurance" — and watch those numbers build or recede week over week. Every session also gets a single **Load** number derived from all its parts.
 

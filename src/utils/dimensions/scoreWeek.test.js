@@ -40,7 +40,7 @@ describe('scoreWeek', () => {
 
   it('an empty week is all zeros and has no muscle data', () => {
     const r = scoreWeek([], {})
-    expect(r.dims).toEqual({ strength: 0, endurance: 0, vo2max: 0, speed: 0, threshold: 0 })
+    expect(r.dims).toEqual({ strength: 0, endurance: 0, muscular_endurance: 0, vo2max: 0, speed: 0, threshold: 0 })
     expect(Object.keys(r.musclesWorked)).toHaveLength(0)
   })
 })
@@ -61,22 +61,40 @@ describe('calibration: realistic weeks land in sensible ranges', () => {
     },
   })
 
-  it('a hard threshold week scores threshold ~75-95', () => {
-    const week = [
-      thresholdSession(5, 360), // 5 x 6 min
-      thresholdSession(4, 480), // 4 x 8 min
-      { ...thresholdSession(6, 300), intensityZone: [4] }, // 6 x 5 min @ Z4
-      easy(70, 1),
-      easy(60, 2),
-    ]
-    const r = scoreWeek(week, {})
-    expect(r.dims.threshold).toBeGreaterThanOrEqual(75)
-    expect(r.dims.threshold).toBeLessThanOrEqual(95)
+  // Pure Zone-3 interval work, no warm-up/cooldown, so total Z3 minutes are exact.
+  const z3Only = (reps, dragSec) => ({
+    activityTag: 'run', type: 'interval', intensityZone: [3],
+    blocks: { sections: [{ kind: 'interval', paceMode: 'time', reps, dragSec, pauseSec: 60 }] },
   })
 
-  it('an easy recovery week scores every quality below 45', () => {
+  it('threshold anchor: ~240 min of Zone 3 work scores ~100', () => {
+    // 4 sessions x 60 min Z3 = 240 min
+    const week = [z3Only(6, 600), z3Only(6, 600), z3Only(6, 600), z3Only(6, 600)]
+    expect(scoreWeek(week, {}).dims.threshold).toBe(100)
+  })
+
+  it('threshold is no longer too easy: ~120 min of Zone 3 lands ~50, not maxed', () => {
+    const week = [z3Only(6, 600), z3Only(6, 600)] // 120 min Z3
+    const t = scoreWeek(week, {}).dims.threshold
+    expect(t).toBeGreaterThanOrEqual(40)
+    expect(t).toBeLessThanOrEqual(60)
+  })
+
+  it('endurance is no longer too easy: a 4h easy week stays well under 100', () => {
+    const r = scoreWeek([easy(120, 1), easy(120, 1)], {}) // 240 min Z1
+    expect(r.dims.endurance).toBeLessThan(45)
+  })
+
+  it('endurance anchor: ~750 min of Zone 1/2 reaches ~100', () => {
+    const week = [easy(150, 1), easy(150, 1), easy(150, 1), easy(150, 1), easy(150, 2)]
+    expect(scoreWeek(week, {}).dims.endurance).toBe(100)
+  })
+
+  it('an easy recovery week scores intensity qualities low', () => {
     const r = scoreWeek([easy(40, 1), easy(35, 1)], {})
-    Object.values(r.dims).forEach(v => expect(v).toBeLessThan(45))
+    expect(r.dims.threshold).toBeLessThan(20)
+    expect(r.dims.vo2max).toBeLessThan(20)
+    expect(r.dims.muscular_endurance).toBe(0) // sessions are short
   })
 })
 

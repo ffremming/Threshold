@@ -11,8 +11,10 @@ import {
 } from './constants'
 
 describe('dimensions constants', () => {
-  it('defines the five qualities', () => {
-    expect(QUALITIES).toEqual(['strength', 'endurance', 'vo2max', 'speed', 'threshold'])
+  it('defines the six qualities including muscular endurance', () => {
+    expect(QUALITIES).toEqual([
+      'strength', 'endurance', 'muscular_endurance', 'vo2max', 'speed', 'threshold',
+    ])
   })
 
   it('display order contains exactly the five qualities', () => {

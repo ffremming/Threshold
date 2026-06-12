@@ -3,14 +3,26 @@
 // Two fidelity levels:
 //   - structured: walk the session's blocks (per-block physiology)
 //   - estimated:  no blocks -> zone-weighted estimate from activity + intensity
-// Both feed the same five quality accumulators, so structured sessions are
+// Both feed the same six quality accumulators, so structured sessions are
 // simply sharper. Nothing scores zero by accident.
 
 import { getSections } from '../../sessionBlocks'
 import { computeSectionWorkMinutes } from '../../sessionBlocks/sections'
 import { estimateWorkoutDuration } from '../load'
 import { normalizeIntensityZone, normalizeIntensityZones } from '../intensity'
-import { QUALITIES, ZONE_WEIGHTS, SPRINT_WEIGHT, STRENGTH_ACTIVITIES } from './constants'
+import {
+  QUALITIES,
+  ZONE_WEIGHTS,
+  SPRINT_WEIGHT,
+  STRENGTH_ACTIVITIES,
+  LOAD_BASE,
+  LOAD_SCALE,
+  LOAD_EXP,
+  LONG_SESSION_MIN,
+  LONG_INTERVAL_REP_MIN,
+  ME_BASE,
+  ME_ZONE_SCALE,
+} from './constants'
 import { strengthDose, musclesWorkedFromSession } from './strength'
 
 // Strength dose -> load scaling so strength load is comparable to cardio load.
@@ -19,7 +31,9 @@ const STRENGTH_LOAD_SCALE = 0.9
 const STRENGTH_PROXY_PER_MIN = 1.1
 
 export function emptyDims() {
-  return { strength: 0, endurance: 0, vo2max: 0, speed: 0, threshold: 0 }
+  const out = {}
+  for (const q of QUALITIES) out[q] = 0
+  return out
 }
 
 export function addDims(target, add) {
@@ -27,7 +41,7 @@ export function addDims(target, add) {
   return target
 }
 
-// Split N work-minutes in an intensity zone across the qualities.
+// Split N work-minutes in an intensity zone across the intensity qualities.
 export function doseFromMinutesInZone(minutes, zone) {
   const w = ZONE_WEIGHTS[zone] || ZONE_WEIGHTS[2]
   const out = emptyDims()
@@ -35,17 +49,32 @@ export function doseFromMinutesInZone(minutes, zone) {
   return out
 }
 
-// Cardio block load — mirrors getWorkoutIntensityFactor shape (0.75 + zone*0.35).
-function cardioBlockLoad(minutes, zone) {
-  return minutes * (0.75 + zone * 0.35)
+// Steep load-per-minute curve: high zones cost much more than easy Zone 1.
+function loadPerMinute(zone) {
+  return LOAD_BASE + LOAD_SCALE * Math.pow(zone, LOAD_EXP)
 }
 
-// Resolve the intensity zone to use for a section. Sections do not carry a
-// zone of their own; warm-ups/cooldowns are treated as Zone 1, everything else
-// inherits the workout's normalized intensity zone.
+function cardioBlockLoad(minutes, zone) {
+  return minutes * loadPerMinute(zone)
+}
+
+// Muscular-endurance dose for a qualifying long block.
+function muscularEnduranceDose(minutes, zone) {
+  return minutes * (ME_BASE + ME_ZONE_SCALE * zone)
+}
+
+// Resolve the intensity zone for a section. Sections do not carry their own
+// zone; warm-ups/cooldowns are Zone 1, everything else inherits the workout's
+// normalized intensity zone.
 function sectionZone(section, workout) {
   if (section.kind === 'warmup' || section.kind === 'cooldown') return 1
   return normalizeIntensityZone(workout?.type, workout?.intensityZone) || 2
+}
+
+// Per-rep minutes for an interval section (total work minutes / reps).
+function intervalRepMinutes(section, workout, totalMinutes) {
+  const reps = Math.max(1, Number(section.reps) || 1)
+  return totalMinutes / reps
 }
 
 export function scoreSession(workout, opts = {}) {
@@ -77,6 +106,16 @@ export function scoreSession(workout, opts = {}) {
     const zone = sectionZone(section, workout)
     addDims(dims, doseFromMinutesInZone(minutes, zone))
     load += cardioBlockLoad(minutes, zone)
+
+    // Muscular endurance: long continuous blocks, or intervals with long reps.
+    if (section.kind === 'interval') {
+      const repMin = intervalRepMinutes(section, workout, minutes)
+      if (repMin >= LONG_INTERVAL_REP_MIN) {
+        dims.muscular_endurance += muscularEnduranceDose(minutes, zone)
+      }
+    } else if (minutes >= LONG_SESSION_MIN) {
+      dims.muscular_endurance += muscularEnduranceDose(minutes, zone)
+    }
   }
 
   // Strength aggregate (from structured exercise sections + muscle resolver).
@@ -109,6 +148,11 @@ export function scoreSessionFallback(workout) {
     for (const z of list) {
       addDims(dims, doseFromMinutesInZone(per, z))
       load += cardioBlockLoad(per, z)
+    }
+    // A long continuous text-only session also builds muscular endurance.
+    if (minutes >= LONG_SESSION_MIN) {
+      const z = list.length ? Math.round(list.reduce((a, b) => a + b, 0) / list.length) : 2
+      dims.muscular_endurance += muscularEnduranceDose(minutes, z)
     }
     return { load: Math.round(load), dims, musclesWorked: {}, fidelity: 'estimated' }
   }

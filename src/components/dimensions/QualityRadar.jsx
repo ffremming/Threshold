@@ -14,12 +14,20 @@ function ringPoints(cx, cy, r, n, fraction) {
     .join(' ')
 }
 
-// Pentagon radar of the five qualities. `dims` is the engine output (0–100).
-export default function QualityRadar({ dims = {}, size = 220, className = '' }) {
+// Radar of the qualities (one axis each). `dims` is the engine output (0–100).
+export default function QualityRadar({ dims = {}, size = 240, className = '' }) {
   const cx = size / 2
   const cy = size / 2
-  const r = size / 2 - 34 // padding for axis labels
+  const r = size / 2 - 48 // extra padding so wide axis labels don't clip
   const n = QUALITY_ORDER.length
+
+  // Anchor labels by horizontal position so side labels grow outward, not over
+  // the figure: left side -> end, right side -> start, top/bottom -> middle.
+  const anchorFor = (x) => {
+    if (x < cx - 1) return 'end'
+    if (x > cx + 1) return 'start'
+    return 'middle'
+  }
 
   const dataPoints = QUALITY_ORDER.map((q, i) =>
     vertex(cx, cy, r, i, n, Math.max(0, Math.min(100, dims[q] || 0)) / 100)
@@ -53,7 +61,7 @@ export default function QualityRadar({ dims = {}, size = 220, className = '' }) 
       />
       {/* axis labels */}
       {QUALITY_ORDER.map((q, i) => {
-        const [x, y] = vertex(cx, cy, r + 16, i, n, 1)
+        const [x, y] = vertex(cx, cy, r + 14, i, n, 1)
         return (
           <text
             key={q}
@@ -61,7 +69,7 @@ export default function QualityRadar({ dims = {}, size = 220, className = '' }) 
             x={x}
             y={y}
             fill={QUALITY_COLORS[q]}
-            textAnchor="middle"
+            textAnchor={anchorFor(x)}
             dominantBaseline="middle"
           >
             {QUALITY_LABELS[q]}

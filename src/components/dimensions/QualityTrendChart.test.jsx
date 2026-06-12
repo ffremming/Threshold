@@ -16,17 +16,17 @@ vi.mock('react-chartjs-2', () => ({
 import QualityTrendChart from './QualityTrendChart'
 
 const WEEKLY = [
-  { threshold: 20, endurance: 55, vo2max: 10, speed: 15, strength: 60 },
-  { threshold: 50, endurance: 66, vo2max: 18, speed: 20, strength: 50 },
-  { threshold: 80, endurance: 74, vo2max: 34, speed: 34, strength: 34 },
-  { threshold: 0, endurance: 0, vo2max: 0, speed: 0, strength: 0 },
+  { threshold: 20, endurance: 55, muscular_endurance: 30, vo2max: 10, speed: 15, strength: 60 },
+  { threshold: 50, endurance: 66, muscular_endurance: 45, vo2max: 18, speed: 20, strength: 50 },
+  { threshold: 80, endurance: 74, muscular_endurance: 60, vo2max: 34, speed: 34, strength: 34 },
+  { threshold: 0, endurance: 0, muscular_endurance: 0, vo2max: 0, speed: 0, strength: 0 },
 ]
 const LABELS = ['w1', 'w2', 'w3', 'w4']
 
 describe('QualityTrendChart', () => {
-  it('renders five quality lines and starts on the stimulus view', () => {
+  it('renders six quality lines and starts on the stimulus view', () => {
     render(<QualityTrendChart weeklyDims={WEEKLY} labels={LABELS} nowIndex={2} />)
-    expect(screen.getByTestId('line-chart')).toHaveAttribute('data-datasets', '5')
+    expect(screen.getByTestId('line-chart')).toHaveAttribute('data-datasets', '6')
     expect(screen.getByRole('tablist')).toHaveAttribute('data-view', 'stimulus')
     // Stimulus view shows the raw weekly value (threshold 80 in week 3).
     const threshold = lastData.datasets.find(d => d.label === 'Threshold')

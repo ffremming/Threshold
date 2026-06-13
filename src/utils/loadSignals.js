@@ -173,6 +173,8 @@ export function computeWeekSeries(weeks, workoutsByWeekKey, currentWeek, current
       duration: summary.totalDuration,
       load: scored.load,
       activityDistance: summary.activityDistance,
+      activityDuration: summary.activityDuration,
+      activityLoad: summary.activityLoad,
       dims: scored.dims,
     }
   })

@@ -192,4 +192,13 @@ describe('computeWeekSeries', () => {
     expect(series[0].activityDistance).toBeTypeOf('object')
     expect(series[0].activityDistance.run).toBeCloseTo(10, 5)
   })
+
+  it('emits activityLoad and activityDuration for the per-activity fan-out', () => {
+    const weeks = [{ week: 23, year: 2026, key: '2026-23' }]
+    const series = computeWeekSeries(weeks, { '2026-23': run(60, 10) }, 99, 2026)
+    expect(series[0].activityLoad).toBeTypeOf('object')
+    expect(series[0].activityLoad.run).toBeGreaterThan(0)
+    expect(series[0].activityDuration).toBeTypeOf('object')
+    expect(series[0].activityDuration.run).toBeCloseTo(60, 5)
+  })
 })

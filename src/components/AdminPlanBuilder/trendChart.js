@@ -1,4 +1,3 @@
-import { averageLastValues } from '../../utils/seriesMath'
 import { formatDurationLabel, formatKmValue } from '../../utils'
 import { ACTIVITY_TAG_MAP } from '../../utils/activity'
 import { QUALITY_ORDER, QUALITY_COLORS, QUALITY_LABELS } from '../../utils/dimensions'
@@ -13,19 +12,23 @@ export const TREND_METRICS = [
   { value: 'quality', label: 'Quality', unit: '', color: '#64748b' },
 ]
 
-function metricColor(metric) {
-  return (TREND_METRICS.find(m => m.value === metric) || TREND_METRICS[0]).color
+// Which per-week per-activity map each metric splits on. `distance` is the
+// fallback for any unmapped metric.
+const ACTIVITY_MAP_KEY = {
+  distance: 'activityDistance',
+  duration: 'activityDuration',
+  load: 'activityLoad',
 }
 
-// Distance splits into one line per sport (colored by its canonical activity
-// color) instead of a single total line with a moving average — a coach reads
-// the per-sport mix directly. Sports are ordered by total distance descending
-// so the legend leads with the biggest contributors. A sport plots 0 in weeks
-// it is absent so every line spans the full x-axis.
-function buildDistanceSportData(series) {
+// Distance, duration, and load each split into one line per activity (colored by
+// its canonical activity color) instead of a single total line with a moving
+// average — a coach reads the per-activity mix directly. Activities are ordered
+// by total descending so the legend leads with the biggest contributors. An
+// activity plots 0 in weeks it is absent so every line spans the full x-axis.
+function buildActivitySplitData(series, mapKey) {
   const totals = {}
   series.forEach(point => {
-    const byTag = point.activityDistance || {}
+    const byTag = point[mapKey] || {}
     Object.keys(byTag).forEach(tag => {
       totals[tag] = (totals[tag] || 0) + (byTag[tag] || 0)
     })
@@ -40,7 +43,7 @@ function buildDistanceSportData(series) {
       return {
         label: meta?.label || tag,
         data: series.map(point =>
-          Number(((point.activityDistance || {})[tag] || 0).toFixed(1))),
+          Number(((point[mapKey] || {})[tag] || 0).toFixed(1))),
         borderColor: color,
         backgroundColor: color,
         pointBackgroundColor: color,
@@ -73,49 +76,13 @@ function buildQualityChartData(series) {
   }
 }
 
-// Build chart.js data for the selected metric. Distance fans out into per-sport
-// lines (see buildDistanceSportData); quality fans out into per-quality lines
-// (see buildQualityChartData); duration and load keep a primary line plus a
-// 3-week trailing moving average. Planner-local — does not depend on dashboard
-// charts. The moving average is computed from raw values and rounded only at the
-// end (so it matches the dashboard's MA), while the plotted points are rounded
-// for a clean tooltip.
+// Build chart.js data for the selected metric. Distance, duration, and load all
+// fan out into one line per activity (see buildActivitySplitData); quality fans
+// out into per-quality lines (see buildQualityChartData). Planner-local — does
+// not depend on dashboard charts.
 export function buildTrendChartData(series, metric) {
-  if (metric === 'distance') return buildDistanceSportData(series)
   if (metric === 'quality') return buildQualityChartData(series)
-
-  const raw = series.map(point => point[metric] || 0)
-  const values = raw.map(value => Number(value.toFixed(1)))
-  const movingAverage = series.map((_, index) =>
-    Number(averageLastValues(raw, 3, index).toFixed(1)))
-  const color = metricColor(metric)
-
-  return {
-    labels: series.map(point => point.label),
-    datasets: [
-      {
-        label: 'Weekly',
-        data: values,
-        borderColor: color,
-        backgroundColor: `${color}22`,
-        fill: true,
-        tension: 0.32,
-        pointRadius: 3,
-        order: 2,
-      },
-      {
-        label: '3-week average',
-        data: movingAverage,
-        borderColor: '#0f172a',
-        pointBackgroundColor: '#0f172a',
-        pointBorderWidth: 0,
-        pointRadius: 2,
-        borderDash: [6, 6],
-        tension: 0.3,
-        order: 1,
-      },
-    ],
-  }
+  return buildActivitySplitData(series, ACTIVITY_MAP_KEY[metric] || ACTIVITY_MAP_KEY.distance)
 }
 
 function formatTick(value, unit) {

@@ -18,9 +18,11 @@ vi.mock('react-chartjs-2', () => ({
 import MonthTrendPanel from './MonthTrendPanel'
 
 const SERIES = [
-  { key: '2026-23', label: 'W23', distance: 10, duration: 60, load: 100, activityDistance: { run: 10 },
+  { key: '2026-23', label: 'W23', distance: 10, duration: 60, load: 100,
+    activityDistance: { run: 10 }, activityDuration: { run: 60 }, activityLoad: { run: 100 },
     dims: { threshold: 10, vo2max: 20, speed: 0, strength: 5, muscular_endurance: 8, endurance: 40 } },
-  { key: '2026-24', label: 'W24', distance: 20, duration: 90, load: 200, activityDistance: { run: 20 },
+  { key: '2026-24', label: 'W24', distance: 20, duration: 90, load: 200,
+    activityDistance: { run: 20 }, activityDuration: { run: 90 }, activityLoad: { run: 200 },
     dims: { threshold: 30, vo2max: 25, speed: 12, strength: 15, muscular_endurance: 18, endurance: 60 } },
 ]
 
@@ -32,9 +34,11 @@ describe('MonthTrendPanel', () => {
     expect(screen.getByRole('button', { name: /load/i })).toBeInTheDocument()
   })
 
-  it('defaults to distance and switches the chart data on metric click', () => {
+  it('defaults to distance and switches the per-activity line on metric click', () => {
     render(<MonthTrendPanel series={SERIES} />)
+    // Default distance: the run activity-distance line is [10, 20].
     expect(screen.getByTestId('trend-line')).toHaveAttribute('data-primary', '[10,20]')
+    // Duration: the run activity-duration line is [60, 90].
     fireEvent.click(screen.getByRole('button', { name: /duration/i }))
     expect(screen.getByTestId('trend-line')).toHaveAttribute('data-primary', '[60,90]')
   })

@@ -1,26 +1,31 @@
 import { useMemo, useState } from 'react'
-import { Sparkles } from 'lucide-react'
+import { Sparkles, X } from 'lucide-react'
 import { Button, SportPicker } from '../ui'
 import {
   QUALITY_ORDER, QUALITY_LABELS, QUALITY_COLORS, ACTIVITY_TAG_MAP,
 } from '../../utils'
+import { getSessionDomain } from '../../sessionBlocks/units'
 import { weekTargetKey } from '../../utils/weekTargetTypes'
 
-// Default quality weights: an aerobic-base lean (endurance heavy) the coach tunes.
+// Default quality weights: an aerobic-base lean the coach tunes.
 const DEFAULT_WEIGHTS = { threshold: 20, vo2max: 15, speed: 5, strength: 10, muscular_endurance: 10, endurance: 40 }
 
-// Left settings panel for the quick-build view. Holds every block-level
-// parameter — start volume + unit, weekly ramp, week span, per-quality weight
-// sliders, hard sessions per week, and an activity split — and emits them to
-// onGenerate(range, opts). One panel, applied to the whole selected period.
+// A blank activity target row. Distance-domain sports default to a distance
+// target; everything else (strength, mobility, ball sports) to time. Hard
+// sessions are opt-in per activity (off by default).
+function newRow(tag) {
+  const unit = getSessionDomain(tag) === 'distance' ? 'distance' : 'time'
+  return { tag, volume: '', unit, hard: false }
+}
+
+// Left settings panel for the quick-build view. Per-activity rows (each a volume
+// in distance or time + a hard on/off toggle) plus a weekly ramp, a week span,
+// and per-quality weight sliders. Emits everything to onGenerate(range, opts).
 export default function QuickBuildSidebar({ overviewWeeks, onGenerate }) {
   const weeks = overviewWeeks || []
-  const [startVolume, setStartVolume] = useState('')
-  const [unit, setUnit] = useState('time') // 'time' | 'distance'
+  const [rows, setRows] = useState([newRow('run')])
   const [rampPct, setRampPct] = useState(5)
-  const [hardPerWeek, setHardPerWeek] = useState(3)
   const [weights, setWeights] = useState(DEFAULT_WEIGHTS)
-  const [distribution, setDistribution] = useState({}) // { tag: % }
   const [fromKey, setFromKey] = useState('')
   const [toKey, setToKey] = useState('')
 
@@ -41,38 +46,36 @@ export default function QuickBuildSidebar({ overviewWeeks, onGenerate }) {
       .map(w => ({ week: w.week, year: w.year }))
   }, [weeks, from, to])
 
-  const volume = Number(startVolume)
-  const canGenerate = volume > 0 && range.length > 0
+  const activities = rows
+    .map(r => ({ tag: r.tag, volume: Number(r.volume), unit: r.unit, hard: r.hard }))
+    .filter(a => a.volume > 0)
+  const canGenerate = activities.length > 0 && range.length > 0
 
-  const distEntries = Object.entries(distribution)
-  const distTotal = distEntries.reduce((s, [, v]) => s + Number(v || 0), 0)
-  const distOff = distEntries.length > 0 && Math.round(distTotal) !== 100
-
+  function patchRow(tag, patch) {
+    setRows(prev => prev.map(r => (r.tag === tag ? { ...r, ...patch } : r)))
+  }
+  function removeRow(tag) {
+    setRows(prev => prev.filter(r => r.tag !== tag))
+  }
+  // SportPicker returns the full next tag list; add new rows, drop removed ones,
+  // keep existing rows' values.
+  function syncRows(nextTags) {
+    setRows(prev => {
+      const byTag = new Map(prev.map(r => [r.tag, r]))
+      return nextTags.map(tag => byTag.get(tag) || newRow(tag))
+    })
+  }
   function setWeight(q, v) {
     setWeights(prev => ({ ...prev, [q]: Number(v) }))
   }
-  function syncDistTags(nextTags) {
-    setDistribution(prev => {
-      const next = {}
-      for (const tag of nextTags) next[tag] = prev[tag] ?? 0
-      return next
-    })
-  }
-  function setDistPct(tag, v) {
-    setDistribution(prev => ({ ...prev, [tag]: Number(v) }))
-  }
 
   function generate() {
-    // Drop zero-weight qualities so an all-zero set means "no preference".
     const activeWeights = Object.fromEntries(
       Object.entries(weights).filter(([, v]) => Number(v) > 0))
     onGenerate(range, {
-      startVolume: volume,
-      unit,
+      activities,
       rampPct: Number(rampPct),
-      hardPerWeek: Number(hardPerWeek),
       qualityWeights: Object.keys(activeWeights).length ? activeWeights : null,
-      distribution: distEntries.length ? distribution : null,
     })
   }
 
@@ -81,28 +84,52 @@ export default function QuickBuildSidebar({ overviewWeeks, onGenerate }) {
       <h3 className="pb-qb-title">Quick build</h3>
 
       <section className="pb-qb-section">
-        <div className="pb-qb-unit" role="group" aria-label="Volume unit">
-          <button type="button" className={`pb-qb-unit-btn${unit === 'time' ? ' is-on' : ''}`} aria-pressed={unit === 'time'} onClick={() => setUnit('time')}>Time</button>
-          <button type="button" className={`pb-qb-unit-btn${unit === 'distance' ? ' is-on' : ''}`} aria-pressed={unit === 'distance'} onClick={() => setUnit('distance')}>Distance</button>
-        </div>
-        <label className="pb-qb-field">
-          <span>{unit === 'time' ? 'Start time (min/week)' : 'Start distance (km/week)'}</span>
-          <input
-            type="number" min="0"
-            aria-label={unit === 'time' ? 'Start time (min)' : 'Start distance (km)'}
-            value={startVolume}
-            onChange={e => setStartVolume(e.target.value)}
-            placeholder={unit === 'time' ? 'min' : 'km'}
-          />
-        </label>
+        <span className="pb-qb-section-label">Activities</span>
+        {rows.map(r => {
+          const meta = ACTIVITY_TAG_MAP[r.tag]
+          return (
+            <div key={r.tag} className="pb-qb-act" data-testid={`activity-row-${r.tag}`}>
+              <div className="pb-qb-act-head">
+                <span className="pb-qb-act-name" style={{ color: meta?.color }}>{meta?.label || r.tag}</span>
+                <button type="button" className="pb-qb-act-remove" aria-label={`Remove ${meta?.label || r.tag}`} onClick={() => removeRow(r.tag)}>
+                  <X size={11} aria-hidden="true" />
+                </button>
+              </div>
+              <div className="pb-qb-act-body">
+                <input
+                  type="number" min="0"
+                  className="pb-qb-act-vol"
+                  aria-label={`${meta?.label || r.tag} volume`}
+                  value={r.volume}
+                  onChange={e => patchRow(r.tag, { volume: e.target.value })}
+                  placeholder={r.unit === 'distance' ? 'km' : 'min'}
+                />
+                <div className="pb-qb-unit" role="group" aria-label={`${meta?.label || r.tag} unit`}>
+                  <button type="button" className={`pb-qb-unit-btn${r.unit === 'distance' ? ' is-on' : ''}`} aria-label={`${meta?.label || r.tag} distance unit`} aria-pressed={r.unit === 'distance'} onClick={() => patchRow(r.tag, { unit: 'distance' })}>km</button>
+                  <button type="button" className={`pb-qb-unit-btn${r.unit === 'time' ? ' is-on' : ''}`} aria-label={`${meta?.label || r.tag} time unit`} aria-pressed={r.unit === 'time'} onClick={() => patchRow(r.tag, { unit: 'time' })}>min</button>
+                </div>
+              </div>
+              <label className="pb-qb-act-hard">
+                <input
+                  type="checkbox"
+                  aria-label={`${meta?.label || r.tag} hard sessions`}
+                  checked={r.hard}
+                  onChange={e => patchRow(r.tag, { hard: e.target.checked })}
+                />
+                <span>Hard sessions</span>
+              </label>
+            </div>
+          )
+        })}
+        <SportPicker value={rows.map(r => r.tag)} onChange={syncRows} placeholder="+ activity" />
+      </section>
+
+      <section className="pb-qb-section">
+        <span className="pb-qb-section-label">Progression</span>
         <label className="pb-qb-field">
           <span>Weekly ramp %</span>
           <input type="number" min="0" max="20" aria-label="Weekly ramp percent" value={rampPct} onChange={e => setRampPct(e.target.value)} />
         </label>
-      </section>
-
-      <section className="pb-qb-section">
-        <span className="pb-qb-section-label">Weeks</span>
         <div className="pb-qb-span">
           <label className="pb-qb-field">
             <span>From</span>
@@ -121,14 +148,6 @@ export default function QuickBuildSidebar({ overviewWeeks, onGenerate }) {
       </section>
 
       <section className="pb-qb-section">
-        <span className="pb-qb-section-label">Intensity</span>
-        <label className="pb-qb-field">
-          <span>Hard sessions / week</span>
-          <input type="number" min="0" max="7" aria-label="Hard sessions per week" value={hardPerWeek} onChange={e => setHardPerWeek(e.target.value)} />
-        </label>
-      </section>
-
-      <section className="pb-qb-section">
         <span className="pb-qb-section-label">Quality balance</span>
         {QUALITY_ORDER.map(q => (
           <div key={q} className="pb-qb-weight">
@@ -143,24 +162,6 @@ export default function QuickBuildSidebar({ overviewWeeks, onGenerate }) {
             <span className="pb-qb-weight-val">{weights[q] ?? 0}</span>
           </div>
         ))}
-      </section>
-
-      <section className="pb-qb-section">
-        <span className="pb-qb-section-label">Activity split</span>
-        {distEntries.map(([tag, pct]) => {
-          const meta = ACTIVITY_TAG_MAP[tag]
-          return (
-            <div key={tag} className="pb-qb-dist-row">
-              <span className="pb-qb-dist-tag" style={{ color: meta?.color }}>{meta?.label || tag}</span>
-              <input type="number" min="0" max="100" aria-label={`${meta?.label || tag} %`} value={pct} onChange={e => setDistPct(tag, e.target.value)} />
-            </div>
-          )
-        })}
-        <div className="pb-qb-dist-foot">
-          {distEntries.length > 0 && <span className={`pb-qb-dist-total${distOff ? ' is-off' : ''}`}>{Math.round(distTotal)}%</span>}
-          <SportPicker value={distEntries.map(([t]) => t)} onChange={syncDistTags} placeholder="+ sport" />
-        </div>
-        {distEntries.length === 0 && <span className="pb-qb-hint">No split → match the bank</span>}
       </section>
 
       <Button variant="primary" block disabled={!canGenerate} onClick={generate}>

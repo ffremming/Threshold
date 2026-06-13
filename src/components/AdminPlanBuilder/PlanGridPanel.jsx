@@ -6,7 +6,6 @@ import WeekRulePanel from './WeekRulePanel'
 import DayIntensityTag from './DayIntensityTag'
 import ReplaceSessionButton from './ReplaceSessionButton'
 import GenerateBar from './GenerateBar'
-import './styles/plan.css'
 
 const WEEKDAYS = [1, 2, 3, 4, 5, 6, 7]
 

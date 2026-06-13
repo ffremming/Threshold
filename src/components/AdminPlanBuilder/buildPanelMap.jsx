@@ -1,6 +1,7 @@
 import BankPanel from './BankPanel'
 import BuilderWeekPanel from './BuilderWeekPanel'
 import MonthGridPanel from './MonthGridPanel'
+import PlanGridPanel from './PlanGridPanel'
 
 export function buildPanelMap(props) {
   const {
@@ -31,6 +32,8 @@ export function buildPanelMap(props) {
     onDeleteWorkout,
     onAddSessionToDay,
     onAddSessionToDayAcross,
+    onAddTemplateToDay,
+    onAddTemplateToDayAcross,
     onAddManySessions,
     onMoveMany,
     onDeleteMany,
@@ -39,6 +42,9 @@ export function buildPanelMap(props) {
     onJumpToWeek,
     handleWorkoutDragStart,
     handleDayDragStart,
+    plan,
+    planActions,
+    noteAuthor,
   } = props
 
   return {
@@ -56,7 +62,20 @@ export function buildPanelMap(props) {
         removeVisibleActivity={removeVisibleActivity}
       />
     ),
-    calendar: view === 'month' ? (
+    calendar: view === 'plan' ? (
+      <PlanGridPanel
+        overviewWeeks={overviewWeeks}
+        overviewWorkoutsByWeekKey={overviewWorkoutsByWeekKey}
+        plan={plan}
+        planActions={planActions}
+        templates={templates}
+        onAddManySessions={onAddManySessions}
+        onAddSessionToDay={onAddSessionToDayAcross}
+        onSelectWorkout={onSelectWorkout}
+        onDeleteWorkout={onDeleteWorkout}
+        resolveMuscles={undefined}
+      />
+    ) : view === 'month' ? (
       <MonthGridPanel
         visiblePanelIds={visiblePanelIds}
         currentWeek={currentWeek}
@@ -72,6 +91,11 @@ export function buildPanelMap(props) {
         onSelectWorkout={onSelectWorkout}
         onDeleteWorkout={onDeleteWorkout}
         onAddSessionToDay={onAddSessionToDayAcross}
+        onAddTemplateToDayAcross={onAddTemplateToDayAcross}
+        templates={templates}
+        visibleActivities={visibleActivities}
+        addVisibleActivity={addVisibleActivity}
+        removeVisibleActivity={removeVisibleActivity}
         onAddManySessions={onAddManySessions}
         onMoveMany={onMoveMany}
         onDeleteMany={onDeleteMany}
@@ -80,6 +104,9 @@ export function buildPanelMap(props) {
         onJumpToWeek={onJumpToWeek}
         handleWorkoutDragStart={handleWorkoutDragStart}
         handleDragEnd={handleDragEnd}
+        plan={plan}
+        planActions={planActions}
+        noteAuthor={noteAuthor}
       />
     ) : (
       <BuilderWeekPanel
@@ -95,9 +122,17 @@ export function buildPanelMap(props) {
         onSelectWorkout={onSelectWorkout}
         onDeleteWorkout={onDeleteWorkout}
         onAddSessionToDay={onAddSessionToDay}
+        onAddTemplateToDay={onAddTemplateToDay}
+        templates={templates}
+        visibleActivities={visibleActivities}
+        addVisibleActivity={addVisibleActivity}
+        removeVisibleActivity={removeVisibleActivity}
         handleWorkoutDragStart={handleWorkoutDragStart}
         handleDayDragStart={handleDayDragStart}
         handleDragEnd={handleDragEnd}
+        plan={plan}
+        planActions={planActions}
+        noteAuthor={noteAuthor}
       />
     ),
   }

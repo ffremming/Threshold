@@ -14,6 +14,7 @@ import TrashZone from './TrashZone'
 const VIEW_TABS = [
   { value: 'week', label: 'Week' },
   { value: 'month', label: 'Month' },
+  { value: 'plan', label: 'Plan' },
 ]
 
 export default function AdminPlanBuilder({
@@ -43,6 +44,9 @@ export default function AdminPlanBuilder({
   onMoveMany,
   onDeleteMany,
   onCreateTemplate,
+  plan,
+  planActions,
+  noteAuthor,
 }) {
   const [view, setView] = useState('week')
   // True while the month view holds Copy/Cut sessions "in hand" awaiting a place.
@@ -122,6 +126,8 @@ export default function AdminPlanBuilder({
     onDeleteWorkout,
     onAddSessionToDay,
     onAddSessionToDayAcross,
+    onAddTemplateToDay,
+    onAddTemplateToDayAcross,
     onAddManySessions,
     onMoveMany,
     onDeleteMany,
@@ -129,6 +135,9 @@ export default function AdminPlanBuilder({
     onJumpToWeek: jumpToWeek,
     handleWorkoutDragStart: drag.handleWorkoutDragStart,
     handleDayDragStart: drag.handleDayDragStart,
+    plan,
+    planActions,
+    noteAuthor,
   })
 
   return (

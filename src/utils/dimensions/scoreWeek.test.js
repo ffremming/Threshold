@@ -115,12 +115,27 @@ describe('calibration: realistic weeks land in sensible ranges', () => {
     expect(scoreWeek(week, {}).dims.speed).toBeGreaterThanOrEqual(95)
   })
 
-  it('muscular endurance accrues continuously and rewards long weeks', () => {
-    const oneLong = scoreWeek([easy(180, 2)], {}).dims.muscular_endurance // one 3 h
-    const fourLong = scoreWeek([easy(180, 2), easy(180, 2), easy(180, 2), easy(180, 2)], {}).dims.muscular_endurance
+  it('muscular endurance is long-and-hard: short sessions add nothing, long weeks build it', () => {
+    // Long threshold session: 30 min warmup (Z1) + 90 min Z3 work.
+    const longThreshold = () => ({ activityTag: 'run', type: 'continuous', intensityZone: [3],
+      blocks: { sections: [
+        { kind: 'warmup', paceMode: 'time', durationMin: 30 },
+        { kind: 'steady', paceMode: 'time', durationMin: 90 },
+      ] } })
+
+    // A week of only short/easy sessions builds essentially no muscular endurance.
+    const shortWeek = scoreWeek([easy(30, 3), easy(45, 4), easy(60, 2)], {}).dims.muscular_endurance
+    expect(shortWeek).toBe(0)
+
+    // One long threshold session is modest; far from maxed.
+    const oneLong = scoreWeek([longThreshold()], {}).dims.muscular_endurance
     expect(oneLong).toBeGreaterThan(0)
-    expect(oneLong).toBeLessThan(40) // one 3 h run is far from maxed
-    expect(fourLong).toBeGreaterThanOrEqual(95) // ~12 h of long work ≈ max
+    expect(oneLong).toBeLessThan(40)
+
+    // ~3–4 genuinely long sessions per week approach the top of the scale.
+    const fourLong = scoreWeek([longThreshold(), longThreshold(), longThreshold(), longThreshold()], {})
+      .dims.muscular_endurance
+    expect(fourLong).toBeGreaterThanOrEqual(95)
   })
 
   it('an easy recovery week scores intensity qualities low', () => {

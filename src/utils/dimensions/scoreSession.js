@@ -16,9 +16,10 @@ import {
   SPRINT_WEIGHT,
   STRENGTH_ACTIVITIES,
   EDWARDS_ZONE_WEIGHTS,
-  ME_K,
-  ME_INTENSITY_BASE,
-  ME_INTENSITY_ZONE_SCALE,
+  ME_ZONE_WEIGHTS,
+  ME_RAW_MIN_MINUTES,
+  ME_EFF_FLOOR,
+  ME_EXPONENT,
   SPEED_PER_SPRINT,
 } from './constants'
 import { strengthDose, musclesWorkedFromSession } from './strength'
@@ -77,17 +78,24 @@ function cardioBlockLoad(minutes, zone) {
   return minutes * weight
 }
 
-// Muscular-endurance intensity weighting (long hard counts more than long easy).
-function meIntensityFactor(zone) {
-  return ME_INTENSITY_BASE + ME_INTENSITY_ZONE_SCALE * zone
+// Per-minute muscular-endurance weight for a zone (1..5; fractional zones
+// interpolate). Threshold (Z3) is the deliberate ×3 jump.
+function meZoneWeight(zone) {
+  const z = Math.max(1, Math.min(5, zone))
+  const lo = Math.floor(z)
+  const hi = Math.ceil(z)
+  if (lo === hi) return ME_ZONE_WEIGHTS[lo]
+  return ME_ZONE_WEIGHTS[lo] + (ME_ZONE_WEIGHTS[hi] - ME_ZONE_WEIGHTS[lo]) * (z - lo)
 }
 
-// Continuous muscular-endurance dose for a session of total duration D minutes:
-// quadratic in duration so each minute of a longer session is worth more, with
-// no trigger/cliff. `zone` weights intensity.
-function muscularEnduranceDose(durationMin, zone) {
-  if (durationMin <= 0) return 0
-  return ME_K * durationMin * durationMin * meIntensityFactor(zone)
+// Long-and-hard muscular-endurance dose. Two gates: the session must be long
+// enough in real clock time (so short sessions score zero however intense) AND
+// clear the effective-minutes floor. Above both, only the excess counts, mildly
+// super-linear so one long effort beats several short ones.
+function muscularEnduranceDose(rawClockMin, effectiveMin) {
+  if (rawClockMin < ME_RAW_MIN_MINUTES) return 0
+  if (effectiveMin < ME_EFF_FLOOR) return 0
+  return Math.pow(effectiveMin - ME_EFF_FLOOR, ME_EXPONENT)
 }
 
 // Resolve the intensity zone for a section. Sections do not carry their own
@@ -114,10 +122,10 @@ export function scoreSession(workout, opts = {}) {
 
   const dims = emptyDims()
   let load = 0
-  // Muscular endurance grows with total session duration (continuous, quadratic),
-  // so tally the session's total work minutes and a zone-weighted average here.
+  // Muscular endurance: tally the session's total real work minutes (the raw
+  // clock gate) and its zone-weighted effective minutes (Σ min × meZoneWeight).
   let sessionMin = 0
-  let sessionZoneWeighted = 0
+  let sessionEffMin = 0
 
   for (const section of sections) {
     if (section.kind === 'exercise') {
@@ -134,7 +142,7 @@ export function scoreSession(workout, opts = {}) {
       dims.vo2max += minutes * SPRINT_WEIGHT.vo2max
       load += cardioBlockLoad(minutes, 5)
       sessionMin += minutes
-      sessionZoneWeighted += minutes * 5
+      sessionEffMin += minutes * meZoneWeight(5)
       continue
     }
 
@@ -144,14 +152,11 @@ export function scoreSession(workout, opts = {}) {
     addDims(dims, doseFromMinutesInZone(minutes, zone))
     load += cardioBlockLoad(minutes, zone)
     sessionMin += minutes
-    sessionZoneWeighted += minutes * zone
+    sessionEffMin += minutes * meZoneWeight(zone)
   }
 
-  // Muscular endurance: continuous, quadratic in the whole session's duration.
-  if (sessionMin > 0) {
-    const z = sessionZoneWeighted / sessionMin
-    dims.muscular_endurance += muscularEnduranceDose(sessionMin, z)
-  }
+  // Muscular endurance: long-and-hard gates on real minutes + effective minutes.
+  dims.muscular_endurance += muscularEnduranceDose(sessionMin, sessionEffMin)
 
   // Strength aggregate (from structured exercise sections + muscle resolver).
   const musclesWorked = musclesWorkedFromSession(workout, resolveMuscles)
@@ -180,14 +185,15 @@ export function scoreSessionFallback(workout) {
     const list = zones && zones.length ? zones : [2]
     const per = minutes / list.length
     let load = 0
+    let effMin = 0
     for (const z of list) {
       addDims(dims, doseFromMinutesInZone(per, z))
       load += cardioBlockLoad(per, z)
+      effMin += per * meZoneWeight(z)
     }
-    // Continuous muscular-endurance accrual (quadratic in duration), same as
-    // structured sessions — long text-only sessions count proportionally more.
-    const meZone = list.length ? list.reduce((a, b) => a + b, 0) / list.length : 2
-    dims.muscular_endurance += muscularEnduranceDose(minutes, meZone)
+    // Muscular endurance: same long-and-hard gates as structured sessions —
+    // short text-only sessions score zero, only long ones accrue.
+    dims.muscular_endurance += muscularEnduranceDose(minutes, effMin)
     return { load: Math.round(load), dims, musclesWorked: {}, fidelity: 'estimated' }
   }
 

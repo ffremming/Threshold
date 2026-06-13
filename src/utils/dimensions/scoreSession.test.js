@@ -148,38 +148,59 @@ describe("load: Edwards summated-HR-zone TRIMP (minutes × zone weight)", () => 
   })
 })
 
-describe('muscular endurance: continuous, grows with session length (no cliff)', () => {
+describe('muscular endurance: long-and-hard only (short sessions score zero)', () => {
   const run = (min, zone) => ({ activityTag: 'run', type: 'continuous', intensityZone: [zone],
     blocks: { sections: [{ kind: 'steady', paceMode: 'time', durationMin: min }] } })
+  // warmup (Z1) + a work block at `zone`, as separate sections.
+  const wuWork = (wuMin, workMin, zone) => ({ activityTag: 'run', type: 'continuous', intensityZone: [zone],
+    blocks: { sections: [
+      { kind: 'warmup', paceMode: 'time', durationMin: wuMin },
+      { kind: 'steady', paceMode: 'time', durationMin: workMin },
+    ] } })
   const me = (w) => scoreSession(w).dims.muscular_endurance
 
-  it('accrues continuously — even a short session contributes a little (no trigger)', () => {
-    expect(me(run(45, 2))).toBeGreaterThan(0)
-    expect(me(run(20, 2))).toBeGreaterThan(0)
+  it('a short session contributes zero, even when intense', () => {
+    expect(me(run(30, 3))).toBe(0)   // 30 min Z3 tempo: under the 75 min clock floor
+    expect(me(wuWork(15, 30, 4))).toBe(0) // 45 min Z4 intervals: short -> zero
+    expect(me(wuWork(20, 30, 5))).toBe(0) // 50 min Z5 hard: short -> zero
+    expect(me(run(60, 2))).toBe(0)   // 60 min easy: short -> zero
   })
 
-  it('grows super-linearly with duration: a 3 h session ≫ a 1 h session', () => {
-    const at1h = me(run(60, 2))
-    const at3h = me(run(180, 2))
-    // quadratic in duration -> ~9x for 3x the time, far more than linear
-    expect(at3h).toBeGreaterThan(at1h * 6)
+  it('a long easy session that does not clear the effective-minutes floor scores zero', () => {
+    // 80 min Z1 = 80 effective minutes, below the 90 eff-min floor.
+    expect(me(run(80, 1))).toBe(0)
   })
 
-  it('a longer session beats the same total time split into shorter ones', () => {
-    const one3h = me(run(180, 2))
-    const three1h = 3 * me(run(60, 2)) // same 3 h total, split
-    expect(one3h).toBeGreaterThan(three1h * 2)
+  it('a long-enough session contributes once both gates pass', () => {
+    // 15 wu (Z1) + 60 Z3 = 75 clock min, eff = 15 + 180 = 195 -> qualifies.
+    expect(me(wuWork(15, 60, 3))).toBeGreaterThan(0)
   })
 
-  it('long hard work weighs more per minute than long easy work', () => {
-    const easyPerMin = me(run(180, 2)) / 180
-    const hardPerMin = me(run(180, 4)) / 180
-    expect(hardPerMin).toBeGreaterThan(easyPerMin)
+  it('grows super-linearly with effective minutes: a 3 h session ≫ a 90 min session', () => {
+    const at90 = me(run(90, 2))
+    const at180 = me(run(180, 2))
+    expect(at180).toBeGreaterThan(at90 * 3)
+  })
+
+  it('a longer session beats the same effective time split into shorter ones', () => {
+    // one 3 h (qualifies) vs three 1 h easy sessions (each short -> zero).
+    expect(me(run(180, 2))).toBeGreaterThan(3 * me(run(60, 2)))
+  })
+
+  it('a long threshold session ≫ a long easy session of equal clock time', () => {
+    const longThreshold = me(wuWork(30, 90, 3)) // 120 min, eff 300
+    const longEasy = me(run(120, 2))            // 120 min, eff 180
+    expect(longThreshold).toBeGreaterThan(longEasy * 2)
   })
 
   it('a text-only long session also accrues muscular endurance', () => {
     expect(scoreSession({ activityTag: 'run', type: 'continuous', intensityZone: [2], notes: '180 min' })
       .dims.muscular_endurance).toBeGreaterThan(0)
+  })
+
+  it('a text-only short session scores zero', () => {
+    expect(scoreSession({ activityTag: 'run', type: 'continuous', intensityZone: [4], notes: '40 min' })
+      .dims.muscular_endurance).toBe(0)
   })
 })
 

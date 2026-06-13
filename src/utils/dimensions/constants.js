@@ -59,16 +59,19 @@ export const SPRINT_WEIGHT = { speed: 0.85, vo2max: 0.15, endurance: 0, threshol
 export const EDWARDS_ZONE_WEIGHTS = { 1: 1, 2: 2, 3: 3, 4: 4, 5: 5 }
 
 // ── Muscular endurance ───────────────────────────────────────────────────────
-// Load-based and continuous (no triggers/cliffs). Every endurance minute
-// contributes, but minutes in LONGER sessions are worth more — the per-minute
-// weight grows with session duration, so a session of D minutes contributes
-//   dose = ME_K * D^2 * intensityFactor(zone)
-// (quadratic in duration → long efforts dominate smoothly). A 1 h session still
-// contributes a little; a 3 h session contributes far more than 3×1 h.
-export const ME_K = 0.0011
-// Intensity weighting: long hard work counts a bit more (0.7 + 0.15*zone).
-export const ME_INTENSITY_BASE = 0.7
-export const ME_INTENSITY_ZONE_SCALE = 0.15
+// Long-and-hard only: muscular endurance comes from SUSTAINED effort under load.
+// A session must clear TWO gates to contribute anything:
+//   1. real clock duration >= ME_RAW_MIN_MINUTES — short sessions score zero no
+//      matter how intense (a 45 min Z4 interval set is short → 0).
+//   2. effective minutes E = Σ(section_minutes × ME_ZONE_WEIGHTS[zone]) >= ME_EFF_FLOOR.
+// Above both, only the excess counts and long efforts dominate mildly super-linearly:
+//   dose = (E − ME_EFF_FLOOR) ^ ME_EXPONENT
+// Threshold (zone 3) minutes are weighted ×3, so length × intensity contributes
+// the most. Anchor: 30 min warmup (Z1) + 30 min Z3 = 120 effective min ("2 h").
+export const ME_ZONE_WEIGHTS = { 1: 1, 2: 1.5, 3: 3, 4: 4, 5: 5 }
+export const ME_RAW_MIN_MINUTES = 75 // real clock minutes; below this → 0
+export const ME_EFF_FLOOR = 90 // effective (zone-weighted) minutes; below this → 0
+export const ME_EXPONENT = 1.3 // super-linear so one long effort beats several short
 
 // ── Speed ────────────────────────────────────────────────────────────────────
 // Load-based: each sprint rep contributes a fixed dose (continuous, no minimum
@@ -82,12 +85,12 @@ export const SPEED_PER_SPRINT = 8
 //  - vo2max:    100 = ~120 min of Zone 4/5 work/week
 //  - threshold: 100 = ~240 min of Zone 3 work/week
 //  - speed:     100 = ~12 sprint reps/week (≈ 3 sessions × 4 sprints)
-//  - muscular_endurance: 100 = ~12 h/week of long work (e.g. 4 × 3 h sessions)
+//  - muscular_endurance: 100 = ~3 genuinely long sessions/week (long-threshold + long rides)
 export const REFERENCE_DOSE = {
   threshold: 144, // ~240 min Zone 3/week (240 × 0.6 threshold-weight)
   vo2max: 66, // ~120 min Zone 4/5/week
   endurance: 1425, // ~25 h Zone 1/2/week
-  muscular_endurance: 143, // ~12 h/week of long work (4 × 3 h)
+  muscular_endurance: 4000, // ~3 long sessions/week (see ME model above)
   speed: 96, // ~12 sprint reps/week
   strength: 55, // full-body strength ~2x/wk via the saturation model
 }

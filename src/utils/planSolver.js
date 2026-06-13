@@ -10,6 +10,9 @@ const W_DIST = 1.0
 const W_TIME = 1.0
 const W_ACT = 0.4
 const W_QUAL = 0.4
+// Exceeding the weekly hard-session cap is a hard constraint, modelled as a
+// large per-extra-session penalty so the solver never prefers an over-cap plan.
+const HARD_CAP_PENALTY = 100
 // Per-slot eligibility penalty when a candidate mismatches a day's intensity tag.
 const TAG_PENALTY = 0.25
 // Per-slot reward (negative cost) for filling a tagged day with a matching
@@ -76,15 +79,62 @@ function cost(target, proj, chosen, dayAssign, dayTags) {
     c += W_ACT * l1
   }
 
-  // Quality focus: penalize each focus quality not represented by any chosen
-  // session — proportional shortfall.
-  const qf = target.qualities || []
-  if (qf.length > 0) {
-    const served = new Set()
-    for (const ch of chosen) for (const q of ch.qualities || []) served.add(q)
-    let missing = 0
-    for (const q of qf) if (!served.has(q)) missing += 1
-    c += W_QUAL * (missing / qf.length)
+  // Quality balance. Two modes:
+  //   qualityWeights {q: w} — match the chosen sessions' quality mix to the
+  //     desired weight distribution (L1 over normalized shares). This is the
+  //     primary, expressive mode (slider weights from the UI).
+  //   qualities [q] — legacy focus set: penalize each focus quality not
+  //     represented at all. Kept for back-compat with the older callers/tests.
+  const weights = target.qualityWeights
+  if (weights && Object.keys(weights).length > 0) {
+    const wanted = new Set(Object.keys(weights).filter(q => Math.max(0, weights[q]) > 0))
+    const wTotal = Object.values(weights).reduce((s, v) => s + Math.max(0, v), 0) || 1
+    // The quality balance describes the QUALITY portion of the week. Sessions
+    // that train at least one wanted quality count toward the mix; pure-easy
+    // volume fillers (no wanted quality) are quality-neutral, so adding them to
+    // reach volume never worsens the quality cost. Each counted session splits
+    // one unit across the wanted qualities it trains.
+    const have = {}
+    let haveTotal = 0
+    for (const ch of chosen) {
+      const qs = (ch.qualities || []).filter(q => wanted.has(q))
+      if (qs.length === 0) continue
+      for (const q of qs) {
+        have[q] = (have[q] || 0) + 1 / qs.length
+        haveTotal += 1 / qs.length
+      }
+    }
+    if (haveTotal > 0) {
+      let l1 = 0
+      for (const q of wanted) {
+        const want = Math.max(0, weights[q] || 0) / wTotal
+        const got = (have[q] || 0) / haveTotal
+        l1 += Math.abs(want - got)
+      }
+      c += W_QUAL * l1
+    } else {
+      // Nothing chosen yet serves any weighted quality → full mismatch.
+      c += W_QUAL * 2
+    }
+  } else {
+    const qf = target.qualities || []
+    if (qf.length > 0) {
+      const served = new Set()
+      for (const ch of chosen) for (const q of ch.qualities || []) served.add(q)
+      let missing = 0
+      for (const q of qf) if (!served.has(q)) missing += 1
+      c += W_QUAL * (missing / qf.length)
+    }
+  }
+
+  // Hard-session cap: count existing hard sessions plus chosen high-intensity
+  // ones; every session over target.hardPerWeek incurs a large penalty so the
+  // solver fills the remaining volume with easy sessions instead.
+  if (target.hardPerWeek != null) {
+    const existingHard = Number.isFinite(target.existingHardCount) ? target.existingHardCount : 0
+    const chosenHard = chosen.filter(candidateIsHigh).length
+    const over = existingHard + chosenHard - target.hardPerWeek
+    if (over > 0) c += HARD_CAP_PENALTY * over
   }
 
   // Per-placement tag fit: translate each placement's assigned weekday to its
@@ -132,8 +182,11 @@ function fitOf(target, proj) {
   }
 }
 
-export function solveWeek(target, ctx) {
+export function solveWeek(rawTarget, ctx) {
   const { existingTotals, candidates, dayTags = {}, maxAdds = 7 } = ctx
+  // Fold the existing hard-session count into the target so the cost function's
+  // hard cap accounts for sessions already on the calendar.
+  const target = { ...rawTarget, existingHardCount: Number(existingTotals?.hardCount) || 0 }
   const restCount = WEEKDAYS.filter(d => dayTags[d] === 'rest').length
   const slotCap = Math.max(0, Math.min(maxAdds, WEEKDAYS.length - restCount))
   if (slotCap === 0 || !candidates?.length) {
@@ -202,7 +255,7 @@ export function solveWeek(target, ctx) {
   }
 
   const placements = cur.placeable.map(c => ({
-    session: { ...c.template, distance: c.distance, duration: c.duration, activityTag: c.activityTag, id: c.id },
+    session: { ...c.template, distance: c.distance, duration: c.duration, activityTag: c.activityTag, qualities: c.qualities, id: c.id },
     weekday: cur.assign.get(c),
   }))
   return { placements, fit: fitOf(target, cur.proj) }

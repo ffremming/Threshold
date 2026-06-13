@@ -69,3 +69,68 @@ describe('solveWeek', () => {
     expect(fit.distanceKm).toBeLessThan(100)        // shortfall reflected, no throw
   })
 })
+
+describe('solveWeek — quality weights + hard cap', () => {
+  const EMPTY = { distance: 0, durationMin: 0, byActivity: {}, byQuality: {} }
+
+  it('favors the higher-weighted quality in the session mix', () => {
+    // Weights strongly favor vo2max over endurance. With 2 slots and a generous
+    // volume target, the mix should lean toward the vo2max session.
+    const target = {
+      distanceKm: 40, durationMin: 240, distribution: null, qualities: [],
+      qualityWeights: { vo2max: 0.9, endurance: 0.1 },
+    }
+    const candidates = [
+      cand('vo2', 'run', 10, 60, ['vo2max']),
+      cand('end', 'run', 10, 60, ['endurance']),
+    ]
+    const { placements } = solveWeek(target, { existingTotals: EMPTY, candidates, dayTags: {}, maxAdds: 2 })
+    const vo2Count = placements.filter(p => p.session.id === 'vo2').length
+    const endCount = placements.filter(p => p.session.id === 'end').length
+    expect(vo2Count).toBeGreaterThanOrEqual(endCount)
+    expect(vo2Count).toBeGreaterThan(0)
+  })
+
+  const isHard = p => (p.session.qualities || []).some(q => ['threshold', 'vo2max', 'speed', 'strength'].includes(q))
+
+  it('placed sessions carry their qualities (so intensity is visible)', () => {
+    const target = { distanceKm: 20, durationMin: 120, distribution: null, qualities: [], qualityWeights: { vo2max: 1 } }
+    const candidates = [cand('vo2', 'run', 10, 60, ['vo2max'])]
+    const { placements } = solveWeek(target, { existingTotals: EMPTY, candidates, dayTags: {}, maxAdds: 2 })
+    expect(placements[0].session.qualities).toContain('vo2max')
+  })
+
+  it('caps HARD sessions per week and fills the rest easy', () => {
+    // Many candidates, big volume target, but hardPerWeek=2 limits the hard ones;
+    // the remaining slots must be filled with easy/endurance sessions.
+    const target = {
+      distanceKm: 100, durationMin: 600, distribution: null, qualities: [],
+      qualityWeights: { vo2max: 1 }, hardPerWeek: 2,
+    }
+    const candidates = [
+      ...Array.from({ length: 5 }, (_, i) => cand(`h${i}`, 'run', 10, 60, ['vo2max'])),
+      ...Array.from({ length: 5 }, (_, i) => cand(`e${i}`, 'run', 10, 60, ['endurance'])),
+    ]
+    const { placements } = solveWeek(target, { existingTotals: EMPTY, candidates, dayTags: {}, maxAdds: 7 })
+    expect(placements.filter(isHard).length).toBe(2)        // exactly the cap
+    expect(placements.filter(p => !isHard(p)).length).toBeGreaterThan(0) // rest are easy
+  })
+
+  it('counts existing hard sessions toward the hard cap', () => {
+    const existing = {
+      distance: 10, durationMin: 60,
+      byActivity: { run: { distance: 10, duration: 60 } },
+      byQuality: {}, hardCount: 2, // already 2 hard sessions on the calendar
+    }
+    const target = {
+      distanceKm: 100, durationMin: 600, distribution: null, qualities: [],
+      qualityWeights: { vo2max: 1 }, hardPerWeek: 2,
+    }
+    const candidates = [
+      ...Array.from({ length: 5 }, (_, i) => cand(`h${i}`, 'run', 10, 60, ['vo2max'])),
+      ...Array.from({ length: 5 }, (_, i) => cand(`e${i}`, 'run', 10, 60, ['endurance'])),
+    ]
+    const { placements } = solveWeek(target, { existingTotals: existing, candidates, dayTags: {}, maxAdds: 7 })
+    expect(placements.filter(isHard).length).toBe(0) // cap already met by existing
+  })
+})

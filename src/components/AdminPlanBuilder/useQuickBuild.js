@@ -72,15 +72,16 @@ export function useQuickBuild({
 
   // Generate across `range` ([{week,year}]).
   // `opts = { activities: [{ tag, volume, unit:'distance'|'time' }],
-  //           rampPct, qualityWeights, hardPerWeek }`.
+  //           rampPct, qualityWeights, hardPerWeek, dayTags }`.
   // Anchor-sets-the-scale: each activity's volume → minutes (distance via pace);
   // the sum is the week-1 time base, ramped across the span. Per-activity minute
-  // shares form the distribution. hardPerWeek caps total hard sessions (one per
-  // hard day) across all activities.
+  // shares form the distribution. hardPerWeek caps total hard sessions; dayTags
+  // ({weekday: 'hard'|'easy'|'long'|'rest'}) fixes weekday roles (e.g. hard on
+  // Tue/Thu/Sat, long on Sun) so the solver places by day.
   const generate = useCallback((range, opts) => {
     const selected = range || []
     if (selected.length === 0) return
-    const { activities = [], rampPct = 0, qualityWeights = null, hardPerWeek = null } = opts || {}
+    const { activities = [], rampPct = 0, qualityWeights = null, hardPerWeek = null, dayTags = {} } = opts || {}
 
     // Per-activity minutes; drop non-positive. Distribution shares come from the
     // same rows.
@@ -133,11 +134,16 @@ export function useQuickBuild({
 
       const workouts = overviewWorkoutsByWeekKey?.[key] || []
       const usedDays = new Set(workouts.map(w => Number(w.weekday)))
-      const maxAdds = Math.max(0, 7 - usedDays.size)
+      // Block days that already have a session by marking them 'rest' for the
+      // solver (one add per empty day), keeping the caller's role tags otherwise.
+      const effectiveDayTags = { ...dayTags }
+      for (const d of usedDays) effectiveDayTags[d] = 'rest'
+      const restDays = [1, 2, 3, 4, 5, 6, 7].filter(d => effectiveDayTags[d] === 'rest').length
+      const maxAdds = Math.max(0, 7 - restDays)
       const { placements } = solveWeek(target, {
         existingTotals: buildExistingTotals(workouts, resolveMuscles),
         candidates,
-        dayTags: {},
+        dayTags: effectiveDayTags,
         maxAdds,
       })
       for (const p of placements) {

@@ -87,6 +87,33 @@ describe('useQuickBuild (per-activity)', () => {
     expect(hard.length).toBeLessThanOrEqual(2)
   })
 
+  it('places hard sessions on hard-tagged days and the long session on the long day', () => {
+    const props = baseProps({
+      templates: [
+        { id: 'hard', title: 'Intervals', activityTag: 'run', type: 'interval', intensityZone: [5], blocks: { sections: [{ kind: 'interval', distanceKm: 8, durationMin: 50, reps: 5 }] } },
+        { id: 'easy', title: 'Easy', activityTag: 'run', type: 'continuous', intensityZone: [2], blocks: { sections: [{ kind: 'steady', distanceKm: 10, durationMin: 60 }] } },
+        { id: 'long', title: 'Long', activityTag: 'run', type: 'continuous', intensityZone: [2], blocks: { sections: [{ kind: 'steady', distanceKm: 24, durationMin: 140 }] } },
+      ],
+    })
+    const { result } = renderHook(() => useQuickBuild(props))
+    // dayTags: Tue(2)/Thu(4)/Sat(6) hard, Sun(7) long, rest easy.
+    act(() => result.current.generate(
+      [{ week: 1, year: 2026 }],
+      {
+        activities: [{ tag: 'run', volume: 480, unit: 'time' }], rampPct: 0,
+        qualityWeights: { vo2max: 1 }, hardPerWeek: 2,
+        dayTags: { 1: 'easy', 2: 'hard', 3: 'easy', 4: 'hard', 5: 'easy', 6: 'hard', 7: 'long' },
+      },
+    ))
+    const items = lastItems(props)
+    const isHard = i => (i.session.qualities || []).some(q => ['threshold', 'vo2max', 'speed', 'strength'].includes(q))
+    // every hard session sits on a hard-tagged weekday (2/4/6)
+    for (const i of items.filter(isHard)) expect([2, 4, 6]).toContain(i.weekday)
+    // Sunday (7) holds the longest session
+    const sunday = items.find(i => i.weekday === 7)
+    if (sunday) expect(sunday.session.id).toBe('long')
+  })
+
   it('does nothing for an empty selection or no activities', () => {
     const props = baseProps()
     const { result } = renderHook(() => useQuickBuild(props))

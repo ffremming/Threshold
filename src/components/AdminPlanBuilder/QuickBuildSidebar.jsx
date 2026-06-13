@@ -11,11 +11,10 @@ import { weekTargetKey } from '../../utils/weekTargetTypes'
 const DEFAULT_WEIGHTS = { threshold: 20, vo2max: 15, speed: 5, strength: 10, muscular_endurance: 10, endurance: 40 }
 
 // A blank activity target row. Distance-domain sports default to a distance
-// target; everything else (strength, mobility, ball sports) to time. Hard
-// sessions are opt-in per activity (off by default).
+// target; everything else (strength, mobility, ball sports) to time.
 function newRow(tag) {
   const unit = getSessionDomain(tag) === 'distance' ? 'distance' : 'time'
-  return { tag, volume: '', unit, hard: false }
+  return { tag, volume: '', unit }
 }
 
 // Left settings panel for the quick-build view. Per-activity rows (each a volume
@@ -25,6 +24,7 @@ export default function QuickBuildSidebar({ overviewWeeks, onGenerate }) {
   const weeks = overviewWeeks || []
   const [rows, setRows] = useState([newRow('run')])
   const [rampPct, setRampPct] = useState(5)
+  const [hardDays, setHardDays] = useState(3)
   const [weights, setWeights] = useState(DEFAULT_WEIGHTS)
   const [fromKey, setFromKey] = useState('')
   const [toKey, setToKey] = useState('')
@@ -47,7 +47,7 @@ export default function QuickBuildSidebar({ overviewWeeks, onGenerate }) {
   }, [weeks, from, to])
 
   const activities = rows
-    .map(r => ({ tag: r.tag, volume: Number(r.volume), unit: r.unit, hard: r.hard }))
+    .map(r => ({ tag: r.tag, volume: Number(r.volume), unit: r.unit }))
     .filter(a => a.volume > 0)
   const canGenerate = activities.length > 0 && range.length > 0
 
@@ -75,6 +75,7 @@ export default function QuickBuildSidebar({ overviewWeeks, onGenerate }) {
     onGenerate(range, {
       activities,
       rampPct: Number(rampPct),
+      hardPerWeek: Number(hardDays),
       qualityWeights: Object.keys(activeWeights).length ? activeWeights : null,
     })
   }
@@ -109,19 +110,18 @@ export default function QuickBuildSidebar({ overviewWeeks, onGenerate }) {
                   <button type="button" className={`pb-qb-unit-btn${r.unit === 'time' ? ' is-on' : ''}`} aria-label={`${meta?.label || r.tag} time unit`} aria-pressed={r.unit === 'time'} onClick={() => patchRow(r.tag, { unit: 'time' })}>min</button>
                 </div>
               </div>
-              <label className="pb-qb-act-hard">
-                <input
-                  type="checkbox"
-                  aria-label={`${meta?.label || r.tag} hard sessions`}
-                  checked={r.hard}
-                  onChange={e => patchRow(r.tag, { hard: e.target.checked })}
-                />
-                <span>Hard sessions</span>
-              </label>
             </div>
           )
         })}
         <SportPicker value={rows.map(r => r.tag)} onChange={syncRows} placeholder="+ activity" />
+      </section>
+
+      <section className="pb-qb-section">
+        <span className="pb-qb-section-label">Intensity</span>
+        <label className="pb-qb-field">
+          <span>Hard days / week</span>
+          <input type="number" min="0" max="7" aria-label="Hard days per week" value={hardDays} onChange={e => setHardDays(e.target.value)} />
+        </label>
       </section>
 
       <section className="pb-qb-section">

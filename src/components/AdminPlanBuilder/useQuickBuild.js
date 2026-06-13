@@ -71,20 +71,21 @@ export function useQuickBuild({
     [templates, resolveMuscles])
 
   // Generate across `range` ([{week,year}]).
-  // `opts = { activities: [{ tag, volume, unit:'distance'|'time', hard }],
-  //           rampPct, qualityWeights }`.
+  // `opts = { activities: [{ tag, volume, unit:'distance'|'time' }],
+  //           rampPct, qualityWeights, hardPerWeek }`.
   // Anchor-sets-the-scale: each activity's volume → minutes (distance via pace);
   // the sum is the week-1 time base, ramped across the span. Per-activity minute
-  // shares form the distribution; hard-enabled tags form the hard allow-set.
+  // shares form the distribution. hardPerWeek caps total hard sessions (one per
+  // hard day) across all activities.
   const generate = useCallback((range, opts) => {
     const selected = range || []
     if (selected.length === 0) return
-    const { activities = [], rampPct = 0, qualityWeights = null } = opts || {}
+    const { activities = [], rampPct = 0, qualityWeights = null, hardPerWeek = null } = opts || {}
 
-    // Per-activity minutes; drop non-positive. Build distribution shares + the
-    // hard allow-set from the same rows.
+    // Per-activity minutes; drop non-positive. Distribution shares come from the
+    // same rows.
     const perActivity = (activities || [])
-      .map(a => ({ tag: a.tag, minutes: activityTargetMinutes(a), hard: !!a.hard }))
+      .map(a => ({ tag: a.tag, minutes: activityTargetMinutes(a) }))
       .filter(a => a.tag && a.minutes > 0)
     if (perActivity.length === 0) return
 
@@ -93,7 +94,6 @@ export function useQuickBuild({
 
     const distribution = {}
     for (const a of perActivity) distribution[a.tag] = (a.minutes / totalMinutes) * 100
-    const hardActivities = perActivity.filter(a => a.hard).map(a => a.tag)
 
     // Seed the ramp: the first selected week carries the total time; later weeks
     // derive. Sort the selection chronologically so the ramp climbs in order.
@@ -128,7 +128,7 @@ export function useQuickBuild({
         distribution,
         qualities: [],
         qualityWeights: qualityWeights && Object.keys(qualityWeights).length ? qualityWeights : null,
-        hardActivities,
+        hardPerWeek: hardPerWeek != null ? hardPerWeek : null,
       }
 
       const workouts = overviewWorkoutsByWeekKey?.[key] || []

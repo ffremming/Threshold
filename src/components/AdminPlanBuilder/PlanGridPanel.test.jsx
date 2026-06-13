@@ -46,10 +46,10 @@ describe('PlanGridPanel (quick build)', () => {
     expect(screen.getByText('Easy run')).toBeInTheDocument()
   })
 
-  it('shows the settings sidebar with a per-activity row, quality balance + Generate', () => {
+  it('shows the settings sidebar with a per-activity row, hard days, quality balance + Generate', () => {
     render(<PlanGridPanel {...baseProps()} />)
     expect(screen.getByLabelText(/running volume/i)).toBeInTheDocument()
-    expect(screen.getByRole('checkbox', { name: /running hard sessions/i })).toBeInTheDocument()
+    expect(screen.getByLabelText(/hard days/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/threshold weight/i)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /generate/i })).toBeInTheDocument()
   })

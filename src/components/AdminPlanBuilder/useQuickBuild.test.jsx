@@ -68,27 +68,29 @@ describe('useQuickBuild (per-activity)', () => {
     expect(tags.has('bike')).toBe(true)
   })
 
-  it('keeps an activity easy when its hard toggle is off', () => {
+  it('caps total hard sessions at hardDays per week', () => {
     const props = baseProps({
-      templates: [runTpl('vo2max'), runTpl('endurance'), bikeTpl('vo2max'), bikeTpl('endurance')],
+      // a big single-week target with plenty of hard + easy candidates
+      overviewWorkoutsByWeekKey: { '2026-01': [], '2026-02': [] },
+      templates: [
+        { id: 'rh', title: 'Intervals', activityTag: 'run', type: 'interval', intensityZone: [5], blocks: { sections: [{ kind: 'interval', distanceKm: 8, durationMin: 50, reps: 5 }] } },
+        { id: 're', title: 'Easy run', activityTag: 'run', type: 'continuous', intensityZone: [2], blocks: { sections: [{ kind: 'steady', distanceKm: 12, durationMin: 72 }] } },
+      ],
     })
     const { result } = renderHook(() => useQuickBuild(props))
     act(() => result.current.generate(
       [{ week: 1, year: 2026 }],
-      { activities: [
-        { tag: 'run', volume: 180, unit: 'time', hard: true },
-        { tag: 'bike', volume: 180, unit: 'time', hard: false },
-      ], rampPct: 0, qualityWeights: { vo2max: 1 } },
+      { activities: [{ tag: 'run', volume: 420, unit: 'time' }], rampPct: 0, qualityWeights: { vo2max: 1 }, hardPerWeek: 2 },
     ))
     const items = lastItems(props)
-    const bikeHard = items.filter(i => i.session.activityTag === 'bike' && (i.session.qualities || []).some(q => ['threshold', 'vo2max', 'speed', 'strength'].includes(q)))
-    expect(bikeHard.length).toBe(0)
+    const hard = items.filter(i => (i.session.qualities || []).some(q => ['threshold', 'vo2max', 'speed', 'strength'].includes(q)))
+    expect(hard.length).toBeLessThanOrEqual(2)
   })
 
   it('does nothing for an empty selection or no activities', () => {
     const props = baseProps()
     const { result } = renderHook(() => useQuickBuild(props))
-    act(() => result.current.generate([], { activities: [{ tag: 'run', volume: 60, unit: 'time', hard: true }], rampPct: 0 }))
+    act(() => result.current.generate([], { activities: [{ tag: 'run', volume: 60, unit: 'time' }], rampPct: 0 }))
     act(() => result.current.generate([{ week: 1, year: 2026 }], { activities: [], rampPct: 0 }))
     expect(props.onAddManySessions).not.toHaveBeenCalled()
   })

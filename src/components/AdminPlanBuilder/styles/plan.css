@@ -67,5 +67,3 @@
 .pb-qb-act-remove:hover { color: #dc2626; }
 .pb-qb-act-body { display: flex; align-items: center; gap: 6px; }
 .pb-qb-act-vol { flex: 1; height: 1.9rem; padding: 0 6px; border: 1px solid var(--th-line-strong, #cbd5e1); border-radius: 6px; font-size: 0.8rem; min-width: 0; }
-.pb-qb-act-hard { display: flex; align-items: center; gap: 5px; font-size: 0.66rem; color: var(--th-ink-muted, #64748b); cursor: pointer; }
-.pb-qb-act-hard input { accent-color: var(--th-accent, #2563eb); }

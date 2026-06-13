@@ -30,6 +30,28 @@ describe('QuickBuildSidebar (per-activity)', () => {
     expect(screen.getByLabelText(/vo2max weight/i)).toBeInTheDocument()
   })
 
+  it('renders an editable weekday-role row pre-set to hard Tue/Thu/Sat and long Sun', () => {
+    render1()
+    // each weekday is a button labelled with its current role
+    expect(screen.getByRole('button', { name: /tuesday: hard/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /thursday: hard/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /saturday: hard/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /sunday: long/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /monday: easy/i })).toBeInTheDocument()
+  })
+
+  it('cycles a weekday role on click and passes dayTags to onGenerate', () => {
+    const onGenerate = vi.fn()
+    render1(onGenerate)
+    fireEvent.change(within(screen.getByTestId('activity-row-run')).getByLabelText(/running volume/i), { target: { value: '60' } })
+    // Monday easy → hard on one click
+    fireEvent.click(screen.getByRole('button', { name: /monday: easy/i }))
+    expect(screen.getByRole('button', { name: /monday: hard/i })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: /generate/i }))
+    const [, opts] = onGenerate.mock.calls[0]
+    expect(opts.dayTags).toMatchObject({ 1: 'hard', 2: 'hard', 4: 'hard', 6: 'hard', 7: 'long' })
+  })
+
   it('passes per-activity targets, hard days, and quality weights to onGenerate', () => {
     const onGenerate = vi.fn()
     render1(onGenerate)

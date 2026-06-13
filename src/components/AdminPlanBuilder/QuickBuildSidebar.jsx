@@ -10,6 +10,14 @@ import { weekTargetKey } from '../../utils/weekTargetTypes'
 // Default quality weights: an aerobic-base lean the coach tunes.
 const DEFAULT_WEIGHTS = { threshold: 20, vo2max: 15, speed: 5, strength: 10, muscular_endurance: 10, endurance: 40 }
 
+// Weekday roles. 1=Mon..7=Sun. Default: hard on Tue/Thu/Sat, long run on Sun,
+// everything else easy. Clicking a day cycles through these roles.
+const DAY_ROLE_CYCLE = ['easy', 'hard', 'long', 'rest']
+const DAY_SHORT = { 1: 'Mon', 2: 'Tue', 3: 'Wed', 4: 'Thu', 5: 'Fri', 6: 'Sat', 7: 'Sun' }
+const DAY_LONG = { 1: 'Monday', 2: 'Tuesday', 3: 'Wednesday', 4: 'Thursday', 5: 'Friday', 6: 'Saturday', 7: 'Sunday' }
+const DEFAULT_DAY_ROLES = { 1: 'easy', 2: 'hard', 3: 'easy', 4: 'hard', 5: 'easy', 6: 'hard', 7: 'long' }
+const ROLE_COLOR = { easy: '#22c55e', hard: '#ef4444', long: '#6366f1', rest: '#94a3b8' }
+
 // A blank activity target row. Distance-domain sports default to a distance
 // target; everything else (strength, mobility, ball sports) to time.
 function newRow(tag) {
@@ -25,6 +33,7 @@ export default function QuickBuildSidebar({ overviewWeeks, onGenerate }) {
   const [rows, setRows] = useState([newRow('run')])
   const [rampPct, setRampPct] = useState(5)
   const [hardDays, setHardDays] = useState(3)
+  const [dayRoles, setDayRoles] = useState(DEFAULT_DAY_ROLES)
   const [weights, setWeights] = useState(DEFAULT_WEIGHTS)
   const [fromKey, setFromKey] = useState('')
   const [toKey, setToKey] = useState('')
@@ -68,6 +77,12 @@ export default function QuickBuildSidebar({ overviewWeeks, onGenerate }) {
   function setWeight(q, v) {
     setWeights(prev => ({ ...prev, [q]: Number(v) }))
   }
+  function cycleDay(d) {
+    setDayRoles(prev => {
+      const i = DAY_ROLE_CYCLE.indexOf(prev[d] || 'easy')
+      return { ...prev, [d]: DAY_ROLE_CYCLE[(i + 1) % DAY_ROLE_CYCLE.length] }
+    })
+  }
 
   function generate() {
     const activeWeights = Object.fromEntries(
@@ -76,6 +91,7 @@ export default function QuickBuildSidebar({ overviewWeeks, onGenerate }) {
       activities,
       rampPct: Number(rampPct),
       hardPerWeek: Number(hardDays),
+      dayTags: dayRoles,
       qualityWeights: Object.keys(activeWeights).length ? activeWeights : null,
     })
   }
@@ -122,6 +138,25 @@ export default function QuickBuildSidebar({ overviewWeeks, onGenerate }) {
           <span>Hard days / week</span>
           <input type="number" min="0" max="7" aria-label="Hard days per week" value={hardDays} onChange={e => setHardDays(e.target.value)} />
         </label>
+        <div className="pb-qb-days" role="group" aria-label="Weekday roles">
+          {[1, 2, 3, 4, 5, 6, 7].map(d => {
+            const role = dayRoles[d] || 'easy'
+            return (
+              <button
+                key={d}
+                type="button"
+                className={`pb-qb-day is-${role}`}
+                aria-label={`${DAY_LONG[d]}: ${role}. Click to change.`}
+                title={`${DAY_LONG[d]}: ${role}`}
+                onClick={() => cycleDay(d)}
+                style={{ '--role-color': ROLE_COLOR[role] }}
+              >
+                <span className="pb-qb-day-name">{DAY_SHORT[d]}</span>
+                <span className="pb-qb-day-role">{role}</span>
+              </button>
+            )
+          })}
+        </div>
       </section>
 
       <section className="pb-qb-section">

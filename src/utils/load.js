@@ -18,13 +18,6 @@ export function getWorkoutDistance(workout) {
   return parseDistanceValue(workout?.distance)
 }
 
-export function getWeeklyDistance(workouts) {
-  return workouts.reduce((sum, workout) => {
-    const distance = getWorkoutDistance(workout)
-    return distance === null ? sum : sum + distance
-  }, 0)
-}
-
 export function parseDurationFromText(value) {
   if (!value || typeof value !== 'string') return 0
   const hourMatch = value.match(/(\d+(?:[.,]\d+)?)\s*(t|h|time|timer)/i)

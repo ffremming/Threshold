@@ -9,8 +9,6 @@ export const ACTIVITY_GROUPS = [
   { value: 'other',      label: 'Other' },
 ]
 
-export const ACTIVITY_GROUP_MAP = Object.fromEntries(ACTIVITY_GROUPS.map(g => [g.value, g]))
-
 export const ACTIVITY_TAGS = [
   { value: 'strength',     label: 'Strength',         icon: 'strength',     color: '#ec4899', bg: '#fce7f3', group: 'strength' },
   { value: 'run',          label: 'Running',          icon: 'run',          color: '#3b82f6', bg: '#dbeafe', group: 'endurance' },

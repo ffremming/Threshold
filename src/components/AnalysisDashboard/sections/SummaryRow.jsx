@@ -1,6 +1,9 @@
 import { SummaryCell } from './primitives'
 import { formatDelta, formatMetricValue, getMetricTooltip } from '../utils'
+import { ACWR_THRESHOLDS } from '../../../utils/loadSignals'
 import './summary.css'
+
+const ROBUST_ACWR_NOTE = `Acute/chronic load. Around ${ACWR_THRESHOLDS.undertrainingMax}–${ACWR_THRESHOLDS.safeMax} is often robust.`
 
 export default function SummaryRow({
   selectedMetricMeta, primaryMetric, totals, trendDelta, focusWeek,
@@ -23,7 +26,7 @@ export default function SummaryRow({
       <SummaryCell
         label="Readiness ratio"
         value={focusWeek?.readinessRatio ? focusWeek.readinessRatio.toFixed(2) : '0.00'}
-        note="Acute/chronic load. Around 0.8–1.3 is often robust."
+        note={ROBUST_ACWR_NOTE}
       />
       <SummaryCell label="Density" value={density} note="Load per hour." />
       <SummaryCell

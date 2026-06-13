@@ -6,6 +6,7 @@ import {
   formatLoad,
   formatPaceLabel,
   formatPauseLabel,
+  formatSeconds,
   formatSetsReps,
   formatSpeedLabel,
   getSections,
@@ -14,16 +15,6 @@ import {
   paceToSpeed,
 } from '../../sessionBlocks'
 import SessionMuscleMap from '../Strength/SessionMuscleMap'
-
-function formatSeconds(totalSec) {
-  const sec = Math.max(0, Math.round(Number(totalSec) || 0))
-  if (sec >= 60) {
-    const m = Math.floor(sec / 60)
-    const s = sec % 60
-    return s > 0 ? `${m}m ${String(s).padStart(2, '0')}s` : `${m} min`
-  }
-  return `${sec}s`
-}
 
 function describeSpeed(paceSecPerKm, activityTag) {
   if (!paceSecPerKm || paceSecPerKm <= 0) return null

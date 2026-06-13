@@ -66,12 +66,6 @@ export function clampPace(pace) {
   return Math.min(PACE_MAX, Math.max(PACE_MIN, pace))
 }
 
-export function formatSeconds(totalSec) {
-  const sec = Math.max(0, Math.round(Number(totalSec) || 0))
-  if (sec >= 60) {
-    const m = Math.floor(sec / 60)
-    const s = sec % 60
-    return s > 0 ? `${m}m ${String(s).padStart(2, '0')}s` : `${m} min`
-  }
-  return `${sec}s`
-}
+// Re-exported from the canonical session-blocks formatter so slider components
+// can keep importing it from this constants module.
+export { formatSeconds } from '../../sessionBlocks'

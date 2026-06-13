@@ -1,13 +1,18 @@
 import {
   estimateMechanicalLoad,
   estimateWorkoutDuration,
-  estimateWorkoutLoad,
   getWorkoutDistance,
   isHardWorkout,
   normalizeIntensityZones,
+  scoreSession,
 } from './index'
 import { computeWeekSummary } from './weekSummary'
+import { makeMuscleResolver } from '../components/dimensions/useMuscleResolver'
 import { averageLastValues, safeDivide } from './seriesMath'
+
+// Same canonical Edwards-TRIMP load source as computeWeekSummary, so the daily
+// breakdown and zone-load split reconcile with the week totals and the chart.
+const resolveMuscles = makeMuscleResolver()
 
 // Per-week enriched stats: totals, per-activity, per-zone, daily breakdown.
 // Past weeks count only completed sessions (planned-but-skipped shouldn't
@@ -43,7 +48,7 @@ export function buildWeekStats(
 
   const workouts = weekWorkouts.map(workout => {
     const duration = estimateWorkoutDuration(workout)
-    const load = estimateWorkoutLoad(workout)
+    const load = scoreSession(workout, { resolveMuscles }).load
     const distance = getWorkoutDistance(workout) || 0
     const mechanicalLoad = estimateMechanicalLoad(workout)
     const normalizedZones = normalizeIntensityZones(workout.type, workout.intensityZone)
@@ -88,14 +93,23 @@ export function buildWeekStats(
   }
 }
 
-// ACWR readiness bands. Boundaries are inclusive on the lower-risk side:
-// exactly 1.3 is safe, exactly 1.5 is caution. A ratio of 0 / non-finite means
-// there is no chronic baseline yet — caller treats that as "settling".
+// ACWR readiness band boundaries. Single source of truth for the acute:chronic
+// ratio thresholds used both to classify weeks (classifyAcwr) and to describe
+// the "robust" range in UI copy. Boundaries are inclusive on the lower-risk
+// side: exactly SAFE_MAX is safe, exactly CAUTION_MAX is caution.
+export const ACWR_THRESHOLDS = {
+  undertrainingMax: 0.8, // below this: undertraining
+  safeMax: 1.3,          // up to and including this: safe
+  cautionMax: 1.5,       // up to and including this: caution; above: spike
+}
+
+// ACWR readiness bands. A ratio of 0 / non-finite means there is no chronic
+// baseline yet — caller treats that as "settling".
 export function classifyAcwr(acwr) {
   if (!Number.isFinite(acwr) || acwr <= 0) return null
-  if (acwr < 0.8) return 'undertraining'
-  if (acwr <= 1.3) return 'safe'
-  if (acwr <= 1.5) return 'caution'
+  if (acwr < ACWR_THRESHOLDS.undertrainingMax) return 'undertraining'
+  if (acwr <= ACWR_THRESHOLDS.safeMax) return 'safe'
+  if (acwr <= ACWR_THRESHOLDS.cautionMax) return 'caution'
   return 'spike'
 }
 

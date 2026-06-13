@@ -65,9 +65,14 @@ function cost(target, proj, chosen, dayAssign, dayTags) {
   if (target.distanceKm > 0) c += W_DIST * Math.abs(proj.distance - target.distanceKm) / target.distanceKm
   if (target.durationMin > 0) c += W_TIME * Math.abs(proj.durationMin - target.durationMin) / target.durationMin
 
-  // Activity distribution (L1 over duration shares) — only if a distribution is set.
+  // Activity distribution (L1 over duration shares) — only if a distribution is
+  // set. Scaled by volume completeness so an under-filled week isn't punished for
+  // a temporary imbalance: with one session placed, the mix is necessarily 100%
+  // one activity, and full-strength distribution cost there would exceed the
+  // volume gain and stall the greedy before it can balance. Ramping the weight in
+  // with fill lets the solver add sessions first, then even out the mix.
   const dist = target.distribution
-  if (dist && Object.keys(dist).length > 0 && proj.durationMin > 0) {
+  if (dist && Object.keys(dist).length > 0 && proj.durationMin > 0 && target.durationMin > 0) {
     const total = Object.values(dist).reduce((s, v) => s + v, 0) || 1
     let l1 = 0
     const allTags = new Set([...Object.keys(dist), ...Object.keys(proj.byActivity)])
@@ -76,7 +81,8 @@ function cost(target, proj, chosen, dayAssign, dayTags) {
       const haveShare = (proj.byActivity[tag]?.duration || 0) / proj.durationMin
       l1 += Math.abs(wantShare - haveShare)
     }
-    c += W_ACT * l1
+    const fill = Math.min(1, proj.durationMin / target.durationMin)
+    c += W_ACT * l1 * fill
   }
 
   // Quality balance. Two modes:

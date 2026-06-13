@@ -1,9 +1,18 @@
 import { useCallback, useMemo } from 'react'
 import { computeWeekSummary, sessionDuration, sessionDistance } from '../../utils/weekSummary'
 import { sessionCategories } from '../../utils/sessionCategory'
+import { activityMinutesPerKm } from '../../utils/load'
 import { weekTargetKey } from '../../utils/weekTargetTypes'
 import { deriveWeekTargets } from '../../utils/planRamp'
 import { solveWeek } from '../../utils/planSolver'
+
+// Convert one per-activity volume target to minutes. Distance targets are sized
+// by the activity's rough pace; time targets pass through.
+function activityTargetMinutes({ tag, volume, unit }) {
+  const v = Number(volume) || 0
+  if (v <= 0) return 0
+  return unit === 'distance' ? v * activityMinutesPerKm(tag) : v
+}
 
 // Build solver candidates from the template bank: each gets duration/distance
 // and the qualities it trains (via sessionCategories).
@@ -46,10 +55,11 @@ function buildExistingTotals(workouts, resolveMuscles) {
   }
 }
 
-// Quick-build controller: ONE start volume + a ramp drives every selected week.
-// No per-week editing — the single input seeds the first selected week, the ramp
-// derives the rest (bending down for deload/taper bands and A-race goals), and
-// the solver fills each week from the bank around any existing sessions.
+// Quick-build controller: per-activity volume targets (each distance- or
+// time-based, each hard-enabled or not) drive every selected week. The summed
+// time seeds a weekly ramp; the per-activity time shares become the activity
+// distribution; the hard-enabled tags become the solver's hard allow-set. The
+// solver fills each week from the bank around existing sessions.
 export function useQuickBuild({
   plan, overviewWeeks, overviewWorkoutsByWeekKey, templates, onAddManySessions, resolveMuscles,
 }) {
@@ -60,34 +70,42 @@ export function useQuickBuild({
     () => buildCandidates(templates, resolveMuscles),
     [templates, resolveMuscles])
 
-  // Generate sessions across `range` ([{week,year}]) from a single start volume
-  // plus block-level quality/intensity/activity parameters applied to every week.
-  // `opts = { startVolume, unit:'time'|'distance', rampPct, qualityWeights,
-  // hardPerWeek, distribution }`. The first week in range is the typed base;
-  // deriveWeekTargets ramps the rest and applies deload/taper coding. The solver
-  // fills each week from the bank around existing sessions. One batched insert.
+  // Generate across `range` ([{week,year}]).
+  // `opts = { activities: [{ tag, volume, unit:'distance'|'time', hard }],
+  //           rampPct, qualityWeights }`.
+  // Anchor-sets-the-scale: each activity's volume → minutes (distance via pace);
+  // the sum is the week-1 time base, ramped across the span. Per-activity minute
+  // shares form the distribution; hard-enabled tags form the hard allow-set.
   const generate = useCallback((range, opts) => {
     const selected = range || []
     if (selected.length === 0) return
-    const {
-      startVolume, unit = 'time', rampPct = 0,
-      qualityWeights = null, hardPerWeek = null, distribution = null,
-    } = opts || {}
-    if (!(startVolume > 0)) return
+    const { activities = [], rampPct = 0, qualityWeights = null } = opts || {}
 
-    // Seed the ramp: the first selected week carries the typed start volume in the
-    // chosen unit; later weeks derive. Sort selection chronologically so the ramp
-    // climbs in calendar order.
-    const sorted = [...selected].sort((a, b) =>
-      a.year - b.year || a.week - b.week)
+    // Per-activity minutes; drop non-positive. Build distribution shares + the
+    // hard allow-set from the same rows.
+    const perActivity = (activities || [])
+      .map(a => ({ tag: a.tag, minutes: activityTargetMinutes(a), hard: !!a.hard }))
+      .filter(a => a.tag && a.minutes > 0)
+    if (perActivity.length === 0) return
+
+    const totalMinutes = perActivity.reduce((s, a) => s + a.minutes, 0)
+    if (!(totalMinutes > 0)) return
+
+    const distribution = {}
+    for (const a of perActivity) distribution[a.tag] = (a.minutes / totalMinutes) * 100
+    const hardActivities = perActivity.filter(a => a.hard).map(a => a.tag)
+
+    // Seed the ramp: the first selected week carries the total time; later weeks
+    // derive. Sort the selection chronologically so the ramp climbs in order.
+    const sorted = [...selected].sort((a, b) => a.year - b.year || a.week - b.week)
     const first = sorted[0]
     const baseTarget = {
       id: 'quickbuild-base',
       week: first.week,
       year: first.year,
       base: true,
-      distanceKm: unit === 'distance' ? startVolume : null,
-      durationMin: unit === 'time' ? startVolume : null,
+      distanceKm: null,
+      durationMin: totalMinutes,
       distribution: null,
       qualities: [],
       dayTags: {},
@@ -103,16 +121,15 @@ export function useQuickBuild({
     for (const { week, year } of sorted) {
       const key = weekTargetKey(week, year)
       const r = resolved.get(key)
-      if (!r) continue
+      if (!r || !(r.durationMin > 0)) continue
       const target = {
-        distanceKm: r.distanceKm || 0,
-        durationMin: r.durationMin || 0,
-        distribution: distribution && Object.keys(distribution).length ? distribution : null,
+        distanceKm: 0,
+        durationMin: r.durationMin,
+        distribution,
         qualities: [],
         qualityWeights: qualityWeights && Object.keys(qualityWeights).length ? qualityWeights : null,
-        hardPerWeek: hardPerWeek != null ? hardPerWeek : null,
+        hardActivities,
       }
-      if (!(target.distanceKm > 0) && !(target.durationMin > 0)) continue
 
       const workouts = overviewWorkoutsByWeekKey?.[key] || []
       const usedDays = new Set(workouts.map(w => Number(w.weekday)))

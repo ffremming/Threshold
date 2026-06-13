@@ -20,9 +20,14 @@ export async function removeRelationship(coachId, athleteId) {
 }
 
 export function onRelationshipsSnapshot(callback) {
-  return onSnapshot(collection(db, 'relationships'), snap => {
-    callback(snap.docs.map(d => ({ id: d.id, ...d.data() })))
-  })
+  return onSnapshot(
+    collection(db, 'relationships'),
+    snap => callback(snap.docs.map(d => ({ id: d.id, ...d.data() }))),
+    err => {
+      console.error('onRelationshipsSnapshot listen error:', err)
+      callback([])
+    },
+  )
 }
 
 // Live list of active coaches, for athletes browsing who to link to.
@@ -35,7 +40,11 @@ export function onCoachesSnapshot(callback) {
         .map(normalizeUserDoc)
         .filter(u => (u.status || 'active') === 'active')
       callback(coaches)
-    }
+    },
+    err => {
+      console.error('onCoachesSnapshot listen error:', err)
+      callback([])
+    },
   )
 }
 
@@ -66,17 +75,30 @@ export function onCoachAthletesSnapshot(coachId, callback) {
 
       for (const uid of nextIds) {
         if (athleteSubs.has(uid)) continue
-        const unsub = onSnapshot(doc(db, 'users', uid), userSnap => {
-          if (userSnap.exists()) athleteData.set(uid, normalizeUserDoc(userSnap))
-          else athleteData.delete(uid)
-          publish()
-        })
+        const unsub = onSnapshot(
+          doc(db, 'users', uid),
+          userSnap => {
+            if (userSnap.exists()) athleteData.set(uid, normalizeUserDoc(userSnap))
+            else athleteData.delete(uid)
+            publish()
+          },
+          err => {
+            console.error('onCoachAthletesSnapshot athlete listen error:', err)
+            athleteData.delete(uid)
+            publish()
+          },
+        )
         athleteSubs.set(uid, unsub)
       }
 
       hasRelationships = true
       publish()
-    }
+    },
+    err => {
+      console.error('onCoachAthletesSnapshot relationships listen error:', err)
+      hasRelationships = true
+      publish()
+    },
   )
 
   return () => {

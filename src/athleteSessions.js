@@ -49,7 +49,10 @@ export function subscribeAthleteSessions(coachId, athleteId, callback) {
       .map(d => ({ id: d.id, ...d.data() }))
       .sort((a, b) => (a.title || '').localeCompare(b.title || ''))
     callback(items)
-  }, () => callback([]))
+  }, err => {
+    console.error('subscribeAthleteSessions listen error:', err)
+    callback([])
+  })
 }
 
 export async function addAthleteSessionFromBank(coachId, athleteId, bankTemplate) {

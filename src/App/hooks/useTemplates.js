@@ -21,7 +21,12 @@ export function useTemplates(userProfile) {
         const customTemplates = snap.docs.map(d => ({ id: d.id, ...d.data() }))
         setTemplates(mergeTemplates(customTemplates))
         setLoadingTemplates(false)
-      }
+      },
+      err => {
+        console.error('useTemplates listen error:', err)
+        setTemplates(mergeTemplates())
+        setLoadingTemplates(false)
+      },
     )
     return unsub
   }, [userProfile?.uid])

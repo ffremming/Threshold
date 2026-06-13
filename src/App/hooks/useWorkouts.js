@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { collection, query, where, onSnapshot } from 'firebase/firestore'
 import { db } from '../../firebase'
 import {
@@ -22,6 +22,14 @@ export function useWorkouts({
   const [overviewWorkouts, setOverviewWorkouts] = useState([])
   const [loading, setLoading] = useState(true)
   const [overviewLoading, setOverviewLoading] = useState(true)
+
+  // Stable primitive derived from the week keys. The Set instance is recreated
+  // on every parent render, so depending on it directly would re-subscribe the
+  // overview listener each render; this string only changes when the keys do.
+  const overviewWeekKeysSignature = useMemo(
+    () => Array.from(overviewWeekKeys).sort().join(','),
+    [overviewWeekKeys],
+  )
 
   useEffect(() => {
     if (!viewedAthleteId) {
@@ -47,7 +55,8 @@ export function useWorkouts({
         setWorkouts(docs)
         setLoading(false)
       },
-      () => {
+      err => {
+        console.error('useWorkouts listen error:', err)
         setWorkouts([])
         setLoading(false)
       }
@@ -82,7 +91,10 @@ export function useWorkouts({
         setOverviewLoading(false)
       },
     })
-  }, [canManageWorkouts, currentWeek, currentYear, overviewWeekKeys, user?.uid, userProfile?.uid, viewedAthleteId])
+    // overviewWeekKeys/overviewWeeks are read inside but intentionally excluded:
+    // overviewWeekKeysSignature tracks their content without the unstable identity.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [canManageWorkouts, currentWeek, currentYear, overviewWeekKeysSignature, user?.uid, userProfile?.uid, viewedAthleteId])
 
   return { workouts, overviewWorkouts, loading, overviewLoading }
 }

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { collection, onSnapshot, query, where } from 'firebase/firestore'
 import { db } from '../../firebase'
 import {
@@ -51,7 +51,8 @@ export function useWeekWorkouts(selectedAthleteId, currentWeek, currentYear) {
         setWorkouts(docs)
         setLoading(false)
       },
-      () => {
+      err => {
+        console.error('useWeekWorkouts listen error:', err)
         setWorkouts([])
         setLoading(false)
       }
@@ -65,6 +66,14 @@ export function useWeekWorkouts(selectedAthleteId, currentWeek, currentYear) {
 export function useWeeklyRangeWorkouts(selectedAthleteId, weeks, weekKeys) {
   const [workouts, setWorkouts] = useState([])
   const [loading, setLoading] = useState(true)
+
+  // weeks/weekKeys are recreated on every parent render; depend on a stable
+  // primitive of their content so the listener only re-subscribes when the
+  // actual week range changes.
+  const weekKeysSignature = useMemo(
+    () => Array.from(weekKeys).sort().join(','),
+    [weekKeys],
+  )
 
   useEffect(() => {
     if (!selectedAthleteId) {
@@ -82,9 +91,14 @@ export function useWeeklyRangeWorkouts(selectedAthleteId, weeks, weekKeys) {
         setWorkouts(nextWorkouts)
         if (isReady) setLoading(false)
       },
-      onError: () => setLoading(false),
+      onError: err => {
+        console.error('useWeeklyRangeWorkouts listen error:', err)
+        setLoading(false)
+      },
     })
-  }, [weekKeys, weeks, selectedAthleteId])
+    // weeks/weekKeys read inside but excluded; weekKeysSignature tracks content.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [weekKeysSignature, selectedAthleteId])
 
   return { workouts, loading }
 }
@@ -108,7 +122,12 @@ export function useCoachTemplates(ownerId) {
           .sort(sortTemplates)
         setTemplates(customTemplates)
         setLoading(false)
-      }
+      },
+      err => {
+        console.error('useCoachTemplates listen error:', err)
+        setTemplates([])
+        setLoading(false)
+      },
     )
     return unsub
   }, [ownerId])
@@ -136,10 +155,11 @@ export function useGlobalTemplates(ownerId) {
         setTemplates(items)
         setLoading(false)
       },
-      () => {
+      err => {
+        console.error('useGlobalTemplates listen error:', err)
         setTemplates([])
         setLoading(false)
-      }
+      },
     )
     return unsub
   }, [ownerId])

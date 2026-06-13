@@ -63,7 +63,7 @@ export default function AthleteOverview({
         })
         setWorkoutCountByAthlete(prev => ({ ...prev, ...counts }))
       },
-      () => {},
+      err => console.error('AthleteOverview workout-count listen error:', err),
     ))
 
     return () => unsubs.forEach(u => u())

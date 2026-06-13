@@ -9,6 +9,7 @@ const CALLBACK_URL = import.meta.env.VITE_STRAVA_CALLBACK_URL // stravaCallback 
 // Build the Strava authorize URL. We pass the Firebase ID token as `state`
 // so the callback can identify the athlete server-side.
 export async function buildStravaAuthorizeUrl() {
+  if (!auth.currentUser) throw new Error('Not signed in — cannot connect Strava.')
   const idToken = await auth.currentUser.getIdToken()
   const params = new URLSearchParams({
     client_id: CLIENT_ID,
@@ -27,12 +28,19 @@ export function subscribeCompletedActivities(athleteId, callback) {
     collection(db, 'completedActivities'),
     where('athleteId', '==', athleteId),
   )
-  return onSnapshot(q, snap => {
-    const items = snap.docs
-      .map(d => ({ id: d.id, ...d.data() }))
-      .sort((a, b) => (b.startDate?.seconds || 0) - (a.startDate?.seconds || 0))
-    callback(items)
-  })
+  return onSnapshot(
+    q,
+    snap => {
+      const items = snap.docs
+        .map(d => ({ id: d.id, ...d.data() }))
+        .sort((a, b) => (b.startDate?.seconds || 0) - (a.startDate?.seconds || 0))
+      callback(items)
+    },
+    err => {
+      console.error('subscribeCompletedActivities listen error:', err)
+      callback([])
+    },
+  )
 }
 
 // Session-scoped in-memory cache: never fetch the same streams from Strava

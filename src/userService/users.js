@@ -29,9 +29,14 @@ export async function getUserProfile(uid) {
 }
 
 export function onUserProfileSnapshot(uid, callback) {
-  return onSnapshot(doc(db, 'users', uid), snap => {
-    callback(snap.exists() ? normalizeUserDoc(snap) : null)
-  })
+  return onSnapshot(
+    doc(db, 'users', uid),
+    snap => callback(snap.exists() ? normalizeUserDoc(snap) : null),
+    err => {
+      console.error('onUserProfileSnapshot listen error:', err)
+      callback(null)
+    },
+  )
 }
 
 export async function updateUserRole(uid, roles) {
@@ -58,7 +63,12 @@ export async function updateUserProfile(uid, fields) {
 }
 
 export function onAllUsersSnapshot(callback) {
-  return onSnapshot(collection(db, 'users'), snap => {
-    callback(snap.docs.map(normalizeUserDoc))
-  })
+  return onSnapshot(
+    collection(db, 'users'),
+    snap => callback(snap.docs.map(normalizeUserDoc)),
+    err => {
+      console.error('onAllUsersSnapshot listen error:', err)
+      callback([])
+    },
+  )
 }

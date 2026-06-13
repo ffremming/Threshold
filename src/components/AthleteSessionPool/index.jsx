@@ -47,6 +47,10 @@ export default function AthleteSessionPool({ coachId, athleteId }) {
         const custom = snap.docs.map(d => ({ id: d.id, ...d.data() }))
         setBankTemplates(mergeTemplates(custom))
       },
+      err => {
+        console.error('AthleteSessionPool templates listen error:', err)
+        setBankTemplates(mergeTemplates())
+      },
     )
     return unsub
   }, [coachId])

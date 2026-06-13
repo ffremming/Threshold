@@ -127,9 +127,20 @@ function cost(target, proj, chosen, dayAssign, dayTags) {
     }
   }
 
-  // Hard-session cap: count existing hard sessions plus chosen high-intensity
-  // ones; every session over target.hardPerWeek incurs a large penalty so the
-  // solver fills the remaining volume with easy sessions instead.
+  // Per-activity hard control: when target.hardActivities is set, a hard session
+  // is only allowed for an activity in that list. A hard session of any other
+  // activity is heavily penalized, so the solver keeps that sport easy. An empty
+  // list means no activity may be hard.
+  if (target.hardActivities != null) {
+    const allowed = new Set(target.hardActivities)
+    for (const ch of chosen) {
+      if (candidateIsHigh(ch) && !allowed.has(ch.activityTag)) c += HARD_CAP_PENALTY
+    }
+  }
+
+  // Global hard-session cap: count existing hard sessions plus chosen
+  // high-intensity ones; every session over target.hardPerWeek incurs a large
+  // penalty so the solver fills the remaining volume with easy sessions instead.
   if (target.hardPerWeek != null) {
     const existingHard = Number.isFinite(target.existingHardCount) ? target.existingHardCount : 0
     const chosenHard = chosen.filter(candidateIsHigh).length

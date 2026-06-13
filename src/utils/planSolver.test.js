@@ -133,4 +133,38 @@ describe('solveWeek — quality weights + hard cap', () => {
     const { placements } = solveWeek(target, { existingTotals: existing, candidates, dayTags: {}, maxAdds: 7 })
     expect(placements.filter(isHard).length).toBe(0) // cap already met by existing
   })
+
+  it('only allows hard sessions for activities in hardActivities', () => {
+    // Hard enabled for run, disabled for bike. Big volume so both sports fill up,
+    // but only run may carry hard sessions; bike must stay easy.
+    const target = {
+      distanceKm: 0, durationMin: 600, distribution: { run: 50, bike: 50 }, qualities: [],
+      qualityWeights: { vo2max: 1 }, hardActivities: ['run'],
+    }
+    const candidates = [
+      cand('run-hard', 'run', 0, 60, ['vo2max']),
+      cand('run-easy', 'run', 0, 60, ['endurance']),
+      cand('bike-hard', 'bike', 0, 60, ['vo2max']),
+      cand('bike-easy', 'bike', 0, 60, ['endurance']),
+    ]
+    const { placements } = solveWeek(target, { existingTotals: EMPTY, candidates, dayTags: {}, maxAdds: 7 })
+    const bikeHard = placements.filter(p => p.session.activityTag === 'bike' && isHard(p))
+    expect(bikeHard.length).toBe(0)                 // bike never hard
+    const runHard = placements.filter(p => p.session.activityTag === 'run' && isHard(p))
+    expect(runHard.length).toBeGreaterThan(0)       // run gets the hard work
+  })
+
+  it('with hardActivities empty, no session is hard', () => {
+    const target = {
+      distanceKm: 0, durationMin: 300, distribution: null, qualities: [],
+      qualityWeights: { vo2max: 1 }, hardActivities: [],
+    }
+    const candidates = [
+      cand('hard', 'run', 0, 60, ['vo2max']),
+      cand('easy', 'run', 0, 60, ['endurance']),
+    ]
+    const { placements } = solveWeek(target, { existingTotals: EMPTY, candidates, dayTags: {}, maxAdds: 5 })
+    expect(placements.filter(isHard).length).toBe(0)
+    expect(placements.length).toBeGreaterThan(0)    // still fills volume with easy
+  })
 })

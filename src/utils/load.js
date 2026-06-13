@@ -27,6 +27,16 @@ export function parseDurationFromText(value) {
   return Math.round(hours + minutes)
 }
 
+// Rough minutes-per-km used to estimate a session's time from its distance when
+// no explicit duration is given. Single source of truth so distance↔time
+// conversions (estimator, the quick-build per-activity sizing) all agree.
+const ACTIVITY_MIN_PER_KM = { bike: 2.7, swim: 20, xc_skiing: 4.8, walking: 12, run: 6 }
+const DEFAULT_MIN_PER_KM = 6
+
+export function activityMinutesPerKm(activityTag) {
+  return ACTIVITY_MIN_PER_KM[activityTag] ?? DEFAULT_MIN_PER_KM
+}
+
 export function estimateWorkoutDuration(workout) {
   const explicitDuration =
     parseDurationFromText(workout?.notes) ||
@@ -39,11 +49,7 @@ export function estimateWorkoutDuration(workout) {
   const distance = getWorkoutDistance(workout)
   if (!distance) return 0
 
-  if (workout?.activityTag === 'bike') return Math.round(distance * 2.7)
-  if (workout?.activityTag === 'swim') return Math.round(distance * 20)
-  if (workout?.activityTag === 'xc_skiing') return Math.round(distance * 4.8)
-  if (workout?.activityTag === 'walking') return Math.round(distance * 12)
-  return Math.round(distance * 6)
+  return Math.round(distance * activityMinutesPerKm(workout?.activityTag))
 }
 
 export function getWorkoutIntensityFactor(workout) {

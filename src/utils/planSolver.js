@@ -31,12 +31,21 @@ function candidateIsHigh(c) {
 //   +PENALTY   mismatch (high session on easy day, or easy session on hard day)
 //   -BONUS     match (high on hard, low on easy) — actively preferred
 //   0          untagged day — neutral
-function tagMismatch(c, tag) {
+// A "long" day is an easy day that also rewards the longest endurance session:
+// hard sessions are penalized, and an easy session earns a bonus scaled by its
+// duration relative to the longest candidate (maxDuration), so the long run/ride
+// lands here.
+function tagMismatch(c, tag, maxDuration = 0) {
   if (tag === 'rest') return Infinity
   if (!tag) return 0
   const high = candidateIsHigh(c)
   if (tag === 'hard') return high ? -TAG_BONUS : TAG_PENALTY
   if (tag === 'easy') return high ? TAG_PENALTY : -TAG_BONUS
+  if (tag === 'long') {
+    if (high) return TAG_PENALTY
+    const lengthShare = maxDuration > 0 ? (c.duration || 0) / maxDuration : 0
+    return -TAG_BONUS - TAG_BONUS * lengthShare // up to 2× bonus for the longest
+  }
   return 0
 }
 
@@ -60,7 +69,7 @@ function project(existingTotals, chosen) {
 
 // Cost of a projection vs target (lower better). Includes per-placement tag
 // penalties so day-fit influences selection.
-function cost(target, proj, chosen, dayAssign, dayTags) {
+function cost(target, proj, chosen, dayAssign, dayTags, maxDuration = 0) {
   let c = 0
   if (target.distanceKm > 0) c += W_DIST * Math.abs(proj.distance - target.distanceKm) / target.distanceKm
   if (target.durationMin > 0) c += W_TIME * Math.abs(proj.durationMin - target.durationMin) / target.durationMin
@@ -159,26 +168,29 @@ function cost(target, proj, chosen, dayAssign, dayTags) {
   for (const p of chosen) {
     const weekday = dayAssign.get(p)
     const tag = weekday != null ? (dayTags?.[weekday] || null) : null
-    c += tagMismatch(p, tag)
+    c += tagMismatch(p, tag, maxDuration)
   }
   return c
 }
 
 // Assign chosen candidates to the best eligible (non-rest) weekday, greedily by
 // tag fit, one session per day. Returns Map(candidate → weekday) and the subset
-// that found a day (placeable).
-function assignDays(chosen, dayTags) {
+// that found a day (placeable). maxDuration normalizes the "long" day bonus.
+function assignDays(chosen, dayTags, maxDuration = 0) {
   const usedDays = new Set()
   const assign = new Map()
   const placeable = []
-  // High-intensity candidates pick first so they claim hard days.
-  const order = [...chosen].sort((a, b) => Number(candidateIsHigh(b)) - Number(candidateIsHigh(a)))
+  // High-intensity candidates pick first so they claim hard days; then longest
+  // first so the long run/ride claims the long day before shorter sessions.
+  const order = [...chosen].sort((a, b) =>
+    Number(candidateIsHigh(b)) - Number(candidateIsHigh(a))
+    || (b.duration || 0) - (a.duration || 0))
   for (const c of order) {
     let bestDay = null
     let bestPen = Infinity
     for (const d of WEEKDAYS) {
       if (usedDays.has(d)) continue
-      const pen = tagMismatch(c, dayTags[d] || null)
+      const pen = tagMismatch(c, dayTags[d] || null, maxDuration)
       if (pen < bestPen) { bestPen = pen; bestDay = d }
     }
     if (bestDay != null && bestPen !== Infinity) {
@@ -223,10 +235,13 @@ export function solveWeek(rawTarget, ctx) {
   let slotSeq = 0
   const instantiate = c => ({ ...c, _slot: slotSeq++ })
 
+  // Longest candidate duration — normalizes the "long" day bonus.
+  const maxDuration = pool.reduce((m, c) => Math.max(m, c.duration || 0), 0)
+
   function evalCost(list) {
-    const { assign, placeable } = assignDays(list, dayTags)
+    const { assign, placeable } = assignDays(list, dayTags, maxDuration)
     const proj = project(existingTotals, placeable)
-    return { c: cost(target, proj, placeable, assign, dayTags), assign, placeable, proj }
+    return { c: cost(target, proj, placeable, assign, dayTags, maxDuration), assign, placeable, proj }
   }
 
   // Greedy seed: repeatedly add the candidate that most lowers cost.

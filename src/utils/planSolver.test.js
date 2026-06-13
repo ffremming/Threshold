@@ -68,6 +68,36 @@ describe('solveWeek', () => {
     expect(placements.length).toBeGreaterThan(0)
     expect(fit.distanceKm).toBeLessThan(100)        // shortfall reflected, no throw
   })
+
+  it('puts the longest endurance session on a "long" day', () => {
+    // A long-tagged day should take the longest easy/endurance session; a short
+    // easy session and a hard session should NOT win that day.
+    const target = { distanceKm: 0, durationMin: 300, distribution: null, qualities: [] }
+    const candidates = [
+      cand('short', 'run', 8, 45, ['endurance']),
+      cand('long', 'run', 22, 130, ['endurance']),
+      cand('hard', 'run', 10, 55, ['vo2max']),
+    ]
+    const { placements } = solveWeek(target, {
+      existingTotals: EMPTY_TOTALS, candidates,
+      dayTags: { 7: 'long', 1: 'easy', 2: 'easy' }, maxAdds: 3,
+    })
+    const sunday = placements.find(p => p.weekday === 7)
+    expect(sunday?.session.id).toBe('long')          // longest endurance on the long day
+  })
+
+  it('a "long" day does not take a hard session', () => {
+    const target = { distanceKm: 0, durationMin: 120, distribution: null, qualities: ['vo2max'] }
+    const candidates = [
+      cand('hard', 'run', 10, 55, ['vo2max']),
+      cand('easy-long', 'run', 20, 120, ['endurance']),
+    ]
+    const { placements } = solveWeek(target, {
+      existingTotals: EMPTY_TOTALS, candidates, dayTags: { 7: 'long' }, maxAdds: 1,
+    })
+    const sunday = placements.find(p => p.weekday === 7)
+    expect(sunday?.session.id).toBe('easy-long')     // not the hard session
+  })
 })
 
 describe('solveWeek — quality weights + hard cap', () => {

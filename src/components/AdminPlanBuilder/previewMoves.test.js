@@ -1,20 +1,10 @@
 import { describe, it, expect } from 'vitest'
 import { computePreviewMoves } from './previewMoves'
 
-// sessionsInCell stub: map of "week-year-weekday" → sessions.
-function makeSessionsInCell(map) {
-  return (week, year, weekday) => map[`${week}-${year}-${weekday}`] || []
-}
-
 describe('computePreviewMoves', () => {
-  it('shifts a single selected cell to the hovered target', () => {
-    const sessionsInCell = makeSessionsInCell({
-      '20-2026-1': [{ id: 'a', title: 'Run' }],
-    })
-    // Selected key format is "year-week-weekday".
+  it('shifts a single selected session to the hovered target', () => {
     const moves = computePreviewMoves({
-      selectedKeys: ['2026-20-1'],
-      sessionsInCell,
+      selectedSessions: [{ session: { id: 'a', title: 'Run' }, week: 20, year: 2026, weekday: 1 }],
       target: { week: 20, year: 2026, weekday: 3 },
     })
     expect(moves).toEqual([
@@ -22,14 +12,12 @@ describe('computePreviewMoves', () => {
     ])
   })
 
-  it('preserves the selection shape across multiple cells (anchor = earliest)', () => {
-    const sessionsInCell = makeSessionsInCell({
-      '20-2026-1': [{ id: 'a' }], // anchor (earliest day-index)
-      '20-2026-3': [{ id: 'b' }], // +2 days from anchor
-    })
+  it('preserves the selection shape across multiple sessions (anchor = earliest)', () => {
     const moves = computePreviewMoves({
-      selectedKeys: ['2026-20-1', '2026-20-3'],
-      sessionsInCell,
+      selectedSessions: [
+        { session: { id: 'a' }, week: 20, year: 2026, weekday: 1 }, // anchor (earliest day-index)
+        { session: { id: 'b' }, week: 20, year: 2026, weekday: 3 }, // +2 days from anchor
+      ],
       target: { week: 21, year: 2026, weekday: 2 }, // anchor lands on Tue W21
     })
     // a → Tue W21 (target); b keeps its +2 offset → Thu W21.
@@ -37,13 +25,12 @@ describe('computePreviewMoves', () => {
     expect(moves).toContainEqual({ session: { id: 'b' }, week: 21, year: 2026, weekday: 4 })
   })
 
-  it('returns one entry per session in a multi-session cell', () => {
-    const sessionsInCell = makeSessionsInCell({
-      '20-2026-1': [{ id: 'a' }, { id: 'b' }],
-    })
+  it('returns one entry per selected session sharing a day', () => {
     const moves = computePreviewMoves({
-      selectedKeys: ['2026-20-1'],
-      sessionsInCell,
+      selectedSessions: [
+        { session: { id: 'a' }, week: 20, year: 2026, weekday: 1 },
+        { session: { id: 'b' }, week: 20, year: 2026, weekday: 1 },
+      ],
       target: { week: 20, year: 2026, weekday: 5 },
     })
     expect(moves).toHaveLength(2)
@@ -52,8 +39,7 @@ describe('computePreviewMoves', () => {
 
   it('returns [] when nothing is selected', () => {
     expect(computePreviewMoves({
-      selectedKeys: [],
-      sessionsInCell: makeSessionsInCell({}),
+      selectedSessions: [],
       target: { week: 20, year: 2026, weekday: 1 },
     })).toEqual([])
   })

@@ -1,7 +1,15 @@
-import { estimateWorkoutDuration, estimateWorkoutLoad, getWorkoutDistance } from './load'
+import { estimateWorkoutDuration, getWorkoutDistance } from './load'
 import {
   computeSessionTotals, hasStructuredBlocks, getSections, computeSectionWorkMinutes,
 } from '../sessionBlocks'
+import { scoreSession } from './dimensions'
+import { makeMuscleResolver } from '../components/dimensions/useMuscleResolver'
+
+// Shared default resolver so every load number across the app (week summary,
+// analysis signals, planner trend) is the SAME Edwards-TRIMP load shown on each
+// session — including strength sessions, which need the muscle library. Callers
+// may inject their own resolver via opts; this is just the sensible default.
+const defaultResolveMuscles = makeMuscleResolver()
 
 // Duration (minutes) for a session: sum of all its block parts when the session
 // has structured blocks; otherwise fall back to the text/distance estimator.
@@ -62,7 +70,8 @@ export function sessionZoneMinutes(workout) {
 // that have no structured blocks). Zone minutes are aggregated per block via
 // sessionZoneMinutes (warmup/cooldown → Z1, work blocks → session peak zone,
 // interval rest excluded).
-export function computeWeekSummary(workouts) {
+export function computeWeekSummary(workouts, opts = {}) {
+  const resolveMuscles = opts.resolveMuscles || defaultResolveMuscles
   const activityDuration = {}
   const activityDistance = {}
   const activityLoad = {}
@@ -74,7 +83,10 @@ export function computeWeekSummary(workouts) {
 
   for (const workout of workouts || []) {
     const duration = sessionDuration(workout)
-    const load = estimateWorkoutLoad(workout)
+    // Canonical load: Edwards HR-zone TRIMP from the dimensions engine — the
+    // same number shown on each session and the daily load chart. NOT the legacy
+    // duration×intensity estimate, so every surface reconciles.
+    const load = scoreSession(workout, { resolveMuscles }).load
     const distance = sessionDistance(workout)
     const tag = workout.activityTag || 'unknown'
 

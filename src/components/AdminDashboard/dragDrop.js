@@ -1,4 +1,4 @@
-import { doc, serverTimestamp, writeBatch } from 'firebase/firestore'
+import { addDoc, collection, deleteDoc, doc, serverTimestamp, writeBatch } from 'firebase/firestore'
 import { db } from '../../firebase'
 import { withDatabaseWriteLimit } from '../../security/rateLimits'
 import {
@@ -203,7 +203,35 @@ export function createMoveActions(ctx) {
     registerRestoreUndo(priors)
   }
 
-  return { moveWorkout, moveWorkoutByDrag, moveWorkoutAcross, moveManyWorkouts }
+  // Batched multi-delete for the month-view "Cut": remove many workouts in a
+  // SINGLE commit. Captures each deleted workout's full snapshot so undo can
+  // recreate them (with fresh ids — nothing external keys off a workout id).
+  // `ids` = [workoutId].
+  async function deleteManyWorkouts(ids) {
+    if (!ids?.length) return
+    const byId = new Map(pool.map(w => [w.id, w]))
+    const snapshots = ids.map(id => byId.get(id)).filter(Boolean)
+    if (!snapshots.length) return
+
+    const batch = writeBatch(db)
+    snapshots.forEach(w => batch.delete(doc(db, 'workouts', w.id)))
+    await withDatabaseWriteLimit('workouts', () => batch.commit())
+
+    if (pushUndo) {
+      pushUndo(() => withDatabaseWriteLimit('workouts', async () => {
+        for (const w of snapshots) {
+          const { id, createdAt, updatedAt, ...snapshot } = w
+          await addDoc(collection(db, 'workouts'), {
+            ...snapshot,
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp(),
+          })
+        }
+      }))
+    }
+  }
+
+  return { moveWorkout, moveWorkoutByDrag, moveWorkoutAcross, moveManyWorkouts, deleteManyWorkouts }
 }
 
 export function createDragHandlers(ctx) {

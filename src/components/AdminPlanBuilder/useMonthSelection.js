@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { getDayIndex, getCellFromDayIndex, getWeekKey } from '../../utils'
+import { getDayIndex, getCellFromDayIndex } from '../../utils'
 import { computePreviewMoves } from './previewMoves'
 
 export function cellKey(week, year, weekday) {
@@ -20,23 +20,30 @@ function toPayload(workout) {
   return payload
 }
 
-// Excel-style cell selection + clipboard for the month grid. Owns:
-//  - selectedCells: Set of cellKey
+// Excel-style selection + clipboard for the month grid, at the SESSION level —
+// the marquee picks individual session chips it touches, not whole days. Owns:
+//  - selectedIds: Set of workout id
 //  - marquee: live rectangle {startX,startY,curX,curY} | null
 //  - hoverCell: {week,year,weekday} | null  (paste / move-drop destination)
-//  - clipboard: { cells:[{week,year,weekday,sessions:[payload]}], anchorIndex } | null
+//  - clipboard: { sessions:[{payload,index}], anchorIndex } | null
 // and the copy/paste keyboard bindings + paste / move executors.
 export function useMonthSelection({
   gridRef,
   workoutsByWeekKey,
   onAddManySessions,
   onMoveMany,
+  onDeleteMany,
   modalOpen,
 }) {
-  const [selectedCells, setSelectedCells] = useState(() => new Set())
+  const [selectedIds, setSelectedIds] = useState(() => new Set())
   const [marquee, setMarquee] = useState(null)
   const [hoverCell, setHoverCell] = useState(null)
   const [clipboard, setClipboard] = useState(null)
+  // Armed cursor-follow placement after a right-click → Copy / Cut. Holds the
+  // snapshot of sessions to place and the mode:
+  //   { mode: 'copy' | 'cut', sessions: [{payload, id, index}], anchorIndex }
+  // While armed, ghosts follow the hovered day cell and a left-click places them.
+  const [placement, setPlacement] = useState(null)
   // Live cursor position during a selection drag, for the custom follower. Null
   // when the pointer is over a slot (hoverCell set) so the follower hides.
   const [dragCursor, setDragCursor] = useState(null)
@@ -44,20 +51,38 @@ export function useMonthSelection({
   // is a ref, so the derived preview below needs a state nudge to recompute).
   const [selectionDragActive, setSelectionDragActive] = useState(false)
 
-  const marqueeRef = useRef(null)        // { startX, startY, rects: [{key, rect}] }
+  const marqueeRef = useRef(null)        // { startX, startY, rects: [{id, rect}] }
   const hoverRef = useRef(null)
   const clipboardRef = useRef(null)
-  const selectedRef = useRef(selectedCells)
+  const selectedRef = useRef(selectedIds)
   const pastingRef = useRef(false)
+  const placementRef = useRef(placement)
 
-  selectedRef.current = selectedCells
+  selectedRef.current = selectedIds
   hoverRef.current = hoverCell
   clipboardRef.current = clipboard
+  placementRef.current = placement
 
-  const sessionsInCell = useCallback((week, year, weekday) => {
-    const list = workoutsByWeekKey[getWeekKey(week, year)] || []
-    return list.filter(w => Number(w.weekday) === Number(weekday))
+  // id → { ...workout, week, year, weekday } across the whole overview window, so
+  // a selected id resolves back to its current day for moves/copies.
+  const sessionById = useMemo(() => {
+    const map = new Map()
+    for (const list of Object.values(workoutsByWeekKey || {})) {
+      for (const w of list || []) map.set(w.id, w)
+    }
+    return map
   }, [workoutsByWeekKey])
+  const sessionByIdRef = useRef(sessionById)
+  sessionByIdRef.current = sessionById
+
+  // The selected sessions resolved to {session, week, year, weekday}, dropping any
+  // id that no longer exists in the window.
+  const resolveSelected = useCallback(() => (
+    [...selectedRef.current]
+      .map(id => sessionByIdRef.current.get(id))
+      .filter(Boolean)
+      .map(w => ({ session: w, week: w.week, year: w.year, weekday: w.weekday }))
+  ), [])
 
   // ── Marquee selection ──────────────────────────────────────────────
   // Window listeners are attached imperatively at drag start (not via an effect)
@@ -66,14 +91,17 @@ export function useMonthSelection({
     // Only bail on a non-primary button (right/middle). Treat 0 / undefined as
     // the primary button so this works regardless of how the event was created.
     if (event.button > 0 || !gridRef.current) return
-    const cellEls = [...gridRef.current.querySelectorAll('[data-cell-key]')]
+    const chipEls = [...gridRef.current.querySelectorAll('[data-session-id]')]
     const start = { startX: event.clientX, startY: event.clientY }
+    // Activation is deferred until the pointer actually moves past a small
+    // threshold. This lets a marquee begin on top of an interactive element (the
+    // "+" add button) without a plain press hijacking that element's click or
+    // clearing the current selection — only a real drag activates the marquee.
     marqueeRef.current = {
       ...start,
-      rects: cellEls.map(el => ({ key: el.dataset.cellKey, rect: el.getBoundingClientRect() })),
+      active: false,
+      rects: chipEls.map(el => ({ id: el.dataset.sessionId, rect: el.getBoundingClientRect() })),
     }
-    setMarquee({ ...start, curX: event.clientX, curY: event.clientY })
-    setSelectedCells(new Set())
 
     const intersects = (rect, box) => (
       rect.left < box.right && rect.right > box.left
@@ -82,6 +110,14 @@ export function useMonthSelection({
     const onMove = (e) => {
       const m = marqueeRef.current
       if (!m) return
+      if (!m.active) {
+        const moved = Math.abs(e.clientX - m.startX) > 4 || Math.abs(e.clientY - m.startY) > 4
+        if (!moved) return
+        m.active = true
+        // First real movement: now show the box and clear any prior selection.
+        setMarquee({ startX: m.startX, startY: m.startY, curX: e.clientX, curY: e.clientY })
+        setSelectedIds(new Set())
+      }
       const box = {
         left: Math.min(m.startX, e.clientX),
         right: Math.max(m.startX, e.clientX),
@@ -89,10 +125,10 @@ export function useMonthSelection({
         bottom: Math.max(m.startY, e.clientY),
       }
       const next = new Set()
-      for (const { key, rect } of m.rects) {
-        if (intersects(rect, box)) next.add(key)
+      for (const { id, rect } of m.rects) {
+        if (intersects(rect, box)) next.add(id)
       }
-      setSelectedCells(next)
+      setSelectedIds(next)
       setMarquee(prev => prev && { ...prev, curX: e.clientX, curY: e.clientY })
     }
     const onUp = () => {
@@ -105,30 +141,29 @@ export function useMonthSelection({
     window.addEventListener('pointerup', onUp)
   }, [gridRef])
 
-  const isCellSelected = useCallback(key => selectedCells.has(key), [selectedCells])
+  const isSessionSelected = useCallback(id => selectedIds.has(id), [selectedIds])
 
-  // Parse a cellKey "year-week-weekday" back to numbers.
-  function parseKey(key) {
-    const [year, week, weekday] = key.split('-').map(Number)
-    return { week, year, weekday }
-  }
+  // ⌘/Ctrl+click on a chip toggles that single session in the selection.
+  const toggleSession = useCallback((id) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }, [])
 
   // ── Copy ───────────────────────────────────────────────────────────
   const copy = useCallback(() => {
-    const keys = [...selectedRef.current]
-    if (keys.length === 0) return
-    const cells = keys.map(key => {
-      const { week, year, weekday } = parseKey(key)
-      return {
-        week, year, weekday,
-        index: getDayIndex(week, year, weekday),
-        sessions: sessionsInCell(week, year, weekday).map(toPayload),
-      }
-    }).filter(c => c.sessions.length > 0)
-    if (cells.length === 0) return
-    const anchorIndex = Math.min(...cells.map(c => c.index))
-    setClipboard({ cells, anchorIndex })
-  }, [sessionsInCell])
+    const selected = resolveSelected()
+    if (selected.length === 0) return
+    const entries = selected.map(s => ({
+      payload: toPayload(s.session),
+      index: getDayIndex(s.week, s.year, s.weekday),
+    }))
+    const anchorIndex = Math.min(...entries.map(e => e.index))
+    setClipboard({ sessions: entries, anchorIndex })
+  }, [resolveSelected])
 
   // ── Paste (anchored to hover cell) ─────────────────────────────────
   // All pasted sessions go in ONE batched write to avoid tripping the
@@ -138,11 +173,9 @@ export function useMonthSelection({
     const hover = hoverRef.current
     if (!clip || !hover || pastingRef.current || !onAddManySessions) return
     const targetIndex = getDayIndex(hover.week, hover.year, hover.weekday)
-    const items = clip.cells.flatMap(cell => {
-      const dest = getCellFromDayIndex(targetIndex + (cell.index - clip.anchorIndex))
-      return cell.sessions.map(session => ({
-        session, week: dest.week, year: dest.year, weekday: dest.weekday,
-      }))
+    const items = clip.sessions.map(({ payload, index }) => {
+      const dest = getCellFromDayIndex(targetIndex + (index - clip.anchorIndex))
+      return { session: payload, week: dest.week, year: dest.year, weekday: dest.weekday }
     })
     if (items.length === 0) return
     pastingRef.current = true
@@ -154,32 +187,79 @@ export function useMonthSelection({
   }, [onAddManySessions])
 
   // ── Move the whole selection (anchored to a target cell) ───────────
-  // Used when the user drags a selected chip: every session in the selected
-  // cells shifts by the same offset, so the selection's shape is preserved.
+  // Used when the user drags a selected chip: every selected session shifts by
+  // the same offset, so the selection's shape is preserved.
   const moveSelection = useCallback(async (targetWeek, targetYear, targetWeekday) => {
-    const keys = [...selectedRef.current]
-    if (keys.length === 0 || !onMoveMany) return
+    const selected = resolveSelected()
+    if (selected.length === 0 || !onMoveMany) return
     const moves = computePreviewMoves({
-      selectedKeys: keys,
-      sessionsInCell,
+      selectedSessions: selected,
       target: { week: targetWeek, year: targetYear, weekday: targetWeekday },
     }).map(({ session, week, year, weekday }) => ({ id: session.id, week, year, weekday }))
     if (moves.length === 0) return
     await onMoveMany(moves)
-    setSelectedCells(new Set())
-  }, [onMoveMany, sessionsInCell])
+    setSelectedIds(new Set())
+  }, [onMoveMany, resolveSelected])
 
-  // True when the cell holding `workoutId` is part of the current selection —
-  // tells the grid to route a chip drag through moveSelection instead of a
-  // single-session move.
-  const isSelectedWorkout = useCallback((week, year, weekday) => (
-    selectedRef.current.has(cellKey(week, year, weekday))
-  ), [])
+  // ── Armed placement (right-click → Copy / Cut, then click a day) ───────
+  // Snapshot the current selection and enter cursor-follow placement mode. Both
+  // modes hold stripped payloads and place by CREATING fresh sessions; the only
+  // difference is that Cut DELETES the originals immediately when armed (so they
+  // leave the grid the moment you cut), making the held snapshot the only copy.
+  // The snapshot preserves the selection's shape relative to its earliest day.
+  const armPlacement = useCallback(async (mode) => {
+    const selected = resolveSelected()
+    if (selected.length === 0) return
+    const sessions = selected.map(s => ({
+      payload: toPayload(s.session),
+      session: s.session,
+      id: s.session.id,
+      index: getDayIndex(s.week, s.year, s.weekday),
+    }))
+    const anchorIndex = Math.min(...sessions.map(s => s.index))
+    if (mode === 'cut' && onDeleteMany) {
+      await onDeleteMany(sessions.map(s => s.id))
+    }
+    setSelectedIds(new Set())
+    setPlacement({ mode, sessions, anchorIndex })
+  }, [resolveSelected, onDeleteMany])
+
+  // Discard whatever is "in hand" (right-click while armed, or cancel). For Cut
+  // the originals were already deleted at arm-time, so discarding loses them —
+  // recoverable only via the global undo registered by the delete.
+  const cancelPlacement = useCallback(() => setPlacement(null), [])
+
+  // Place the armed sessions at a target day, preserving shape — always a batched
+  // CREATE (Cut already removed the originals). Clears placement + selection.
+  const placeAt = useCallback(async (targetWeek, targetYear, targetWeekday) => {
+    const plan = placementRef.current
+    if (!plan || pastingRef.current || !onAddManySessions) return
+    const targetIndex = getDayIndex(targetWeek, targetYear, targetWeekday)
+    const dest = (index) => getCellFromDayIndex(targetIndex + (index - plan.anchorIndex))
+    pastingRef.current = true
+    try {
+      const items = plan.sessions.map(s => {
+        const d = dest(s.index)
+        return { session: s.payload, week: d.week, year: d.year, weekday: d.weekday }
+      })
+      if (items.length) await onAddManySessions(items)
+    } finally {
+      pastingRef.current = false
+      setPlacement(null)
+      setSelectedIds(new Set())
+    }
+  }, [onAddManySessions])
 
   // ── Keyboard bindings ──────────────────────────────────────────────
   useEffect(() => {
     function onKeyDown(event) {
       if (modalOpen || isTypingTarget(event.target)) return
+      // Esc cancels an armed Copy/Cut placement.
+      if (event.key === 'Escape' && placementRef.current) {
+        event.preventDefault()
+        setPlacement(null)
+        return
+      }
       const mod = event.metaKey || event.ctrlKey
       if (!mod) return
       const k = event.key.toLowerCase()
@@ -194,27 +274,16 @@ export function useMonthSelection({
   }, [copy, paste, modalOpen])
 
   function clearSelection() {
-    setSelectedCells(new Set())
+    setSelectedIds(new Set())
   }
 
-  // Every session across all selected cells — used for the drag ghost so each
-  // dragged session stays visible.
+  // Every selected session — used for the drag ghost so each dragged session
+  // stays visible in the cursor follower.
   const selectedSessions = useCallback(() => (
-    [...selectedRef.current].flatMap(key => {
-      const { week, year, weekday } = parseKey(key)
-      return sessionsInCell(week, year, weekday)
-    })
-  ), [sessionsInCell])
+    resolveSelected().map(s => s.session)
+  ), [resolveSelected])
 
-  // The live selected day-cell DOM nodes, in grid order, for the clone ghost.
-  const selectedCellEls = useCallback(() => {
-    const grid = gridRef.current
-    if (!grid) return []
-    return [...grid.querySelectorAll('[data-cell-key]')]
-      .filter(el => selectedRef.current.has(el.dataset.cellKey))
-  }, [gridRef])
-
-  // ── Selection drag (drag a selected cell to move the whole selection) ──
+  // ── Selection drag (drag a selected chip to move the whole selection) ──
   const draggingSelectionRef = useRef(false)
   const beginSelectionDrag = useCallback((event) => {
     draggingSelectionRef.current = true
@@ -244,51 +313,67 @@ export function useMonthSelection({
   const isDraggingSelection = useCallback(() => draggingSelectionRef.current, [])
 
   // Destination ghosts grouped by destination cellKey, derived from the hovered
-  // target cell. Empty unless a selection drag is active and a cell is hovered.
+  // target cell. Driven by EITHER an active selection drag OR an armed
+  // right-click placement — both follow the cursor's day and shift the snapshot
+  // by the same offset from its anchor.
   const selectionPreview = useMemo(() => {
-    if (!selectionDragActive || !hoverCell) return {}
-    const moves = computePreviewMoves({
-      selectedKeys: [...selectedCells],
-      sessionsInCell,
-      target: hoverCell,
-    })
+    if (!hoverCell) return {}
+    let selectedSessions = null
+    let anchorIndex
+    if (placement) {
+      selectedSessions = placement.sessions.map(s => ({ session: s.session, index: s.index }))
+      anchorIndex = placement.anchorIndex
+    } else if (selectionDragActive) {
+      selectedSessions = [...selectedIds]
+        .map(id => sessionById.get(id))
+        .filter(Boolean)
+        .map(w => ({ session: w, week: w.week, year: w.year, weekday: w.weekday }))
+    } else {
+      return {}
+    }
+    const moves = computePreviewMoves({ selectedSessions, target: hoverCell, anchorIndex })
     const byCell = {}
     for (const m of moves) {
       const key = cellKey(m.week, m.year, m.weekday)
       ;(byCell[key] ||= []).push(m.session)
     }
     return byCell
-  }, [selectionDragActive, hoverCell, selectedCells, sessionsInCell])
+  }, [selectionDragActive, placement, hoverCell, selectedIds, sessionById])
 
-  // True when this ORIGINAL session belongs to the active selection drag (so the
-  // grid dims it while its ghost shows at the destination).
-  const isGhostingSession = useCallback((week, year, weekday) => (
-    selectionDragActive && hoverCell != null
-      && selectedRef.current.has(cellKey(week, year, weekday))
+  // True when this session belongs to an active selection drag — so the grid
+  // dims the original while its ghost shows at the destination. Armed placement
+  // does not dim: Copy leaves originals fully visible, and Cut already deleted
+  // its originals, so there is nothing left to dim.
+  const isGhostingSession = useCallback((id) => (
+    selectionDragActive && hoverCell != null && selectedRef.current.has(id)
   ), [selectionDragActive, hoverCell])
 
   return {
-    selectedCells,
+    selectedIds,
     marquee,
     hoverCell,
     clipboard,
     dragCursor,
     selectionPreview,
+    placement,
     beginMarquee,
     setHoverCell,
-    isCellSelected,
-    isSelectedWorkout,
+    isSessionSelected,
+    toggleSession,
     isGhostingSession,
     copy,
     paste,
     moveSelection,
     clearSelection,
+    armPlacement,
+    placeAt,
+    cancelPlacement,
+    isPlacementArmed: () => placementRef.current != null,
     beginSelectionDrag,
     endSelectionDrag,
     updateDragCursor,
     isDraggingSelection,
     selectedSessions,
-    selectedCellEls,
   }
 }
 

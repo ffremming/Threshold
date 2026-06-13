@@ -102,15 +102,15 @@
   background: color-mix(in srgb, var(--th-ink-muted, #64748b) 6%, var(--th-surface));
 }
 
-/* Marquee-selected day cells (Excel-style range selection). The whole cell is a
- * drag handle for moving the selection, so show a grab cursor. */
-.pb-month-cell.is-selected-cell {
+/* Marquee-selected session chips (Excel-style selection at the session level).
+ * A selected chip is the drag handle for moving the whole selection, so show a
+ * grab cursor. */
+.pb-month-chip.is-selected {
   border-color: var(--th-accent, #2563eb);
-  background: color-mix(in srgb, var(--th-accent, #2563eb) 8%, var(--th-surface));
-  box-shadow: inset 0 0 0 1px var(--th-accent, #2563eb);
+  box-shadow: inset 0 0 0 2px var(--th-accent, #2563eb);
   cursor: grab;
 }
-.pb-month-cell.is-selected-cell:active { cursor: grabbing; }
+.pb-month-chip.is-selected:active { cursor: grabbing; }
 
 /* The drag rectangle itself, positioned in viewport coordinates. */
 .pb-month-marquee {
@@ -403,6 +403,45 @@
   width: 160px;
   pointer-events: none;
   filter: drop-shadow(0 4px 10px rgba(15, 23, 42, 0.18));
+}
+
+/* ── Right-click Copy/Cut context menu + armed placement ──────────────── */
+.pb-month-context-menu {
+  position: fixed;
+  z-index: 50;
+  min-width: 160px;
+  padding: 4px;
+  background: var(--th-surface, #fff);
+  border: 1px solid var(--th-line, #e2e8f0);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18);
+}
+
+.pb-month-context-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 7px 10px;
+  border: none;
+  border-radius: 5px;
+  background: none;
+  font: inherit;
+  font-size: var(--th-text-xs);
+  color: var(--th-ink, #0f172a);
+  text-align: left;
+  cursor: pointer;
+}
+.pb-month-context-item:hover {
+  background: color-mix(in srgb, var(--th-accent, #2563eb) 12%, transparent);
+}
+.pb-month-context-item svg { width: 14px; height: 14px; }
+
+/* While a Copy/Cut placement is armed, the whole grid reads as a drop target:
+ * a copy cursor over the cells, and the cells highlight on hover. */
+.pb-month-grid.is-placing .pb-month-cell { cursor: copy; }
+.pb-month-grid.is-placing .pb-month-cell:hover {
+  box-shadow: inset 0 0 0 2px var(--th-accent, #2563eb);
 }
 
 /* ── Per-week load signals (load · ramp · ACWR readiness) ─────────────

@@ -41,9 +41,14 @@ export default function AdminPlanBuilder({
   onAddSessionToDayAcross,
   onAddManySessions,
   onMoveMany,
+  onDeleteMany,
   onCreateTemplate,
 }) {
   const [view, setView] = useState('week')
+  // True while the month view holds Copy/Cut sessions "in hand" awaiting a place.
+  // While armed, the bank's template actions are suppressed so the user must
+  // place or discard first.
+  const [placementArmed, setPlacementArmed] = useState(false)
 
   const layout = useBuilderLayout()
   const drag = useDragHandlers({
@@ -92,12 +97,14 @@ export default function AdminPlanBuilder({
     visiblePanelIds: callbacks.visiblePanelIds,
     currentWeek,
     currentYear,
-    onCreateTemplate,
+    // While placement is armed, suppress template create/add/drag so the user
+    // can't start new work before placing or discarding the sessions in hand.
+    onCreateTemplate: placementArmed ? undefined : onCreateTemplate,
     loadingTemplates,
     templates,
-    handleTemplateDragStart: drag.handleTemplateDragStart,
+    handleTemplateDragStart: placementArmed ? () => {} : drag.handleTemplateDragStart,
     handleDragEnd: drag.handleDragEnd,
-    handleAddTemplateClick: callbacks.handleAddTemplateClick,
+    handleAddTemplateClick: placementArmed ? () => {} : callbacks.handleAddTemplateClick,
     visibleActivities: layout.visibleActivities,
     addVisibleActivity: layout.addVisibleActivity,
     removeVisibleActivity: layout.removeVisibleActivity,
@@ -117,6 +124,8 @@ export default function AdminPlanBuilder({
     onAddSessionToDayAcross,
     onAddManySessions,
     onMoveMany,
+    onDeleteMany,
+    onPlacementChange: setPlacementArmed,
     onJumpToWeek: jumpToWeek,
     handleWorkoutDragStart: drag.handleWorkoutDragStart,
     handleDayDragStart: drag.handleDayDragStart,

@@ -86,6 +86,7 @@ export default function TabContent(p) {
         onMoveWorkoutByDrag={p.moveWorkoutByDrag}
         onMoveWorkoutAcross={p.moveWorkoutAcross}
         onMoveMany={p.moveManyWorkouts}
+        onDeleteMany={p.deleteManyWorkouts}
         onAddTemplateToDay={p.handleAddTemplateToDay}
         onAddTemplateToDayAcross={p.addTemplateToDayAcross}
         onAddManySessions={p.addManySessions}

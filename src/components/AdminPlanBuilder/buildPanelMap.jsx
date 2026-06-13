@@ -33,6 +33,8 @@ export function buildPanelMap(props) {
     onAddSessionToDayAcross,
     onAddManySessions,
     onMoveMany,
+    onDeleteMany,
+    onPlacementChange,
     modalOpen,
     onJumpToWeek,
     handleWorkoutDragStart,
@@ -72,6 +74,8 @@ export function buildPanelMap(props) {
         onAddSessionToDay={onAddSessionToDayAcross}
         onAddManySessions={onAddManySessions}
         onMoveMany={onMoveMany}
+        onDeleteMany={onDeleteMany}
+        onPlacementChange={onPlacementChange}
         modalOpen={modalOpen}
         onJumpToWeek={onJumpToWeek}
         handleWorkoutDragStart={handleWorkoutDragStart}

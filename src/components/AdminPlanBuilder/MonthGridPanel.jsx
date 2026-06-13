@@ -1,5 +1,5 @@
-import { useMemo, useRef, useState } from 'react'
-import { Plus, X } from 'lucide-react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { Plus, X, Copy, Scissors } from 'lucide-react'
 import {
   ACTIVITY_TAG_MAP, WEEKDAY_OPTIONS, groupWorkoutsByWeekday,
   normalizeIntensityZones, getZoneBarBackground, workoutHasZones,
@@ -25,7 +25,7 @@ function formatRange(monday, sunday) {
   return `${DAY_FMT.format(monday)} – ${DAY_FMT.format(sunday)}`
 }
 
-function MonthChip({ workout, onSelect, onRemove, drag, dropProps, isDragging, isDropTarget, isGhosting }) {
+function MonthChip({ workout, onSelect, onToggleSelect, onContextMenu, onRemove, drag, dropProps, isDragging, isDropTarget, isGhosting, isSelected }) {
   const tag = ACTIVITY_TAG_MAP[workout.activityTag]
   // Strength sessions have no intensity zone — show no zone accent bar.
   const zones = workoutHasZones(workout.activityTag)
@@ -46,14 +46,24 @@ function MonthChip({ workout, onSelect, onRemove, drag, dropProps, isDragging, i
     isDragging ? 'is-drag' : '',
     isDropTarget ? 'is-target' : '',
     isGhosting ? 'is-ghosting' : '',
+    isSelected ? 'is-selected' : '',
   ].filter(Boolean).join(' ')
   return (
-    <div className="pb-month-chip-wrap" {...(dropProps || {})}>
+    <div className="pb-month-chip-wrap" data-session-id={workout.id} onContextMenu={onContextMenu} {...(dropProps || {})}>
       <button
         type="button"
         className={className}
         style={{ '--pb-zone-bar': zoneBar, '--pb-zone-fill': zoneFill }}
-        onClick={() => onSelect?.(workout)}
+        onClick={event => {
+          // ⌘/Ctrl+click toggles this session in the multi-selection; a plain
+          // click opens the editor.
+          if (event.metaKey || event.ctrlKey) {
+            event.preventDefault()
+            onToggleSelect?.(workout)
+            return
+          }
+          onSelect?.(workout)
+        }}
         draggable={draggable}
         onDragStart={draggable ? event => drag.onDragStart(workout, event) : undefined}
         onDragEnd={draggable ? drag.onDragEnd : undefined}
@@ -90,6 +100,24 @@ function MarqueeBox({ marquee }) {
   return <div className="pb-month-marquee" style={{ left, top, width, height }} aria-hidden="true" />
 }
 
+// Right-click context menu for a selection: Copy / Cut, positioned at the
+// cursor. Choosing an item arms cursor-follow placement (handled by the hook).
+function SelectionContextMenu({ menu, count, onCopy, onCut }) {
+  if (!menu) return null
+  return (
+    <div className="pb-month-context-menu" style={{ left: menu.x, top: menu.y }} role="menu">
+      <button type="button" className="pb-month-context-item" role="menuitem" onClick={onCopy}>
+        <Copy aria-hidden="true" strokeWidth={2} />
+        <span>Copy{count > 1 ? ` ${count} sessions` : ''}</span>
+      </button>
+      <button type="button" className="pb-month-context-item" role="menuitem" onClick={onCut}>
+        <Scissors aria-hidden="true" strokeWidth={2} />
+        <span>Cut{count > 1 ? ` ${count} sessions` : ''}</span>
+      </button>
+    </div>
+  )
+}
+
 // Multi-week calendar grid. One row per ISO week from the overview window;
 // seven day cells per row. Sessions drag across days and weeks; the week-row
 // header jumps the Week view to that week. Supports Excel-style marquee
@@ -111,6 +139,8 @@ export default function MonthGridPanel({
   onAddSessionToDay,
   onAddManySessions,
   onMoveMany,
+  onDeleteMany,
+  onPlacementChange,
   modalOpen,
   onJumpToWeek,
   handleWorkoutDragStart,
@@ -128,8 +158,37 @@ export default function MonthGridPanel({
     workoutsByWeekKey: overviewWorkoutsByWeekKey,
     onAddManySessions,
     onMoveMany,
+    onDeleteMany,
     modalOpen,
   })
+
+  // Right-click context menu over a selection: { x, y } in viewport coords, or
+  // null when closed.
+  const [contextMenu, setContextMenu] = useState(null)
+
+  // Open the Copy/Cut menu only when right-clicking a chip that is part of the
+  // current selection. Otherwise let the browser's default menu through.
+  function handleChipContextMenu(workoutId, event) {
+    if (!sel.isSessionSelected(workoutId) || sel.selectedIds.size === 0) return
+    event.preventDefault()
+    setContextMenu({ x: event.clientX, y: event.clientY })
+  }
+
+  // Dismiss the menu on any outside pointerdown or scroll while it is open.
+  useEffect(() => {
+    if (!contextMenu) return
+    function dismiss(event) {
+      if (event.target?.closest?.('.pb-month-context-menu')) return
+      setContextMenu(null)
+    }
+    function dismissOnScroll() { setContextMenu(null) }
+    window.addEventListener('pointerdown', dismiss, true)
+    window.addEventListener('scroll', dismissOnScroll, true)
+    return () => {
+      window.removeEventListener('pointerdown', dismiss, true)
+      window.removeEventListener('scroll', dismissOnScroll, true)
+    }
+  }, [contextMenu])
 
   // The past-week boundary (completed-only filter) is keyed off today's actual
   // week, NOT the navigation cursor (currentWeek/currentYear). Navigating the
@@ -154,41 +213,37 @@ export default function MonthGridPanel({
 
   const cellDrag = { onDragStart: handleWorkoutDragStart, onDragEnd: handleDragEnd }
   const hasClipboard = Boolean(sel.clipboard)
-  const selectionCount = sel.selectedCells.size
+  const selectionCount = sel.selectedIds.size
 
   // Today's calendar date (local midnight), for highlighting the current day cell.
   const today = new Date()
   const todayStamp = today.getFullYear() * 10000 + today.getMonth() * 100 + today.getDate()
 
-  // Drop on a day cell. A selection drag (dragging a selected cell) moves the
-  // whole selection anchored to this cell. A single-session drag whose source
-  // cell is selected does the same. Otherwise: normal single-session / template
-  // drop.
+  // Drop on a day cell. A selection drag (dragging a selected chip) moves the
+  // whole selection anchored to this cell. A single-session drag whose session
+  // is part of the selection does the same. Otherwise: normal single-session /
+  // template drop.
   function handleCellDrop(week, year, weekday, beforeWorkoutId) {
     if (sel.isDraggingSelection() && selectionCount > 0) {
       sel.endSelectionDrag()
       return sel.moveSelection(week, year, weekday)
     }
     const drag = dragState
-    if (drag?.kind === 'workout' && selectionCount > 0) {
-      // The dragged workout might be in any week; find its cell across the window.
-      const all = Object.values(overviewWorkoutsByWeekKey).flat()
-      const dragged = all.find(x => x.id === drag.workoutId)
-      if (dragged && sel.isSelectedWorkout(dragged.week, dragged.year, dragged.weekday)) {
-        handleDragEnd()
-        return sel.moveSelection(week, year, weekday)
-      }
+    if (drag?.kind === 'workout' && selectionCount > 0 && sel.isSessionSelected(drag.workoutId)) {
+      handleDragEnd()
+      return sel.moveSelection(week, year, weekday)
     }
     return handleDrop(weekday, beforeWorkoutId, week, year)
   }
 
-  // Start a marquee from empty grid background. Skip chips/buttons, and skip an
-  // already-selected cell — pressing inside the current selection should drag the
-  // whole selection (the cell's native draggable handles that), not start a new
-  // marquee that would clear the selection.
+  // Start a marquee from anywhere in the grid — background, empty cell space, or
+  // even on top of a day's "+" add button. The marquee only activates once the
+  // pointer actually moves (see beginMarquee), so a plain press on "+" still adds
+  // a session and a plain press on a chip still opens it. Skip only chips (which
+  // own their click/drag gestures) and the week-label (which jumps to the week).
   function onGridPointerDown(event) {
-    if (event.target.closest('.pb-month-chip-wrap, .pb-month-week-label, .pb-month-add')) return
-    if (event.target.closest('.pb-month-cell.is-selected-cell')) return
+    if (sel.isPlacementArmed()) return // a placement click must not start a marquee
+    if (event.target.closest('.pb-month-chip-wrap, .pb-month-week-label')) return
     // Remember where a potential marquee started so the trailing click can tell a
     // real drag-select apart from a plain click on dead space.
     marqueeDownRef.current = { x: event.clientX, y: event.clientY }
@@ -198,16 +253,25 @@ export default function MonthGridPanel({
   // Clicking any non-interactive "dead" spot (panel padding, the weekday header
   // row, the week summary, a non-selected empty cell) clears the cell selection
   // and hides the active-week row outline. A click that is the tail end of a
-  // marquee drag-select must NOT clear what it just selected.
+  // marquee drag-select must NOT clear what it just selected. While a Copy/Cut
+  // placement is armed, a click on a day cell places the sessions there instead.
   function onPanelClick(event) {
     const down = marqueeDownRef.current
     marqueeDownRef.current = null
+    // An armed Copy/Cut placement intercepts the click before the marquee-trailing
+    // logic: clicking a day places, clicking off a cell cancels.
+    if (sel.isPlacementArmed()) {
+      const cellEl = event.target.closest?.('.pb-month-cell')
+      const hover = sel.hoverCell
+      if (cellEl && hover) { sel.placeAt(hover.week, hover.year, hover.weekday); return }
+      sel.cancelPlacement() // click off a cell cancels
+      return
+    }
     if (down) {
       const moved = Math.abs(event.clientX - down.x) > 4 || Math.abs(event.clientY - down.y) > 4
       if (moved) return // this click ends a real marquee drag — keep the selection
     }
     if (event.target.closest('.pb-month-chip-wrap, .pb-month-week-label, .pb-month-add')) return
-    if (event.target.closest('.pb-month-cell.is-selected-cell')) return
     if (selectionCount > 0) sel.clearSelection()
     setOutlineSuppressed(true)
   }
@@ -218,12 +282,20 @@ export default function MonthGridPanel({
     onJumpToWeek(week, year)
   }
 
+  // While sessions are "in hand" (armed Copy/Cut placement), a right-click
+  // anywhere discards them instead of showing a menu.
+  function onPanelContextMenu(event) {
+    if (!sel.isPlacementArmed()) return
+    event.preventDefault()
+    sel.cancelPlacement()
+  }
+
   return (
-    <main className="pb-panel pb-panel--calendar" onClick={onPanelClick}>
+    <main className="pb-panel pb-panel--calendar" onClick={onPanelClick} onContextMenu={onPanelContextMenu}>
       <BuilderPanelHeader
         
         copy={hasClipboard
-          ? `${selectionCount > 0 ? `${selectionCount} cell${selectionCount > 1 ? 's' : ''} selected · ` : ''}Hover a day and press ⌘/Ctrl+V to paste.`
+          ? `${selectionCount > 0 ? `${selectionCount} session${selectionCount > 1 ? 's' : ''} selected · ` : ''}Hover a day and press ⌘/Ctrl+V to paste.`
           : ''}
         panelId="calendar"
         visiblePanelIds={visiblePanelIds}
@@ -257,7 +329,7 @@ export default function MonthGridPanel({
       ) : (
         <div
           ref={gridRef}
-          className={`pb-month-grid${dragState ? ' is-dragging' : ''}`}
+          className={`pb-month-grid${dragState ? ' is-dragging' : ''}${sel.placement ? ' is-placing' : ''}`}
           role="grid"
           onPointerDown={onGridPointerDown}
           onDragOver={event => {
@@ -304,7 +376,6 @@ export default function MonthGridPanel({
 
                 {dayBuckets.map(day => {
                   const key = cellKey(weekEntry.week, weekEntry.year, day.value)
-                  const cellSelected = sel.isCellSelected(key)
                   const baseDropProps = makeDropZoneProps({
                     dragState, handleDropTargetChange,
                     handleDrop: () => handleCellDrop(weekEntry.week, weekEntry.year, day.value, null),
@@ -334,26 +405,15 @@ export default function MonthGridPanel({
                       baseDropProps.onDrop(event)
                     },
                   }
-                  // A selected cell is the handle for dragging the whole selection.
-                  const cellDragProps = cellSelected
-                    ? {
-                        draggable: true,
-                        onDragStart: event => sel.beginSelectionDrag(event),
-                        onDragEnd: () => sel.endSelectionDrag(),
-                      }
-                    : undefined
-                  // Dragging a chip whose cell is selected moves the whole
-                  // selection. The native drag image is suppressed in
-                  // beginSelectionDrag; a custom cursor-follower + destination
-                  // ghosts (rendered below) show where the sessions will land.
-                  const chipDrag = cellSelected
-                    ? {
-                        onDragStart: (workout, event) => {
-                          sel.beginSelectionDrag(event)
-                        },
-                        onDragEnd: () => { sel.endSelectionDrag(); handleDragEnd() },
-                      }
-                    : cellDrag
+                  // Dragging a selected chip moves the whole selection. The
+                  // native drag image is suppressed in beginSelectionDrag; a
+                  // custom cursor-follower + destination ghosts (rendered below)
+                  // show where the sessions will land. An unselected chip drags
+                  // on its own via the normal single-session handlers.
+                  const selectionChipDrag = {
+                    onDragStart: (workout, event) => { sel.beginSelectionDrag(event) },
+                    onDragEnd: () => { sel.endSelectionDrag(); handleDragEnd() },
+                  }
                   const isDayTarget = Boolean(dragState)
                     && dropTarget?.weekday === day.value
                     && Number(dropTarget?.week) === weekEntry.week
@@ -374,20 +434,29 @@ export default function MonthGridPanel({
                   return (
                     <div
                       key={day.value}
-                      data-cell-key={key}
-                      className={`pb-month-cell${isEmptyDay ? ' is-empty' : ''}${isToday ? ' is-today' : ''}${isDayTarget ? ' is-target' : ''}${cellSelected ? ' is-selected-cell' : ''}`}
+                      className={`pb-month-cell${isEmptyDay ? ' is-empty' : ''}${isToday ? ' is-today' : ''}${isDayTarget ? ' is-target' : ''}`}
                       role="gridcell"
                       onPointerEnter={() => sel.setHoverCell({ week: weekEntry.week, year: weekEntry.year, weekday: day.value })}
-                      {...cellDragProps}
                       {...dayDropProps}
                     >
-                      {day.workouts.map(w => (
+                      {day.workouts.map(w => {
+                        const chipSelected = sel.isSessionSelected(w.id)
+                        return (
                         <MonthChip
                           key={w.id}
                           workout={w}
-                          onSelect={onSelectWorkout}
+                          onSelect={workout => {
+                            // While a Copy/Cut placement is armed, a click on a
+                            // chip places at the hovered day instead of opening
+                            // the editor (handled by onPanelClick); swallow it.
+                            if (sel.isPlacementArmed()) return
+                            onSelectWorkout(workout)
+                          }}
+                          onToggleSelect={() => sel.toggleSession(w.id)}
+                          onContextMenu={event => handleChipContextMenu(w.id, event)}
                           onRemove={onDeleteWorkout}
-                          drag={chipDrag}
+                          isSelected={chipSelected}
+                          drag={chipSelected ? selectionChipDrag : cellDrag}
                           dropProps={makeDropZoneProps({
                             dragState, handleDropTargetChange,
                             handleDrop: () => handleCellDrop(weekEntry.week, weekEntry.year, day.value, w.id),
@@ -395,19 +464,26 @@ export default function MonthGridPanel({
                             week: weekEntry.week, year: weekEntry.year, stopPropagation: true,
                           })}
                           isDragging={dragState?.kind === 'workout' && dragState.workoutId === w.id}
-                          isGhosting={sel.isGhostingSession(weekEntry.week, weekEntry.year, day.value)}
+                          isGhosting={sel.isGhostingSession(w.id)}
                           isDropTarget={dropTarget?.beforeWorkoutId === w.id
                             && Number(dropTarget?.week) === weekEntry.week
                             && Number(dropTarget?.year) === weekEntry.year}
                         />
-                      ))}
+                        )
+                      })}
                       {(sel.selectionPreview[key] || []).map((ghost, i) => (
                         <MonthGhostChip key={`ghost-${ghost.id || i}`} workout={ghost} />
                       ))}
                       <button
                         type="button"
                         className="pb-month-add"
-                        onClick={() => onAddSessionToDay(weekEntry.week, weekEntry.year, day.value)}
+                        onClick={() => {
+                          // While sessions are in hand, the "+" must not open the
+                          // add form — the click places the held sessions on this
+                          // day instead (handled by onPanelClick).
+                          if (sel.isPlacementArmed()) return
+                          onAddSessionToDay(weekEntry.week, weekEntry.year, day.value)
+                        }}
                         aria-label={`Add a session on ${day.label}, week ${weekEntry.week}`}
                         title={`Add a session on ${day.shortLabel}, week ${weekEntry.week}`}
                       >
@@ -432,6 +508,13 @@ export default function MonthGridPanel({
       )}
 
       <MarqueeBox marquee={sel.marquee} />
+
+      <SelectionContextMenu
+        menu={contextMenu}
+        count={selectionCount}
+        onCopy={() => { sel.armPlacement('copy'); setContextMenu(null) }}
+        onCut={() => { sel.armPlacement('cut'); setContextMenu(null) }}
+      />
 
       {sel.dragCursor && (
         <div

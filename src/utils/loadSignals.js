@@ -5,6 +5,7 @@ import {
   isHardWorkout,
   normalizeIntensityZones,
   scoreSession,
+  scoreWeek,
 } from './index'
 import { computeWeekSummary } from './weekSummary'
 import { makeMuscleResolver } from '../components/dimensions/useMuscleResolver'
@@ -151,21 +152,28 @@ export function computeWeekSignals(weeks, workoutsByWeekKey, currentWeek, curren
   return signals
 }
 
-// Per-week series for the planner trend chart: one ordered entry per week with
-// the metrics the chart can switch between. Same source of truth as the badges
-// (buildWeekStats) so the chart and the per-week signals never disagree.
+// Per-week series for the planner trend chart. Scored PLANNED-ONLY from each
+// week's raw workouts (every prescribed session, no completed-only filter for
+// past weeks) so the whole chart reflects the plan, including the per-quality
+// `dims`. This intentionally differs from computeWeekSignals/buildWeekStats,
+// which stay completed-only for past weeks — the load-signals strip shows "what
+// happened", the trend chart shows "the plan". todayWeek/todayYear are accepted
+// for call-site compatibility but unused (planned-only has no past/future split).
 export function computeWeekSeries(weeks, workoutsByWeekKey, currentWeek, currentYear, todayWeek = currentWeek, todayYear = currentYear) {
   return weeks.map(week => {
-    const stats = buildWeekStats(week, workoutsByWeekKey, currentWeek, currentYear, null, todayWeek, todayYear)
+    const workouts = workoutsByWeekKey[week.key] || []
+    const summary = computeWeekSummary(workouts, { resolveMuscles })
+    const scored = scoreWeek(workouts, { resolveMuscles })
     return {
       key: week.key,
       week: week.week,
       year: week.year,
       label: `W${week.week}`,
-      distance: stats.distance,
-      duration: stats.duration,
-      load: stats.load,
-      activityDistance: stats.activityDistance,
+      distance: summary.totalDistance,
+      duration: summary.totalDuration,
+      load: scored.load,
+      activityDistance: summary.activityDistance,
+      dims: scored.dims,
     }
   })
 }

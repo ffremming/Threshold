@@ -159,4 +159,37 @@ describe('computeWeekSeries', () => {
     const series = computeWeekSeries(weeks, { '2026-23': [] }, 99, 2026)
     expect(series[0]).toMatchObject({ key: '2026-23', distance: 0, duration: 0, load: 0 })
   })
+
+  it('attaches a dims map per week with all six qualities', () => {
+    const weeks = [{ week: 23, year: 2026, key: '2026-23' }]
+    const series = computeWeekSeries(weeks, { '2026-23': run(60, 10) }, 99, 2026)
+    expect(Object.keys(series[0].dims).sort()).toEqual(
+      ['endurance', 'muscular_endurance', 'speed', 'strength', 'threshold', 'vo2max']
+    )
+    // Zone-2 aerobic work feeds endurance.
+    expect(series[0].dims.endurance).toBeGreaterThan(0)
+  })
+
+  it('counts planned (non-completed) sessions for a PAST week (planned-only)', () => {
+    // The whole trend series is planned-only: even a genuinely-past week (today
+    // is W24) counts a planned-but-skipped session — unlike buildWeekStats /
+    // computeWeekSignals, which drop it.
+    const skipped = [{
+      activityTag: 'run', type: 'rolig', intensityZone: [2], completed: false,
+      notes: '60 min', distance: '10 km',
+    }]
+    const weeks = [{ week: 23, year: 2026, key: '2026-23' }]
+    // cursor=24, today=24 → W23 is past; planned session must still count.
+    const series = computeWeekSeries(weeks, { '2026-23': skipped }, 24, 2026, 24, 2026)
+    expect(series[0].duration).toBeCloseTo(60, 5)
+    expect(series[0].load).toBeGreaterThan(0)
+    expect(series[0].dims.endurance).toBeGreaterThan(0)
+  })
+
+  it('still emits activityDistance for the per-sport distance fan-out', () => {
+    const weeks = [{ week: 23, year: 2026, key: '2026-23' }]
+    const series = computeWeekSeries(weeks, { '2026-23': run(60, 10) }, 99, 2026)
+    expect(series[0].activityDistance).toBeTypeOf('object')
+    expect(series[0].activityDistance.run).toBeCloseTo(10, 5)
+  })
 })

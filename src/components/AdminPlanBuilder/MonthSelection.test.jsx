@@ -33,6 +33,11 @@ function baseProps(overrides = {}) {
     onSelectWorkout: () => {},
     onDeleteWorkout: () => {},
     onAddSessionToDay: () => {},
+    onAddTemplateToDayAcross: () => {},
+    templates: [],
+    visibleActivities: [],
+    addVisibleActivity: () => {},
+    removeVisibleActivity: () => {},
     onAddManySessions: vi.fn(),
     onMoveMany: vi.fn(),
     onDeleteMany: vi.fn(),
@@ -117,18 +122,23 @@ describe('Month marquee selection + copy/paste (session-level)', () => {
     expect(onAddSessionToDay).not.toHaveBeenCalled() // a real drag, not a click
   })
 
-  it('a plain press on the "+" add button adds a session and does not start a marquee', () => {
+  it('a plain press on the "+" add button opens the add menu and "Create new" adds a session', () => {
     const onAddSessionToDay = vi.fn()
-    const { container } = render(<MonthGridPanel {...baseProps({ onAddSessionToDay })} />)
+    const { container } = render(<MonthGridPanel {...baseProps({ onAddSessionToDay, templates: [] })} />)
     stubChipRects(container)
 
     const addBtn = container.querySelectorAll('.pb-month-row')[0].querySelector('.pb-month-add')
-    // Press + release with no movement → not a marquee; the click adds a session.
+    // Press + release with no movement → not a marquee; the click opens the menu.
     act(() => {
       fireEvent(addBtn, Object.assign(new Event('pointerdown', { bubbles: true }), { button: 0, clientX: 5, clientY: 5 }))
       pointerUp(window)
     })
     fireEvent.click(addBtn, { clientX: 5, clientY: 5 })
+
+    // Empty bank → only "Create new" is offered; clicking it adds a session.
+    const createNew = [...document.querySelectorAll('.pb-add-menu-item')]
+      .find(b => /create new/i.test(b.textContent))
+    fireEvent.click(createNew)
 
     expect(onAddSessionToDay).toHaveBeenCalledTimes(1)
     expect(container.querySelector('.pb-month-chip.is-selected')).toBeNull()
@@ -339,18 +349,26 @@ describe('Right-click Copy/Cut placement', () => {
     return container.querySelectorAll('.pb-month-row')[1].querySelectorAll('.pb-month-cell')[3]
   }
 
-  it('opens the menu only when right-clicking inside the selection', () => {
+  it('shows Copy/Cut only when right-clicking inside the selection', () => {
     const { container } = render(<MonthGridPanel {...baseProps()} />)
     stubChipRects(container)
     selectS1(container) // s1 selected, s2 not
 
-    // Right-click the UNselected chip → no menu.
-    fireEvent.contextMenu(container.querySelector('[data-session-id="s2"]'))
-    expect(container.querySelector('.pb-month-context-menu')).toBeNull()
+    const menuText = () => Array.from(
+      container.querySelectorAll('.pb-month-context-item')
+    ).map(b => b.textContent)
 
-    // Right-click the selected chip → menu appears.
-    fireEvent.contextMenu(container.querySelector('[data-session-id="s1"]'))
+    // Right-click the UNselected chip → menu opens with "Add note here" but no
+    // Copy/Cut (those belong to a session selection).
+    fireEvent.contextMenu(container.querySelector('[data-session-id="s2"]'))
     expect(container.querySelector('.pb-month-context-menu')).not.toBeNull()
+    expect(menuText().some(t => /Add note here/.test(t))).toBe(true)
+    expect(menuText().some(t => /^Copy/.test(t))).toBe(false)
+
+    // Right-click the selected chip → Copy/Cut appear.
+    fireEvent.contextMenu(container.querySelector('[data-session-id="s1"]'))
+    expect(menuText().some(t => /^Copy/.test(t))).toBe(true)
+    expect(menuText().some(t => /^Cut/.test(t))).toBe(true)
   })
 
   it('Copy then clicking a day creates a duplicate there (batched), originals kept', async () => {
@@ -461,5 +479,55 @@ describe('Right-click Copy/Cut placement', () => {
     fireEvent.pointerEnter(target)
     fireEvent.click(target)
     expect(onAddManySessions).not.toHaveBeenCalled()
+  })
+
+  it('does not open a session editor while sessions are in hand', () => {
+    const onSelectWorkout = vi.fn()
+    const { container } = render(<MonthGridPanel {...baseProps({ onSelectWorkout })} />)
+    stubChipRects(container)
+    selectS1(container)
+
+    fireEvent.contextMenu(container.querySelector('[data-session-id="s1"]'))
+    fireEvent.click(container.querySelectorAll('.pb-month-context-item')[0]) // Copy
+
+    // Clicking any chip now places, never opens the editor.
+    fireEvent.click(chip(container, 's2'))
+    expect(onSelectWorkout).not.toHaveBeenCalled()
+  })
+
+  it('does not open the add form via "+" while sessions are in hand (places instead)', async () => {
+    const onAddSessionToDay = vi.fn()
+    const onAddManySessions = vi.fn()
+    const { container } = render(<MonthGridPanel {...baseProps({ onAddSessionToDay, onAddManySessions })} />)
+    stubChipRects(container)
+    selectS1(container)
+
+    fireEvent.contextMenu(container.querySelector('[data-session-id="s1"]'))
+    fireEvent.click(container.querySelectorAll('.pb-month-context-item')[0]) // Copy
+
+    // Click the "+" on W22 Thursday: it must not open the add form; the click
+    // places the held sessions on that day.
+    const target = thuW22(container)
+    fireEvent.pointerEnter(target)
+    const addBtn = target.querySelector('.pb-month-add')
+    await act(async () => { fireEvent.click(addBtn) })
+
+    expect(onAddSessionToDay).not.toHaveBeenCalled()
+    expect(onAddManySessions).toHaveBeenCalledTimes(1)
+  })
+
+  it('reports armed/disarmed placement to the builder via onPlacementChange', () => {
+    const onPlacementChange = vi.fn()
+    const { container } = render(<MonthGridPanel {...baseProps({ onPlacementChange })} />)
+    stubChipRects(container)
+    selectS1(container)
+    onPlacementChange.mockClear() // ignore the initial mount(false)
+
+    fireEvent.contextMenu(container.querySelector('[data-session-id="s1"]'))
+    fireEvent.click(container.querySelectorAll('.pb-month-context-item')[0]) // Copy
+    expect(onPlacementChange).toHaveBeenLastCalledWith(true)
+
+    fireEvent.keyDown(document, { key: 'Escape' })
+    expect(onPlacementChange).toHaveBeenLastCalledWith(false)
   })
 })

@@ -6,9 +6,12 @@ export function usePlanCallbacks({
   onWeekChange,
   isThisWeek,
   onAddTemplateToDay,
+  view,
 }) {
-  // Bank (Session picker) and the week always sit side by side.
-  const visiblePanelIds = ['bank', 'calendar']
+  // Bank (Session picker) and the calendar sit side by side — except on the
+  // quick-build tab, which fills the period from the bank automatically and so
+  // hides the manual picker.
+  const visiblePanelIds = view === 'plan' ? ['calendar'] : ['bank', 'calendar']
 
   function prevWeek() {
     const previous = getAdjacentWeek(currentWeek, currentYear, -1)

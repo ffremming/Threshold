@@ -1,32 +1,26 @@
-import { useMemo, useState } from 'react'
-import { EmptyState, Modal, SearchBox, TemplateCard } from '../components/ui'
-import { ACTIVITY_TAG_MAP } from '../utils'
+import { useMemo } from 'react'
+import { EmptyState, Modal, SessionFilterBar, TemplateCard } from '../components/ui'
+import { useSessionFilters } from './hooks/useSessionFilters'
+import { makeMuscleResolver } from '../components/dimensions/useMuscleResolver'
 
-function matchesSearch(template, term) {
-  if (!term) return true
-  const tags = Array.isArray(template.tags) ? template.tags : []
-  const haystack = [
-    template.title,
-    template.description,
-    template.category,
-    template.type,
-    template.activityTag,
-    ACTIVITY_TAG_MAP[template.activityTag]?.label,
-    ...tags,
-  ]
-    .filter(Boolean)
-    .join(' ')
-    .toLowerCase()
-  return haystack.includes(term.toLowerCase())
-}
+const resolveMuscles = makeMuscleResolver()
+
+const SWAP_FILTERS = ['search', 'activities', 'zones', 'categories']
 
 export default function TemplatePickerModal({ targetWorkout, templates, loading, onClose, onPick }) {
-  const [searchQuery, setSearchQuery] = useState('')
+  const filters = useSessionFilters(templates, { enabled: SWAP_FILTERS, resolveMuscles })
 
-  const filtered = useMemo(
-    () => templates.filter(t => matchesSearch(t, searchQuery.trim())),
-    [templates, searchQuery],
-  )
+  const sportCounts = useMemo(() => {
+    const counts = new Map()
+    templates.forEach(t => {
+      if (!t.activityTag) return
+      counts.set(t.activityTag, (counts.get(t.activityTag) || 0) + 1)
+    })
+    return counts
+  }, [templates])
+  const presentSportValues = useMemo(() => Array.from(sportCounts.keys()), [sportCounts])
+
+  const { filtered } = filters
 
   return (
     <Modal
@@ -43,16 +37,21 @@ export default function TemplatePickerModal({ targetWorkout, templates, loading,
       ) : (
         <>
           <div style={{ marginBottom: 'var(--th-space-3)' }}>
-            <SearchBox
-              value={searchQuery}
-              onChange={setSearchQuery}
-              placeholder="Search sessions (title, category, type, sport)…"
+            <SessionFilterBar
+              criteria={filters.criteria}
+              set={filters.set}
+              filtersActive={filters.filtersActive}
+              clearAll={filters.clearAll}
+              enabled={SWAP_FILTERS}
+              sportCounts={sportCounts}
+              presentSportValues={presentSportValues}
+              resultCount={filtered.length}
             />
           </div>
           {filtered.length === 0 ? (
             <EmptyState
               title="No matches"
-              description="Try a different search term."
+              description="Try a different search term or remove a filter."
             />
           ) : (
             <div className="ah-template-grid">

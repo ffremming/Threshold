@@ -64,15 +64,36 @@ export function buildPanelMap(props) {
     ),
     calendar: view === 'plan' ? (
       <PlanGridPanel
+        visiblePanelIds={visiblePanelIds}
+        currentWeek={currentWeek}
+        currentYear={currentYear}
         overviewWeeks={overviewWeeks}
         overviewWorkoutsByWeekKey={overviewWorkoutsByWeekKey}
-        plan={plan}
-        planActions={planActions}
-        templates={templates}
-        onAddManySessions={onAddManySessions}
-        onAddSessionToDay={onAddSessionToDayAcross}
+        selectedWeekKey={selectedWeekKey}
+        loadingOverview={loadingOverview}
+        dragState={dragState}
+        dropTarget={dropTarget}
+        handleDropTargetChange={handleDropTargetChange}
+        handleDrop={handleDrop}
         onSelectWorkout={onSelectWorkout}
         onDeleteWorkout={onDeleteWorkout}
+        onAddSessionToDay={onAddSessionToDayAcross}
+        onAddTemplateToDayAcross={onAddTemplateToDayAcross}
+        templates={templates}
+        visibleActivities={visibleActivities}
+        addVisibleActivity={addVisibleActivity}
+        removeVisibleActivity={removeVisibleActivity}
+        onAddManySessions={onAddManySessions}
+        onMoveMany={onMoveMany}
+        onDeleteMany={onDeleteMany}
+        onPlacementChange={onPlacementChange}
+        modalOpen={modalOpen}
+        onJumpToWeek={onJumpToWeek}
+        handleWorkoutDragStart={handleWorkoutDragStart}
+        handleDragEnd={handleDragEnd}
+        plan={plan}
+        planActions={planActions}
+        noteAuthor={noteAuthor}
         resolveMuscles={undefined}
       />
     ) : view === 'month' ? (

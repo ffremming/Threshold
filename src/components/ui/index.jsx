@@ -171,6 +171,7 @@ export { default as SportPicker } from './SportPicker'
 export { Modal } from './Modal'
 export { Tabs } from './Tabs'
 export { Toolbar, ToolbarGroup, SearchBox } from './Toolbar'
+export { default as SessionFilterBar } from './SessionFilterBar'
 export {
   PageShell,
   ShellBrand,

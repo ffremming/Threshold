@@ -82,14 +82,16 @@ export function deriveWeekTargets(weeks, ctx) {
       continue
     }
 
-    if (!planSettings || prevDist == null) {
-      // No ramp, or nothing to ramp from → untargeted week (skip).
+    if (!planSettings || (prevDist == null && prevDur == null)) {
+      // No ramp, or nothing seeded yet to ramp from → untargeted week (skip).
       continue
     }
 
-    // Ramp up from the running base; advance the base (reductions never lower it).
+    // Ramp each dimension that has been seeded; a dimension the base never set
+    // stays null (e.g. a time-only plan has no distance target). Advance the
+    // running base (reductions never lower it).
     const factor = 1 + (planSettings.rampPct || 0) / 100
-    const rampedDist = prevDist * factor
+    const rampedDist = prevDist != null ? prevDist * factor : null
     const rampedDur = prevDur != null ? prevDur * factor : null
     prevDist = rampedDist
     prevDur = rampedDur
@@ -104,7 +106,7 @@ export function deriveWeekTargets(weeks, ctx) {
       const t = (tw - 1 - tpos) / Math.max(1, tw - 1)
       const reduce = 1 - t * (1 - frac)
       out.set(key, {
-        distanceKm: rampedDist * reduce,
+        distanceKm: rampedDist != null ? rampedDist * reduce : null,
         durationMin: rampedDur != null ? rampedDur * reduce : null,
         source: 'taper',
       })
@@ -117,7 +119,7 @@ export function deriveWeekTargets(weeks, ctx) {
     if (bandHit || cadenceHit || manualHit) {
       const f = planSettings.deloadPct / 100
       out.set(key, {
-        distanceKm: rampedDist * f,
+        distanceKm: rampedDist != null ? rampedDist * f : null,
         durationMin: rampedDur != null ? rampedDur * f : null,
         source: 'deload',
       })

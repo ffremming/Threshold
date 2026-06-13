@@ -148,7 +148,7 @@ function SessionCell({ workout, onSelect, drag, dropProps, isDragging, isDropTar
 //     onRemoveWorkout(workout),        // optional — shows an X on each session
 //     onAddSessionToDay(weekdayValue), // optional — shows a + under each day
 //   }
-export default function WeekOverview({ workouts, onSelectWorkout, dnd }) {
+export default function WeekOverview({ workouts, onSelectWorkout, dnd, weekMonday }) {
   const summary = computeWeekSummary(workouts)
   const days = groupWorkoutsByWeekday(workouts || [])
   const weekQuality = scoreWeek(workouts || [], { resolveMuscles })
@@ -197,10 +197,17 @@ export default function WeekOverview({ workouts, onSelectWorkout, dnd }) {
                 onDragEnd: dnd.onWorkoutDragEnd,
               }
             : undefined
+          const cellDate = weekMonday
+            ? new Date(weekMonday.getFullYear(), weekMonday.getMonth(), weekMonday.getDate() + (day.value - 1))
+            : null
+          const dataDate = cellDate
+            ? `${cellDate.getFullYear()}-${String(cellDate.getMonth() + 1).padStart(2, '0')}-${String(cellDate.getDate()).padStart(2, '0')}`
+            : undefined
           return (
           <div
             key={day.value}
             className={`wo-col${dnd?.isDayDropTarget?.(day.value) ? ' is-target' : ''}`}
+            data-date={dataDate}
             {...(dayDropProps || {})}
           >
             <div
@@ -227,7 +234,7 @@ export default function WeekOverview({ workouts, onSelectWorkout, dnd }) {
                 <button
                   type="button"
                   className="wo-col-add"
-                  onClick={() => dnd.onAddSessionToDay(day.value)}
+                  onClick={event => dnd.onAddSessionToDay(day.value, event)}
                   title={`Add a session on ${day.label || day.shortLabel}`}
                   aria-label={`Add a session on ${day.label || day.shortLabel}`}
                 >

@@ -1,0 +1,39 @@
+/* Training-category ("Focus") chips — mirror the zone buttons, tinted by the
+   quality's color when active. */
+.th-cat-chip {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 2rem;
+  padding: 0 var(--th-space-3);
+  border-radius: var(--th-radius-pill);
+  border: 1px solid var(--th-line-strong);
+  background: var(--th-surface);
+  color: var(--th-ink-muted);
+  font-family: var(--th-font-sans);
+  font-size: var(--th-text-xs);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color var(--th-dur-fast) var(--th-ease),
+              border-color var(--th-dur-fast) var(--th-ease),
+              color var(--th-dur-fast) var(--th-ease);
+}
+
+.th-cat-chip:hover {
+  color: var(--cat-color, var(--th-ink));
+  border-color: var(--cat-color, var(--th-ink));
+}
+
+.th-cat-chip.is-active {
+  background: var(--cat-color, var(--th-ink));
+  border-color: var(--cat-color, var(--th-ink));
+  color: #fff;
+}
+
+.th-filter-count {
+  font-size: var(--th-text-xs);
+  color: var(--th-ink-muted);
+  white-space: nowrap;
+  align-self: center;
+}

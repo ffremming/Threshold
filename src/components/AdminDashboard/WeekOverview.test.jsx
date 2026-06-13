@@ -99,7 +99,7 @@ describe('WeekOverview drag/drop opt-in', () => {
     const addButtons = screen.getAllByLabelText(/^Add a session on /)
     expect(addButtons).toHaveLength(7)
     await user.click(addButtons[0])
-    expect(onAddSessionToDay).toHaveBeenCalledWith(1)
+    expect(onAddSessionToDay).toHaveBeenCalledWith(1, expect.anything())
   })
 
   it('dragging a session does not also start a whole-day drag', () => {

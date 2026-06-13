@@ -1,9 +1,20 @@
 import { useMemo, useState } from 'react'
-import { Search, X } from 'lucide-react'
-import { normalizeIntensityZones } from '../../utils'
+import { SessionFilterBar } from '../../components/ui'
+import { useSessionFilters } from '../../App/hooks/useSessionFilters'
+import { makeMuscleResolver } from '../dimensions/useMuscleResolver'
 import { DEFAULT_VISIBLE_ACTIVITIES } from './constants'
 import BankActivityFilter from './BankActivityFilter'
 import TemplateDragCard from './TemplateDragCard'
+
+// Shared so training-category scoring (which needs the muscle library for
+// strength sessions) matches every other load/dimensions surface in the app.
+const resolveMuscles = makeMuscleResolver()
+
+// Filters offered by the plan-builder session picker. Activity is handled by the
+// icon-based BankActivityFilter (a faster, pinned-tag selector for this surface),
+// so it is intentionally NOT in this list — everything else comes from the shared
+// filter bar so the picker gains zones/types/focus/duration/full-text search.
+const PICKER_FILTERS = ['search', 'zones', 'types', 'categories', 'duration']
 
 export default function BankPickerWindow({
   templates,
@@ -15,54 +26,36 @@ export default function BankPickerWindow({
   onRemoveActivity,
 }) {
   const [activeTagFilter, setActiveTagFilter] = useState(null)
-  const [activeIntensityFilters, setActiveIntensityFilters] = useState([])
-  const [search, setSearch] = useState('')
 
-  const filteredTemplates = useMemo(() => {
-    const query = search.trim().toLowerCase()
-    return templates
-      .filter(template => !template.activityTag || visibleActivities.includes(template.activityTag))
-      .filter(template => !activeTagFilter || template.activityTag === activeTagFilter)
-      .filter(template => {
-        if (activeIntensityFilters.length === 0) return true
-        const zones = normalizeIntensityZones(template.type, template.intensityZone)
-        return activeIntensityFilters.some(zone => zones.includes(zone))
-      })
-      .filter(template => !query || (template.title || '').toLowerCase().includes(query))
-      .sort((a, b) => a.title.localeCompare(b.title, 'nb'))
-  }, [activeIntensityFilters, activeTagFilter, search, templates, visibleActivities])
+  // Activity is filtered up-front (visibility show/hide + the single active tag),
+  // then the shared engine applies search/zone/type/focus/duration.
+  const byActivity = useMemo(() => (
+    templates
+      .filter(t => !t.activityTag || visibleActivities.includes(t.activityTag))
+      .filter(t => !activeTagFilter || t.activityTag === activeTagFilter)
+  ), [templates, visibleActivities, activeTagFilter])
 
-  function toggleIntensityFilter(zone) {
-    setActiveIntensityFilters(prev => (
-      prev.includes(zone)
-        ? prev.filter(currentZone => currentZone !== zone)
-        : [...prev, zone].sort((a, b) => a - b)
-    ))
-  }
+  const filters = useSessionFilters(byActivity, {
+    enabled: PICKER_FILTERS,
+    resolveMuscles,
+  })
+
+  const filteredTemplates = useMemo(
+    () => [...filters.filtered].sort((a, b) => (a.title || '').localeCompare(b.title || '', 'nb')),
+    [filters.filtered],
+  )
 
   return (
     <section className="pb-picker">
-      <div className="pb-search">
-        <Search className="pb-search-icon" aria-hidden="true" strokeWidth={2} />
-        <input
-          type="search"
-          className="pb-search-input"
-          placeholder="Search sessions…"
-          value={search}
-          onChange={event => setSearch(event.target.value)}
-          aria-label="Search sessions by title"
-        />
-        {search && (
-          <button
-            type="button"
-            className="pb-search-clear"
-            onClick={() => setSearch('')}
-            aria-label="Clear search"
-          >
-            <X className="pb-btn-icon" aria-hidden="true" strokeWidth={2} />
-          </button>
-        )}
-      </div>
+      <SessionFilterBar
+        criteria={filters.criteria}
+        set={filters.set}
+        filtersActive={filters.filtersActive}
+        clearAll={filters.clearAll}
+        enabled={PICKER_FILTERS}
+        resultCount={filteredTemplates.length}
+        searchPlaceholder="Search sessions…"
+      />
 
       <BankActivityFilter
         visibleActivities={visibleActivities}
@@ -71,28 +64,6 @@ export default function BankPickerWindow({
         onAddActivity={onAddActivity}
         onRemoveActivity={onRemoveActivity}
       />
-
-      <div className="pb-filter-row">
-        <button
-          type="button"
-          className={`pb-filter-chip${activeIntensityFilters.length === 0 ? ' is-active' : ''}`}
-          onClick={() => setActiveIntensityFilters([])}
-        >All</button>
-        {[1, 2, 3, 4, 5].map(zone => (
-          <button
-            key={zone}
-            type="button"
-            className={`pb-zone-chip pb-zone-${zone}${activeIntensityFilters.includes(zone) ? ' is-active' : ''}`}
-            onClick={() => toggleIntensityFilter(zone)}
-          >
-            Z{zone}
-          </button>
-        ))}
-      </div>
-
-      <div className="pb-picker-count">
-        {filteredTemplates.length} {filteredTemplates.length === 1 ? 'session' : 'sessions'}
-      </div>
 
       {filteredTemplates.length === 0 ? (
         <div className="pb-empty-copy">No sessions match these filters.</div>

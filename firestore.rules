@@ -145,6 +145,18 @@ service cloud.firestore {
       allow delete: if canAccessAthlete(resource.data.athleteId);
     }
 
+    // Per-athlete plan annotations (focus bands, post-it notes, competitions).
+    // The document id IS the athlete's uid, so access is gated on that id —
+    // same shape as stravaConnections. Coaches/superadmins of the athlete and
+    // the athlete themselves may read and write; the stored athleteId must match
+    // the document id.
+    match /plans/{athleteId} {
+      allow read: if canAccessAthlete(athleteId);
+      allow create, update: if canAccessAthlete(athleteId)
+        && request.resource.data.athleteId == athleteId;
+      allow delete: if canAccessAthlete(athleteId);
+    }
+
     // Templates (global, read by all authenticated, write by superadmin/coach)
     match /templates/{templateId} {
       allow read: if isActiveUser() && (

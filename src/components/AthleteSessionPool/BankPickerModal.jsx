@@ -1,17 +1,23 @@
-import { useMemo, useState } from 'react'
-import { EmptyState, Input, Modal, TemplateCard } from '../ui'
+import { useMemo } from 'react'
+import { EmptyState, Modal, SessionFilterBar, TemplateCard } from '../ui'
+import { useSessionFilters } from '../../App/hooks/useSessionFilters'
+
+const PICKER_FILTERS = ['search', 'activities', 'zones']
 
 export default function BankPickerModal({ bankTemplates, onClose, onPick }) {
-  const [search, setSearch] = useState('')
-  const filtered = useMemo(() => {
-    const term = search.trim().toLowerCase()
-    if (!term) return bankTemplates
-    return bankTemplates.filter(t =>
-      (t.title || '').toLowerCase().includes(term) ||
-      (t.category || '').toLowerCase().includes(term) ||
-      (t.description || '').toLowerCase().includes(term),
-    )
-  }, [bankTemplates, search])
+  const filters = useSessionFilters(bankTemplates, { enabled: PICKER_FILTERS })
+
+  const sportCounts = useMemo(() => {
+    const counts = new Map()
+    bankTemplates.forEach(t => {
+      if (!t.activityTag) return
+      counts.set(t.activityTag, (counts.get(t.activityTag) || 0) + 1)
+    })
+    return counts
+  }, [bankTemplates])
+  const presentSportValues = useMemo(() => Array.from(sportCounts.keys()), [sportCounts])
+
+  const { filtered } = filters
 
   return (
     <Modal
@@ -22,14 +28,19 @@ export default function BankPickerModal({ bankTemplates, onClose, onPick }) {
       size="lg"
     >
       <div className="th-pool-picker">
-        <Input
-          type="search"
-          placeholder="Search the bank…"
-          value={search}
-          onChange={e => setSearch(e.target.value)}
+        <SessionFilterBar
+          criteria={filters.criteria}
+          set={filters.set}
+          filtersActive={filters.filtersActive}
+          clearAll={filters.clearAll}
+          enabled={PICKER_FILTERS}
+          sportCounts={sportCounts}
+          presentSportValues={presentSportValues}
+          searchPlaceholder="Search the bank…"
+          resultCount={filtered.length}
         />
         {filtered.length === 0 ? (
-          <EmptyState title="No matches" description="Try adjusting your search." />
+          <EmptyState title="No matches" description="Try adjusting your search or removing a filter." />
         ) : (
           <div className="th-pool-picker-grid">
             {filtered.map(template => (

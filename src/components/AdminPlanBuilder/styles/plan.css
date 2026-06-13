@@ -1,114 +1,51 @@
-/* Plan view — weekly-targets calendar. Mirrors the month grid but the left
-   column is a per-week rule editor and day cells carry intensity tags + replace
-   affordances. Uses the shared design tokens. */
+/* Quick-build view — the month grid (identical look) with a single quick-build
+   control bar on top. Only the bar is styled here; the calendar reuses month.css
+   verbatim. */
 
-.pb-plan-panel { display: flex; flex-direction: column; gap: 8px; }
+.pb-quick-panel { display: flex; flex-direction: column; min-height: 0; }
 
-.pb-generate-bar {
+.pb-quick-bar {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
+  flex-wrap: wrap;
   gap: 12px;
   padding: 8px 12px;
   border-bottom: 1px solid var(--th-line, #e2e8f0);
-}
-.pb-generate-info { font-size: 0.8rem; color: var(--th-ink-muted, #64748b); }
-.pb-generate-ramp { display: flex; align-items: center; gap: 4px; font-size: 0.75rem; }
-.pb-generate-ramp input { width: 48px; }
-
-.pb-plan-grid { display: flex; flex-direction: column; }
-.pb-plan-row {
-  display: grid;
-  grid-template-columns: 220px repeat(7, minmax(0, 1fr));
-  border-bottom: 1px solid var(--th-line, #e2e8f0);
-}
-.pb-plan-row.is-selected { background: var(--th-hover, #eff6ff); }
-
-.pb-plan-rule-col { padding: 8px; border-right: 1px solid var(--th-line, #e2e8f0); }
-.pb-plan-week-btn {
-  font-weight: 600;
-  font-size: 0.8rem;
-  margin-bottom: 6px;
-  cursor: pointer;
-  background: transparent;
-  border: none;
-  padding: 0;
-}
-.pb-plan-week-btn[aria-pressed='true'] { color: var(--th-accent, #2563eb); }
-
-.pb-plan-cell {
-  min-height: 96px;
-  padding: 4px;
-  border-right: 1px solid var(--th-line, #f1f5f9);
-  position: relative;
-}
-.pb-plan-cell-head { display: flex; justify-content: flex-end; }
-.pb-day-tag {
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  border: 1px solid var(--th-line, #cbd5e1);
-  font-size: 0.6rem;
-  line-height: 1;
-  cursor: pointer;
-  background: transparent;
-}
-
-.pb-plan-chip {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 4px;
-  padding: 3px 6px;
-  margin-top: 4px;
-  border-radius: 6px;
   background: var(--th-surface, #fff);
-  border: 1px solid var(--th-line, #e2e8f0);
-  font-size: 0.72rem;
-  cursor: pointer;
 }
-.pb-plan-chip-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.pb-replace-btn {
+
+.pb-quick-field { display: flex; flex-direction: column; gap: 2px; font-size: 0.68rem; color: var(--th-ink-muted, #64748b); }
+.pb-quick-field input,
+.pb-quick-field select {
+  height: 2rem;
+  min-width: 64px;
+  padding: 0 6px;
+  border: 1px solid var(--th-line-strong, #cbd5e1);
+  border-radius: var(--th-radius-md, 8px);
+  background: var(--th-surface, #fff);
+  color: var(--th-ink, #0f172a);
+  font-size: 0.8rem;
+}
+.pb-quick-field input { width: 84px; }
+
+.pb-quick-unit {
+  display: inline-flex;
+  border: 1px solid var(--th-line-strong, #cbd5e1);
+  border-radius: var(--th-radius-md, 8px);
+  overflow: hidden;
+  height: 2rem;
+}
+.pb-quick-unit-btn {
   border: none;
   background: transparent;
+  padding: 0 10px;
+  font-size: 0.75rem;
   cursor: pointer;
-  color: var(--th-ink-muted, #94a3b8);
-  display: inline-flex;
+  color: var(--th-ink-muted, #64748b);
 }
-.pb-replace-btn:hover { color: var(--th-accent, #2563eb); }
-
-.pb-plan-add {
-  position: absolute;
-  bottom: 4px;
-  right: 4px;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  border: 1px dashed var(--th-line, #cbd5e1);
-  background: transparent;
-  cursor: pointer;
+.pb-quick-unit-btn.is-on {
+  background: var(--th-accent, #2563eb);
+  color: #fff;
 }
 
-/* Rule panel internals */
-.pb-rule-panel { display: flex; flex-direction: column; gap: 6px; }
-.pb-rule-field { display: flex; flex-direction: column; font-size: 0.68rem; gap: 2px; }
-.pb-rule-field input { width: 100%; }
-.pb-rule-derived { display: flex; align-items: baseline; gap: 6px; }
-.pb-rule-source { font-size: 0.6rem; text-transform: uppercase; color: var(--th-ink-muted, #94a3b8); }
-
-.pb-bar-row, .pb-rule-qa { display: grid; grid-template-columns: 32px 1fr auto; align-items: center; gap: 4px; font-size: 0.65rem; }
-.pb-bar { position: relative; height: 6px; border-radius: 3px; background: var(--th-line, #e2e8f0); overflow: hidden; }
-.pb-bar-fill { position: absolute; inset: 0 auto 0 0; border-radius: 3px; }
-.pb-bar-notch { position: absolute; top: -1px; bottom: -1px; width: 2px; background: var(--th-ink, #0f172a); }
-
-.pb-quality-chips { display: flex; flex-wrap: wrap; gap: 3px; }
-.pb-quality-chip { font-size: 0.6rem; padding: 1px 6px; border-radius: 999px; border: 1px solid; background: transparent; cursor: pointer; }
-
-.pb-dist-editor { display: flex; flex-direction: column; gap: 2px; }
-.pb-dist-row { display: grid; grid-template-columns: 1fr 48px auto; align-items: center; gap: 4px; font-size: 0.65rem; }
-.pb-dist-row input { width: 100%; }
-.pb-dist-remove { border: none; background: transparent; cursor: pointer; color: var(--th-ink-muted, #94a3b8); }
-.pb-dist-foot { display: flex; align-items: center; justify-content: space-between; gap: 6px; font-size: 0.62rem; margin-top: 2px; }
-.pb-dist-total.is-off { color: #f59e0b; font-weight: 600; }
-
-.pb-rule-quality-actuals { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
-.pb-rule-load { font-size: 0.62rem; color: var(--th-ink-muted, #94a3b8); }
+.pb-quick-count { font-size: 0.75rem; color: var(--th-ink-muted, #64748b); align-self: center; }

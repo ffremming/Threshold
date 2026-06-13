@@ -1,0 +1,459 @@
+/* Plan annotations: goal strip, band lanes, post-it notes, and their editors.
+ * Positioned by the consumer to span the seven day columns; everything inside
+ * is laid out by percentage so it scales between month and week column widths. */
+
+.pb-annotations {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  pointer-events: none; /* let clicks fall through gaps to the grid */
+}
+/* The goal strip and note layer stay transparent to pointer events so a marquee
+ * can start (and sweep) over them; only their interactive leaves capture events.
+ * The band track is the exception — it OWNS its area for drawing a new band
+ * (drag across the empty strip) and resizing an existing one (edge handles), so
+ * it captures pointer events across its whole height. */
+.pb-annotations .pb-goal-strip,
+.pb-annotations .pb-note-layer { pointer-events: none; }
+.pb-annotations .pb-band-track { pointer-events: auto; }
+.pb-annotations .pb-band-pill,
+.pb-annotations .pb-goal-marker,
+.pb-annotations .pb-postit { pointer-events: auto; }
+
+/* Day scale (week view): 7 equal slots carrying data-date for marquee hit-test.
+ * Invisible and non-interactive; it only provides geometry. */
+.pb-annotations-scale {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  height: 6px;
+  pointer-events: none;
+}
+.pb-annotations-slot { min-width: 0; }
+
+/* ── Goal strip ──────────────────────────────────────────────────────── */
+.pb-goal-strip {
+  position: relative;
+  height: 22px;
+}
+.pb-goal-marker {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 46%;
+  padding: 1px 6px 1px 2px;
+  border: 1px solid color-mix(in srgb, var(--pb-goal-color) 55%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--pb-goal-color) 14%, var(--th-surface));
+  color: var(--th-ink);
+  font-size: var(--th-text-2xs);
+  line-height: 1.4;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.pb-goal-marker:hover {
+  background: color-mix(in srgb, var(--pb-goal-color) 24%, var(--th-surface));
+}
+.pb-goal-marker.is-past { opacity: 0.45; }
+/* Priority weighting: A boldest, C subtlest. */
+.pb-goal-marker--p1 { font-weight: 700; border-width: 2px; }
+.pb-goal-marker--p2 { font-weight: 600; }
+.pb-goal-marker--p3 { font-weight: 500; opacity: 0.92; }
+
+.pb-goal-flag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--pb-goal-color) 30%, var(--th-surface));
+  flex: 0 0 auto;
+}
+.pb-goal-icon { width: 11px; height: 11px; color: var(--pb-goal-color); }
+.pb-goal-dot {
+  width: 7px; height: 7px; border-radius: 999px; background: var(--pb-goal-color);
+}
+.pb-goal-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+}
+.pb-goal-prio {
+  font-weight: 800;
+  color: var(--pb-goal-color);
+}
+.pb-goal-countdown {
+  font-variant-numeric: tabular-nums;
+  color: var(--th-ink-muted);
+  font-weight: 500;
+}
+
+/* ── Band track ──────────────────────────────────────────────────────── */
+.pb-band-track {
+  position: relative;
+  width: 100%;
+}
+.pb-band-pill {
+  position: absolute;
+  height: 15px;
+  display: flex;
+  align-items: stretch;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--pb-band-color) 60%, transparent);
+  background: color-mix(in srgb, var(--pb-band-color) 22%, var(--th-surface));
+  color: var(--th-ink);
+  font-size: var(--th-text-2xs);
+  line-height: 1;
+  overflow: hidden;
+  transition: background var(--th-dur-fast, 120ms) ease;
+}
+.pb-band-pill:hover {
+  background: color-mix(in srgb, var(--pb-band-color) 34%, var(--th-surface));
+}
+.pb-band-pill.is-open-left {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  border-left-style: dashed;
+}
+.pb-band-pill.is-open-right {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  border-right-style: dashed;
+}
+/* The clickable middle of a pill (opens the editor). Flanked by resize handles. */
+.pb-band-pill-body {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  padding: 0 4px;
+  background: none;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.pb-band-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+/* Edge grab-handles: a thin column at each real end of a band that resizes it.
+ * Rendered only on a non-open edge (an open edge continues in another row). */
+.pb-band-handle {
+  flex: 0 0 auto;
+  width: 7px;
+  align-self: stretch;
+  cursor: ew-resize;
+  touch-action: none;
+  background: color-mix(in srgb, var(--pb-band-color) 55%, transparent);
+  opacity: 0;
+  transition: opacity var(--th-dur-fast, 120ms) ease;
+}
+.pb-band-pill:hover .pb-band-handle { opacity: 0.7; }
+.pb-band-handle:hover { opacity: 1; }
+.pb-band-handle--start { border-radius: 999px 0 0 999px; }
+.pb-band-handle--end { border-radius: 0 999px 999px 0; }
+
+/* Faint prompt shown only when a week has no bands, inviting a drag-to-create. */
+.pb-band-draw-hint {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  padding-left: 6px;
+  font-size: var(--th-text-2xs);
+  color: var(--th-ink-muted);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--th-dur-fast, 120ms) ease;
+}
+.pb-band-track:hover .pb-band-draw-hint { opacity: 0.55; }
+
+/* Live ghost of a resize/draw gesture, clipped to each week it crosses. */
+.pb-band-ghost {
+  position: absolute;
+  top: 0;
+  height: 15px;
+  border-radius: 999px;
+  border: 1px dashed color-mix(in srgb, var(--th-accent) 70%, transparent);
+  background: color-mix(in srgb, var(--th-accent) 16%, transparent);
+  pointer-events: none;
+}
+.pb-band-ghost.is-drawing {
+  border-style: solid;
+}
+
+/* ── Post-it notes ───────────────────────────────────────────────────── */
+.pb-note-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.pb-postit {
+  position: absolute;
+  top: 0;
+  pointer-events: auto;
+  display: flex;
+  align-items: flex-start;
+  gap: 3px;
+  max-width: 120px;
+  padding: 4px 6px;
+  background: var(--pb-note-color);
+  color: #1f2937;
+  border-radius: 3px;
+  box-shadow: 0 2px 5px rgba(15, 23, 42, 0.22);
+  font-size: var(--th-text-2xs);
+  line-height: 1.25;
+  cursor: grab;
+  rotate: -1.4deg;
+  z-index: 5;
+}
+.pb-postit:hover { rotate: 0deg; z-index: 6; }
+.pb-postit.is-dragging {
+  cursor: grabbing;
+  rotate: 0deg;
+  z-index: 7;
+  box-shadow: 0 6px 14px rgba(15, 23, 42, 0.3);
+}
+.pb-postit-icon { width: 11px; height: 11px; flex: 0 0 auto; opacity: 0.6; }
+.pb-postit-body {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+
+/* ── Editor popovers ─────────────────────────────────────────────────── */
+.pb-editor-popover {
+  position: fixed;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  background: var(--th-surface);
+  border: 1px solid var(--th-line);
+  border-radius: var(--th-radius-sm, 6px);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18);
+}
+/* Per-day "+" add-session menu (choice state) */
+.pb-add-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.pb-add-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: var(--th-radius-sm, 6px);
+  background: transparent;
+  font: inherit;
+  font-size: 0.85rem;
+  color: var(--th-ink);
+  text-align: left;
+  cursor: pointer;
+}
+.pb-add-menu-item:hover {
+  background: rgba(37, 99, 235, 0.08);
+}
+/* Picker state — let the embedded BankPickerWindow scroll if tall. */
+.pb-add-menu-picker {
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.pb-editor-title { font-weight: 700; font-size: 0.78rem; color: var(--th-ink); }
+.pb-editor-swatches { display: flex; flex-wrap: wrap; gap: 4px; }
+.pb-editor-swatch {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 7px;
+  border-radius: 999px;
+  border: 1px solid var(--th-line);
+  background: color-mix(in srgb, var(--pb-swatch, var(--th-line)) 18%, var(--th-surface));
+  font-size: var(--th-text-2xs);
+  cursor: pointer;
+}
+.pb-editor-swatch.is-active {
+  border-color: var(--pb-swatch, var(--th-accent));
+  box-shadow: inset 0 0 0 1px var(--pb-swatch, var(--th-accent));
+  font-weight: 700;
+}
+.pb-editor-swatch--custom { background: var(--th-hover); }
+.pb-editor-row { display: flex; gap: 6px; align-items: flex-end; }
+.pb-editor-row--tints { align-items: center; }
+.pb-editor-field { display: flex; flex-direction: column; gap: 2px; flex: 1; font-size: var(--th-text-2xs); color: var(--th-ink-muted); }
+.pb-editor-input,
+.pb-editor-textarea {
+  width: 100%;
+  padding: 5px 7px;
+  border: 1px solid var(--th-line);
+  border-radius: var(--th-radius-sm, 6px);
+  background: var(--th-surface);
+  color: var(--th-ink);
+  font-size: 0.78rem;
+}
+.pb-editor-textarea { resize: vertical; min-height: 64px; }
+.pb-editor-color { width: 30px; height: 30px; padding: 0; border: 1px solid var(--th-line); border-radius: 6px; background: none; cursor: pointer; }
+.pb-editor-tint {
+  width: 22px; height: 22px; border-radius: 6px; border: 1px solid var(--th-line); cursor: pointer;
+}
+.pb-editor-tint.is-active { box-shadow: 0 0 0 2px var(--th-accent); }
+.pb-editor-actions { display: flex; justify-content: flex-end; gap: 8px; align-items: center; }
+.pb-editor-save {
+  padding: 5px 14px;
+  border: none;
+  border-radius: var(--th-radius-sm, 6px);
+  background: var(--th-accent);
+  color: var(--th-on-accent);
+  font-weight: 600;
+  cursor: pointer;
+}
+.pb-editor-delete {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-right: auto;
+  padding: 4px 8px;
+  border: none;
+  border-radius: var(--th-radius-sm, 6px);
+  background: none;
+  color: var(--th-danger);
+  font-size: var(--th-text-2xs);
+  cursor: pointer;
+}
+.pb-editor-delete svg { width: 13px; height: 13px; }
+
+/* ── Month-grid placement: the annotations region spans the 7 day columns
+ * of a week row, sitting ABOVE the day cells. The week row is a CSS grid
+ * (196px + 7 cols). We place annotations on grid row 1 spanning the day
+ * columns, make the week-col span both rows, and the 7 day cells then
+ * auto-flow onto row 2 (columns 2..8). ───────────────────────────────── */
+.pb-month-annotations {
+  grid-column: 2 / -1;
+  grid-row: 1;
+  margin: 2px 0;
+  min-width: 0;
+}
+.pb-month-row:has(.pb-month-annotations) .pb-month-week-col { grid-column: 1; grid-row: 1 / span 2; }
+.pb-month-row:has(.pb-month-annotations) .pb-month-cell { grid-row: 2; }
+.pb-month-row:has(.pb-month-annotations) .pb-month-signals { grid-row: 2; }
+
+/* Week view: the annotations sit above the day columns, full width. */
+.pb-annotations--week { margin: 4px 0 6px; }
+
+/* New context-menu items reuse .pb-month-context-item; add a section divider. */
+.pb-month-context-sep {
+  height: 1px;
+  margin: 3px 4px;
+  background: var(--th-line);
+}
+
+/* ── Live range selection highlight ──────────────────────────────────── */
+/* Strip-level overlay spanning the selected columns, with a right-click hint. */
+.pb-range-highlight {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 2;
+  border: 1px dashed var(--th-accent, #2563eb);
+  border-radius: var(--th-radius-sm, 6px);
+  background: color-mix(in srgb, var(--th-accent, #2563eb) 12%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.pb-range-hint {
+  font-size: var(--th-text-2xs);
+  font-weight: 600;
+  color: var(--th-accent, #2563eb);
+  background: var(--th-surface);
+  padding: 1px 6px;
+  border-radius: 999px;
+  white-space: nowrap;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12);
+}
+/* Day cells inside the current selection get a soft accent wash so the whole
+ * column area reads as selected before the user right-clicks. */
+.pb-month-cell.is-range-selected {
+  background: color-mix(in srgb, var(--th-accent, #2563eb) 9%, var(--th-surface));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--th-accent, #2563eb) 35%, transparent);
+}
+
+/* ── Post-it "new" dot ───────────────────────────────────────────────── */
+.pb-postit-dot {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  background: #2563eb;
+  border: 1.5px solid var(--th-surface, #fff);
+  box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.4);
+}
+
+/* ── Note dialogue thread ────────────────────────────────────────────── */
+.pb-note-thread {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  max-height: 200px;
+  overflow-y: auto;
+  padding: 2px;
+}
+.pb-note-msg {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  max-width: 85%;
+  padding: 4px 8px;
+  border-radius: 10px;
+  font-size: 0.78rem;
+  line-height: 1.3;
+}
+.pb-note-msg-author {
+  font-size: var(--th-text-2xs);
+  font-weight: 700;
+  text-transform: capitalize;
+  opacity: 0.7;
+}
+.pb-note-msg--me {
+  align-self: flex-end;
+  background: var(--th-accent, #2563eb);
+  color: var(--th-on-accent, #fff);
+}
+.pb-note-msg--them {
+  align-self: flex-start;
+  background: var(--th-hover, #eef2f7);
+  color: var(--th-ink);
+}
+.pb-note-composer { display: flex; gap: 6px; align-items: flex-end; }
+.pb-note-composer .pb-editor-textarea { flex: 1; min-height: 44px; }
+.pb-note-send {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+  border: none;
+  border-radius: var(--th-radius-sm, 6px);
+  background: var(--th-accent, #2563eb);
+  color: var(--th-on-accent, #fff);
+  cursor: pointer;
+}
+.pb-note-send svg { width: 16px; height: 16px; }

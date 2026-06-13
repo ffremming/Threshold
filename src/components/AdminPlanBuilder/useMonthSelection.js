@@ -37,6 +37,12 @@ export function useMonthSelection({
 }) {
   const [selectedIds, setSelectedIds] = useState(() => new Set())
   const [marquee, setMarquee] = useState(null)
+  // The day-range the most recent marquee drag touched, as
+  // { startDate, endDate } ('YYYY-MM-DD'), or null. Computed alongside chip
+  // selection so a single drag yields both a session selection (for move/copy)
+  // and a time range (for adding a band / note / competition). Persists after
+  // pointer-up so the trailing right-click can read it.
+  const [selectedDayRange, setSelectedDayRange] = useState(null)
   const [hoverCell, setHoverCell] = useState(null)
   const [clipboard, setClipboard] = useState(null)
   // Armed cursor-follow placement after a right-click → Copy / Cut. Holds the
@@ -92,6 +98,9 @@ export function useMonthSelection({
     // the primary button so this works regardless of how the event was created.
     if (event.button > 0 || !gridRef.current) return
     const chipEls = [...gridRef.current.querySelectorAll('[data-session-id]')]
+    // Day cells carry data-date='YYYY-MM-DD'; capture their rects too so the
+    // same drag yields the touched day-range for band/note/competition creation.
+    const dayEls = [...gridRef.current.querySelectorAll('[data-date]')]
     const start = { startX: event.clientX, startY: event.clientY }
     // Activation is deferred until the pointer actually moves past a small
     // threshold. This lets a marquee begin on top of an interactive element (the
@@ -101,6 +110,7 @@ export function useMonthSelection({
       ...start,
       active: false,
       rects: chipEls.map(el => ({ id: el.dataset.sessionId, rect: el.getBoundingClientRect() })),
+      dayRects: dayEls.map(el => ({ date: el.dataset.date, rect: el.getBoundingClientRect() })),
     }
 
     const intersects = (rect, box) => (
@@ -114,9 +124,11 @@ export function useMonthSelection({
         const moved = Math.abs(e.clientX - m.startX) > 4 || Math.abs(e.clientY - m.startY) > 4
         if (!moved) return
         m.active = true
-        // First real movement: now show the box and clear any prior selection.
+        // First real movement: now show the box and clear any prior selection
+        // and day-range.
         setMarquee({ startX: m.startX, startY: m.startY, curX: e.clientX, curY: e.clientY })
         setSelectedIds(new Set())
+        setSelectedDayRange(null)
       }
       const box = {
         left: Math.min(m.startX, e.clientX),
@@ -129,6 +141,17 @@ export function useMonthSelection({
         if (intersects(rect, box)) next.add(id)
       }
       setSelectedIds(next)
+      // Touched day-range: min/max of the dates whose cells the box intersects.
+      const dates = []
+      for (const { date, rect } of m.dayRects) {
+        if (date && intersects(rect, box)) dates.push(date)
+      }
+      if (dates.length > 0) {
+        dates.sort()
+        setSelectedDayRange({ startDate: dates[0], endDate: dates[dates.length - 1] })
+      } else {
+        setSelectedDayRange(null)
+      }
       setMarquee(prev => prev && { ...prev, curX: e.clientX, curY: e.clientY })
     }
     const onUp = () => {
@@ -275,6 +298,7 @@ export function useMonthSelection({
 
   function clearSelection() {
     setSelectedIds(new Set())
+    setSelectedDayRange(null)
   }
 
   // Every selected session — used for the drag ghost so each dragged session
@@ -350,6 +374,7 @@ export function useMonthSelection({
 
   return {
     selectedIds,
+    selectedDayRange,
     marquee,
     hoverCell,
     clipboard,

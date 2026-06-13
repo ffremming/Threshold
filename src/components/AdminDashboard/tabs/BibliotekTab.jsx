@@ -58,12 +58,9 @@ export default function BibliotekTab(p) {
       {scope === 'mine' && (
         <OktbankTab
           templates={p.templates}
-          activeCategory={p.activeCategory}
-          setActiveCategory={p.setActiveCategory}
           loadingTemplates={p.loadingTemplates}
           pickingFromBank={p.pickingFromBank}
           replacementTarget={p.replacementTarget}
-          currentWeek={p.currentWeek}
           handleAddFromTemplate={p.handleAddFromTemplate}
           startEditTemplate={p.startEditTemplate}
           handleDeleteTemplate={p.handleDeleteTemplate}

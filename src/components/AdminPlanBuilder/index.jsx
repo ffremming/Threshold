@@ -14,7 +14,7 @@ import TrashZone from './TrashZone'
 const VIEW_TABS = [
   { value: 'week', label: 'Week' },
   { value: 'month', label: 'Month' },
-  { value: 'plan', label: 'Plan' },
+  { value: 'plan', label: 'Quick build' },
 ]
 
 export default function AdminPlanBuilder({
@@ -75,6 +75,7 @@ export default function AdminPlanBuilder({
     onWeekChange,
     isThisWeek,
     onAddTemplateToDay,
+    view,
   })
 
   const isDesktopBuilder = layout.viewportWidth >= 1280

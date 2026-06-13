@@ -18,6 +18,7 @@ import {
   useWeeklyRangeWorkouts,
 } from './hooks'
 import { useAdminActions } from './useAdminActions'
+import { usePlan } from '../../App/hooks/usePlan'
 import { useUndo } from './useUndo'
 import { deriveAdminState } from './derived'
 import { mergeStravaIntoAnalysis, stravaActivityToWorkoutShape } from '../../strava/activityToWorkout'
@@ -46,7 +47,6 @@ export default function AdminDashboard({
   const [showCustomForm, setShowCustomForm] = useState(false)
   const [customForm, setCustomForm] = useState({ ...EMPTY_TEMPLATE })
   const [replacementTarget, setReplacementTarget] = useState(null)
-  const [activeCategory, setActiveCategory] = useState('All')
   const [editingTemplate, setEditingTemplate] = useState(null)
   const [templateForm, setTemplateForm] = useState({ ...EMPTY_TEMPLATE })
   const [editingGlobalTemplate, setEditingGlobalTemplate] = useState(null)
@@ -70,6 +70,8 @@ export default function AdminDashboard({
   const { templates, loading: loadingTemplates } = useCoachTemplates(userProfile?.uid)
   const { templates: globalTemplates, loading: loadingGlobalTemplates } = useGlobalTemplates(userProfile?.uid)
   const completedActivities = useCompletedActivities(selectedAthleteId)
+  // Per-athlete plan annotations (focus bands, post-it notes, competitions).
+  const { plan, planActions } = usePlan(selectedAthleteId)
 
   // Merge imported Strava activities into the analysis window before deriving
   // state: they are the source of truth for completed past-week sessions.
@@ -159,11 +161,11 @@ export default function AdminDashboard({
     analysisWeeks, loadingAnalysis,
     showOverview, setShowOverview,
     activeTagFilter, setActiveTagFilter,
-    activeCategory, setActiveCategory,
     pickingFromBank, replacementTarget,
     setReplacementTarget, setCustomForm, setPickingFromBank, setTab, setShowCustomForm,
     setSelectedWorkout,
     draggedWorkoutId, dropTarget,
+    plan, planActions, noteAuthor: 'coach',
   }
 
   return (

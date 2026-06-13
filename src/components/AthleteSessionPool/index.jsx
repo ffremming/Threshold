@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Plus } from 'lucide-react'
 import { collection, onSnapshot, query, where } from 'firebase/firestore'
 import { db } from '../../firebase'
@@ -10,11 +10,16 @@ import {
   updateAthleteSession,
   deleteAthleteSession,
 } from '../../athleteSessions'
-import { Button, EmptyState, TemplateCard } from '../ui'
+import { Button, EmptyState, SessionFilterBar, TemplateCard } from '../ui'
+import { useSessionFilters } from '../../App/hooks/useSessionFilters'
+import { makeMuscleResolver } from '../dimensions/useMuscleResolver'
 import BankPickerModal from './BankPickerModal'
 import SessionEditModal from './SessionEditModal'
 import '../AthleteSessionPool.css'
 import '../LibraryBrowser.css'
+
+const resolveMuscles = makeMuscleResolver()
+const POOL_FILTERS = ['search', 'activities', 'zones', 'categories']
 
 export default function AthleteSessionPool({ coachId, athleteId }) {
   const [sessions, setSessions] = useState([])
@@ -22,6 +27,17 @@ export default function AthleteSessionPool({ coachId, athleteId }) {
   const [pickerOpen, setPickerOpen] = useState(false)
   const [editing, setEditing] = useState(null)
   const [loading, setLoading] = useState(true)
+
+  const filters = useSessionFilters(sessions, { enabled: POOL_FILTERS, resolveMuscles })
+  const sportCounts = useMemo(() => {
+    const counts = new Map()
+    sessions.forEach(s => {
+      if (!s.activityTag) return
+      counts.set(s.activityTag, (counts.get(s.activityTag) || 0) + 1)
+    })
+    return counts
+  }, [sessions])
+  const presentSportValues = useMemo(() => Array.from(sportCounts.keys()), [sportCounts])
 
   useEffect(() => {
     if (!coachId || !athleteId) {
@@ -102,18 +118,34 @@ export default function AthleteSessionPool({ coachId, athleteId }) {
           description="Pull in sessions from the coach's session bank to build the athlete's personal library."
         />
       ) : (
-        <div className="th-card-grid">
-          {sessions.map(session => (
-            <TemplateCard
-              key={session.id}
-              template={session}
-              primaryLabel="Edit"
-              primaryVariant="secondary"
-              onPrimary={() => setEditing(session)}
-              onDelete={() => handleDelete(session)}
-            />
-          ))}
-        </div>
+        <>
+          <SessionFilterBar
+            criteria={filters.criteria}
+            set={filters.set}
+            filtersActive={filters.filtersActive}
+            clearAll={filters.clearAll}
+            enabled={POOL_FILTERS}
+            sportCounts={sportCounts}
+            presentSportValues={presentSportValues}
+            resultCount={filters.filtered.length}
+          />
+          {filters.filtered.length === 0 ? (
+            <EmptyState title="No matches" description="Try a different search or remove a filter." />
+          ) : (
+            <div className="th-card-grid">
+              {filters.filtered.map(session => (
+                <TemplateCard
+                  key={session.id}
+                  template={session}
+                  primaryLabel="Edit"
+                  primaryVariant="secondary"
+                  onPrimary={() => setEditing(session)}
+                  onDelete={() => handleDelete(session)}
+                />
+              ))}
+            </div>
+          )}
+        </>
       )}
 
       {pickerOpen && (

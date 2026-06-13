@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Plus, X, Copy, Scissors } from 'lucide-react'
+import { Plus, X, Copy, Scissors, Layers, StickyNote, Trophy } from 'lucide-react'
 import {
   ACTIVITY_TAG_MAP, WEEKDAY_OPTIONS, groupWorkoutsByWeekday,
   normalizeIntensityZones, getZoneBarBackground, workoutHasZones,
@@ -17,6 +17,12 @@ import { useMonthSignalsToggle } from './useMonthSignalsToggle'
 import MonthWeekSignals from './MonthWeekSignals'
 import { useMonthTrendsToggle } from './useMonthTrendsToggle'
 import MonthTrendPanel from './MonthTrendPanel'
+import PlanAnnotations from './PlanAnnotations'
+import PlanEditors from './editors/PlanEditors'
+import AddSessionMenu from './AddSessionMenu'
+import { usePlanAnnotations } from './usePlanAnnotations'
+import { useBandGesture } from './useBandGesture'
+import { formatDate } from '../../utils/planGeometry'
 
 const DAY_FMT = new Intl.DateTimeFormat('en', { day: 'numeric', month: 'short' })
 
@@ -100,20 +106,57 @@ function MarqueeBox({ marquee }) {
   return <div className="pb-month-marquee" style={{ left, top, width, height }} aria-hidden="true" />
 }
 
-// Right-click context menu for a selection: Copy / Cut, positioned at the
-// cursor. Choosing an item arms cursor-follow placement (handled by the hook).
-function SelectionContextMenu({ menu, count, onCopy, onCut }) {
+// Right-click context menu, positioned at the cursor. Shows Copy / Cut for a
+// session selection (arms cursor-follow placement), an "Add note here" item when
+// the click was on a session, and Add band / note / competition items when a
+// day-range is selected. Sections are separated by a thin divider.
+function SelectionContextMenu({
+  menu, count, onCopy, onCut,
+  onAddBand, onAddNote, onAddGoal, onAddNoteHere,
+}) {
   if (!menu) return null
+  const hasSelection = Boolean(menu.selectionContext) && count > 0
+  const hasRange = Boolean(menu.range)
   return (
     <div className="pb-month-context-menu" style={{ left: menu.x, top: menu.y }} role="menu">
-      <button type="button" className="pb-month-context-item" role="menuitem" onClick={onCopy}>
-        <Copy aria-hidden="true" strokeWidth={2} />
-        <span>Copy{count > 1 ? ` ${count} sessions` : ''}</span>
-      </button>
-      <button type="button" className="pb-month-context-item" role="menuitem" onClick={onCut}>
-        <Scissors aria-hidden="true" strokeWidth={2} />
-        <span>Cut{count > 1 ? ` ${count} sessions` : ''}</span>
-      </button>
+      {hasSelection && (
+        <>
+          <button type="button" className="pb-month-context-item" role="menuitem" onClick={onCopy}>
+            <Copy aria-hidden="true" strokeWidth={2} />
+            <span>Copy{count > 1 ? ` ${count} sessions` : ''}</span>
+          </button>
+          <button type="button" className="pb-month-context-item" role="menuitem" onClick={onCut}>
+            <Scissors aria-hidden="true" strokeWidth={2} />
+            <span>Cut{count > 1 ? ` ${count} sessions` : ''}</span>
+          </button>
+        </>
+      )}
+      {menu.sessionId && (
+        <>
+          {hasSelection && <div className="pb-month-context-sep" aria-hidden="true" />}
+          <button type="button" className="pb-month-context-item" role="menuitem" onClick={onAddNoteHere}>
+            <StickyNote aria-hidden="true" strokeWidth={2} />
+            <span>Add note here</span>
+          </button>
+        </>
+      )}
+      {hasRange && (
+        <>
+          {(hasSelection || menu.sessionId) && <div className="pb-month-context-sep" aria-hidden="true" />}
+          <button type="button" className="pb-month-context-item" role="menuitem" onClick={onAddBand}>
+            <Layers aria-hidden="true" strokeWidth={2} />
+            <span>Add band…</span>
+          </button>
+          <button type="button" className="pb-month-context-item" role="menuitem" onClick={onAddNote}>
+            <StickyNote aria-hidden="true" strokeWidth={2} />
+            <span>Add note…</span>
+          </button>
+          <button type="button" className="pb-month-context-item" role="menuitem" onClick={onAddGoal}>
+            <Trophy aria-hidden="true" strokeWidth={2} />
+            <span>Add competition…</span>
+          </button>
+        </>
+      )}
     </div>
   )
 }
@@ -137,6 +180,11 @@ export default function MonthGridPanel({
   onSelectWorkout,
   onDeleteWorkout,
   onAddSessionToDay,
+  onAddTemplateToDayAcross,
+  templates,
+  visibleActivities,
+  addVisibleActivity,
+  removeVisibleActivity,
   onAddManySessions,
   onMoveMany,
   onDeleteMany,
@@ -145,6 +193,9 @@ export default function MonthGridPanel({
   onJumpToWeek,
   handleWorkoutDragStart,
   handleDragEnd,
+  plan,
+  planActions,
+  noteAuthor,
 }) {
   const gridRef = useRef(null)
   const marqueeDownRef = useRef(null) // pointerdown pos of a potential marquee drag
@@ -162,16 +213,53 @@ export default function MonthGridPanel({
     modalOpen,
   })
 
-  // Right-click context menu over a selection: { x, y } in viewport coords, or
-  // null when closed.
+  const ann = usePlanAnnotations({ planActions, noteAuthor })
+
+  // Band pointer gestures shared across all week-rows: edge-resize an existing
+  // band (commits directly), or drag out a fresh range in the empty strip
+  // (opens the band editor prefilled at the release point). gridRef supplies the
+  // day cells the cursor hit-tests against, so a drag can cross week rows.
+  const bandGesture = useBandGesture({
+    gridRef,
+    onResizeBand: band => ann.saveBand(band),
+    onDraw: (range, at) => ann.addBandForRange(range, at),
+  })
+
+  // Right-click context menu: { x, y } in viewport coords, plus optional
+  // sessionId (right-clicked a chip) and range (a selected day-range), or null
+  // when closed.
   const [contextMenu, setContextMenu] = useState(null)
 
-  // Open the Copy/Cut menu only when right-clicking a chip that is part of the
-  // current selection. Otherwise let the browser's default menu through.
+  // Per-day "+" add-session menu: { week, year, weekday, at:{x,y} } or null.
+  const [addMenu, setAddMenu] = useState(null)
+
+  // Report armed/disarmed placement up to the builder so it can lock out other
+  // entry points (new template, template drag) while sessions are in hand.
+  const placementArmed = Boolean(sel.placement)
+  useEffect(() => {
+    onPlacementChange?.(placementArmed)
+  }, [placementArmed, onPlacementChange])
+  // Clear the parent's armed flag if the month view unmounts mid-placement.
+  useEffect(() => () => onPlacementChange?.(false), [onPlacementChange])
+
+  // Right-clicking a chip opens the menu with up to three independent sections:
+  //  - Copy/Cut          → when THIS chip is part of the session selection
+  //  - Add note here     → always (anchors a note to this session)
+  //  - Add band / note / competition → whenever a day-range is selected
+  // The day-range and the session selection are orthogonal: a range swept OVER
+  // a session must still be placeable as a band, even though the sweep also
+  // selected the chip. So the range is ALWAYS carried, never gated on selection.
   function handleChipContextMenu(workoutId, event) {
-    if (!sel.isSessionSelected(workoutId) || sel.selectedIds.size === 0) return
     event.preventDefault()
-    setContextMenu({ x: event.clientX, y: event.clientY })
+    event.stopPropagation()
+    const inSelection = sel.isSessionSelected(workoutId) && sel.selectedIds.size > 0
+    setContextMenu({
+      x: event.clientX,
+      y: event.clientY,
+      sessionId: workoutId,
+      selectionContext: inSelection, // Copy/Cut visibility
+      range: sel.selectedDayRange,   // band/note/competition visibility
+    })
   }
 
   // Dismiss the menu on any outside pointerdown or scroll while it is open.
@@ -243,7 +331,9 @@ export default function MonthGridPanel({
   // own their click/drag gestures) and the week-label (which jumps to the week).
   function onGridPointerDown(event) {
     if (sel.isPlacementArmed()) return // a placement click must not start a marquee
-    if (event.target.closest('.pb-month-chip-wrap, .pb-month-week-label')) return
+    // The band track owns its pointer gestures (draw a new band / resize an
+    // existing one), so a press there must not also start a marquee.
+    if (event.target.closest('.pb-month-chip-wrap, .pb-month-week-label, .pb-band-track')) return
     // Remember where a potential marquee started so the trailing click can tell a
     // real drag-select apart from a plain click on dead space.
     marqueeDownRef.current = { x: event.clientX, y: event.clientY }
@@ -283,11 +373,20 @@ export default function MonthGridPanel({
   }
 
   // While sessions are "in hand" (armed Copy/Cut placement), a right-click
-  // anywhere discards them instead of showing a menu.
+  // anywhere discards them. Otherwise, if a day-range is selected, a right-click
+  // on the grid (not on a chip — chips handle their own menu) opens the
+  // annotation menu so the range can become a band / note / competition.
   function onPanelContextMenu(event) {
-    if (!sel.isPlacementArmed()) return
-    event.preventDefault()
-    sel.cancelPlacement()
+    if (sel.isPlacementArmed()) {
+      event.preventDefault()
+      sel.cancelPlacement()
+      return
+    }
+    if (event.target.closest?.('.pb-month-chip-wrap')) return // chip menu handles it
+    if (sel.selectedDayRange) {
+      event.preventDefault()
+      setContextMenu({ x: event.clientX, y: event.clientY, range: sel.selectedDayRange })
+    }
   }
 
   return (
@@ -374,6 +473,29 @@ export default function MonthGridPanel({
                   <MonthWeekSummary workouts={overviewWorkoutsByWeekKey[weekKey] || []} />
                 </div>
 
+                {plan && (
+                  <div className="pb-month-annotations">
+                    <PlanAnnotations
+                      weekMonday={weekEntry.monday}
+                      bands={plan.bands}
+                      goals={plan.goals}
+                      notes={plan.notes}
+                      sessions={overviewWorkoutsByWeekKey[weekKey] || []}
+                      view="month"
+                      viewer={noteAuthor}
+                      selectedRange={sel.selectedDayRange}
+                      bandPreview={bandGesture.preview}
+                      today={formatDate(today)}
+                      onEditBand={(band) => ann.editBand(band)}
+                      onResizeBandHandle={bandGesture.beginResize}
+                      onDrawBand={bandGesture.beginDraw}
+                      onEditGoal={(goal) => ann.editGoal(goal)}
+                      onEditNote={(note) => ann.editNote(note)}
+                      onMoveNote={ann.moveNote}
+                    />
+                  </div>
+                )}
+
                 {dayBuckets.map(day => {
                   const key = cellKey(weekEntry.week, weekEntry.year, day.value)
                   const baseDropProps = makeDropZoneProps({
@@ -431,11 +553,18 @@ export default function MonthGridPanel({
                     : null
                   const isToday = cellDate
                     && (cellDate.getFullYear() * 10000 + cellDate.getMonth() * 100 + cellDate.getDate()) === todayStamp
+                  // Persisted highlight of the selected day-range so the user
+                  // sees what they've selected BEFORE right-clicking to annotate.
+                  const cellDateStr = cellDate ? formatDate(cellDate) : null
+                  const inRange = Boolean(sel.selectedDayRange && cellDateStr
+                    && cellDateStr >= sel.selectedDayRange.startDate
+                    && cellDateStr <= sel.selectedDayRange.endDate)
                   return (
                     <div
                       key={day.value}
-                      className={`pb-month-cell${isEmptyDay ? ' is-empty' : ''}${isToday ? ' is-today' : ''}${isDayTarget ? ' is-target' : ''}`}
+                      className={`pb-month-cell${isEmptyDay ? ' is-empty' : ''}${isToday ? ' is-today' : ''}${isDayTarget ? ' is-target' : ''}${inRange ? ' is-range-selected' : ''}`}
                       role="gridcell"
+                      data-date={cellDate ? formatDate(cellDate) : undefined}
                       onPointerEnter={() => sel.setHoverCell({ week: weekEntry.week, year: weekEntry.year, weekday: day.value })}
                       {...dayDropProps}
                     >
@@ -477,12 +606,17 @@ export default function MonthGridPanel({
                       <button
                         type="button"
                         className="pb-month-add"
-                        onClick={() => {
+                        onClick={event => {
                           // While sessions are in hand, the "+" must not open the
-                          // add form — the click places the held sessions on this
+                          // add menu — the click places the held sessions on this
                           // day instead (handled by onPanelClick).
                           if (sel.isPlacementArmed()) return
-                          onAddSessionToDay(weekEntry.week, weekEntry.year, day.value)
+                          setAddMenu({
+                            week: weekEntry.week,
+                            year: weekEntry.year,
+                            weekday: day.value,
+                            at: { x: event.clientX, y: event.clientY },
+                          })
                         }}
                         aria-label={`Add a session on ${day.label}, week ${weekEntry.week}`}
                         title={`Add a session on ${day.shortLabel}, week ${weekEntry.week}`}
@@ -514,7 +648,27 @@ export default function MonthGridPanel({
         count={selectionCount}
         onCopy={() => { sel.armPlacement('copy'); setContextMenu(null) }}
         onCut={() => { sel.armPlacement('cut'); setContextMenu(null) }}
+        onAddBand={() => { ann.addBandForRange(contextMenu.range, contextMenu); setContextMenu(null) }}
+        onAddNote={() => { ann.addNoteForRange(contextMenu.range, contextMenu); setContextMenu(null) }}
+        onAddGoal={() => { ann.addGoalForRange(contextMenu.range, contextMenu); setContextMenu(null) }}
+        onAddNoteHere={() => { ann.addNoteForSession(contextMenu.sessionId, contextMenu); setContextMenu(null) }}
       />
+
+      <PlanEditors ann={ann} />
+
+      {addMenu && (
+        <AddSessionMenu
+          at={addMenu.at}
+          templates={templates}
+          visibleActivities={visibleActivities}
+          onAddActivity={addVisibleActivity}
+          onRemoveActivity={removeVisibleActivity}
+          onCreateNew={() => onAddSessionToDay(addMenu.week, addMenu.year, addMenu.weekday)}
+          onPickTemplate={template =>
+            onAddTemplateToDayAcross(template, addMenu.week, addMenu.year, addMenu.weekday)}
+          onClose={() => setAddMenu(null)}
+        />
+      )}
 
       {sel.dragCursor && (
         <div

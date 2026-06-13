@@ -1,33 +1,16 @@
 import { useMemo, useState } from 'react'
 import { Plus } from 'lucide-react'
-import {
-  ACTIVITY_TAG_MAP,
-  normalizeIntensityZones,
-} from '../../utils'
-import { Button, Page } from '../ui'
-import FilterBar from './FilterBar'
+import { Button, Page, SessionFilterBar } from '../ui'
+import { useSessionFilters } from '../../App/hooks/useSessionFilters'
+import { makeMuscleResolver } from '../dimensions/useMuscleResolver'
 import ResultsGrid from './ResultsGrid'
 import '../LibraryBrowser.css'
 
-function matchesSearch(template, term) {
-  if (!term) return true
-  const tags = Array.isArray(template.tags) ? template.tags : []
-  const haystack = [
-    template.title,
-    template.description,
-    template.sessionDetails,
-    template.notes,
-    template.category,
-    template.type,
-    template.activityTag,
-    ACTIVITY_TAG_MAP[template.activityTag]?.label,
-    ...tags,
-  ]
-    .filter(Boolean)
-    .join(' ')
-    .toLowerCase()
-  return haystack.includes(term.toLowerCase())
-}
+const resolveMuscles = makeMuscleResolver()
+
+const LIBRARY_FILTERS = [
+  'search', 'activities', 'templateCategory', 'types', 'categories', 'zones', 'duration',
+]
 
 export default function LibraryBrowser({
   globalTemplates,
@@ -39,20 +22,12 @@ export default function LibraryBrowser({
   onDeleteGlobal,
   onCreateGlobal,
 }) {
-  const [search, setSearch] = useState('')
-  const [activitySet, setActivitySet] = useState([])
-  const [category, setCategory] = useState('All')
-  const [zoneSet, setZoneSet] = useState(() => new Set())
   const [pendingAddIds, setPendingAddIds] = useState(() => new Set())
 
-  function toggleZone(value) {
-    setZoneSet(prev => {
-      const next = new Set(prev)
-      if (next.has(value)) next.delete(value)
-      else next.add(value)
-      return next
-    })
-  }
+  const filters = useSessionFilters(globalTemplates, {
+    enabled: LIBRARY_FILTERS,
+    resolveMuscles,
+  })
 
   const sportCounts = useMemo(() => {
     const counts = new Map()
@@ -62,18 +37,6 @@ export default function LibraryBrowser({
     })
     return counts
   }, [globalTemplates])
-
-  const filtered = useMemo(() => {
-    return globalTemplates
-      .filter(t => matchesSearch(t, search.trim()))
-      .filter(t => activitySet.length === 0 || activitySet.includes(t.activityTag))
-      .filter(t => category === 'All' || t.category === category)
-      .filter(t => {
-        if (zoneSet.size === 0) return true
-        const zones = normalizeIntensityZones(t.type, t.intensityZone)
-        return zones.some(z => zoneSet.has(z))
-      })
-  }, [globalTemplates, search, activitySet, category, zoneSet])
 
   const presentSportValues = useMemo(() => Array.from(sportCounts.keys()), [sportCounts])
 
@@ -91,28 +54,16 @@ export default function LibraryBrowser({
     }
   }
 
-  function clearAll() {
-    setSearch('')
-    setActivitySet([])
-    setCategory('All')
-    setZoneSet(new Set())
-  }
-
-  const filtersActive =
-    search.length > 0 ||
-    activitySet.length > 0 ||
-    category !== 'All' ||
-    zoneSet.size > 0
-
   return (
     <Page>
-      <FilterBar
-        search={search} onSearch={setSearch}
-        activitySet={activitySet} onActivityChange={setActivitySet}
-        sportCounts={sportCounts} presentSportValues={presentSportValues}
-        category={category} onCategoryChange={setCategory}
-        zoneSet={zoneSet} onToggleZone={toggleZone}
-        filtersActive={filtersActive} onClear={clearAll}
+      <SessionFilterBar
+        criteria={filters.criteria}
+        set={filters.set}
+        filtersActive={filters.filtersActive}
+        clearAll={filters.clearAll}
+        enabled={LIBRARY_FILTERS}
+        sportCounts={sportCounts}
+        presentSportValues={presentSportValues}
         trailingAction={isSuperadmin && onCreateGlobal ? (
           <Button onClick={onCreateGlobal}>
             <Plus size={16} aria-hidden="true" />
@@ -123,10 +74,10 @@ export default function LibraryBrowser({
 
       <ResultsGrid
         loading={loading}
-        filtered={filtered}
+        filtered={filters.filtered}
         globalTemplates={globalTemplates}
-        filtersActive={filtersActive}
-        onClear={clearAll}
+        filtersActive={filters.filtersActive}
+        onClear={filters.clearAll}
         isAlreadyInBank={isAlreadyInBank}
         pendingAddIds={pendingAddIds}
         onAdd={handleAdd}

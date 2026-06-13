@@ -34,6 +34,11 @@ function renderPanel(overrides = {}) {
     onSelectWorkout: () => {},
     onDeleteWorkout: () => {},
     onAddSessionToDay: () => {},
+    onAddTemplateToDayAcross: () => {},
+    templates: [],
+    visibleActivities: [],
+    addVisibleActivity: () => {},
+    removeVisibleActivity: () => {},
     onJumpToWeek: () => {},
     handleWorkoutDragStart: () => {},
     handleDragEnd: () => {},
@@ -67,9 +72,10 @@ describe('MonthGridPanel', () => {
   it('adds a session to the right (week, weekday) via the per-day +', async () => {
     const user = userEvent.setup()
     const onAddSessionToDay = vi.fn()
-    renderPanel({ onAddSessionToDay })
-    // Week 21 (empty) Monday add button.
+    renderPanel({ onAddSessionToDay, templates: [] })
+    // Week 21 (empty) Monday add button opens the menu; empty bank → only "Create new".
     await user.click(screen.getByLabelText('Add a session on Monday, week 21'))
+    await user.click(screen.getByRole('button', { name: /create new/i }))
     expect(onAddSessionToDay).toHaveBeenCalledWith(21, 2026, 1)
   })
 

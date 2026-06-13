@@ -1,36 +1,30 @@
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { Plus } from 'lucide-react'
-import {
-  ACTIVITY_TAG_MAP,
-  TEMPLATE_CATEGORIES,
-} from '../../../utils'
 import {
   Button,
   Page,
   EmptyState,
-  Toolbar,
-  ToolbarGroup,
-  SearchBox,
-  Chip,
-  SportPicker,
+  SessionFilterBar,
   TemplateCard as UITemplateCard,
 } from '../../ui'
+import { useSessionFilters } from '../../../App/hooks/useSessionFilters'
+import { makeMuscleResolver } from '../../dimensions/useMuscleResolver'
+
+const resolveMuscles = makeMuscleResolver()
+
+const BANK_FILTERS = ['search', 'activities', 'templateCategory', 'types', 'categories', 'zones', 'duration']
 
 export default function OktbankTab({
   templates,
-  activeCategory,
-  setActiveCategory,
   loadingTemplates,
   pickingFromBank,
   replacementTarget,
-  currentWeek,
   handleAddFromTemplate,
   startEditTemplate,
   handleDeleteTemplate,
   startNewTemplate,
 }) {
-  const [search, setSearch] = useState('')
-  const [activitySet, setActivitySet] = useState([])
+  const filters = useSessionFilters(templates, { enabled: BANK_FILTERS, resolveMuscles })
 
   const sportCounts = useMemo(() => {
     const counts = new Map()
@@ -42,58 +36,26 @@ export default function OktbankTab({
   }, [templates])
 
   const presentSportValues = useMemo(() => Array.from(sportCounts.keys()), [sportCounts])
-
-  const filtered = useMemo(() => {
-    return templates
-      .filter(t => activeCategory === 'All' || t.category === activeCategory)
-      .filter(t => activitySet.length === 0 || activitySet.includes(t.activityTag))
-      .filter(t => {
-        if (!search.trim()) return true
-        const term = search.trim().toLowerCase()
-        const haystack = [t.title, t.description, t.notes, t.category, ACTIVITY_TAG_MAP[t.activityTag]?.label]
-          .filter(Boolean).join(' ').toLowerCase()
-        return haystack.includes(term)
-      })
-  }, [templates, activeCategory, activitySet, search])
-
-  const filtersActive = search.length > 0 || activitySet.length > 0 || activeCategory !== 'All'
-
-  function clearAll() {
-    setSearch('')
-    setActivitySet([])
-    setActiveCategory('All')
-  }
+  const { filtered, filtersActive, clearAll } = filters
 
   return (
     <Page>
-      <Toolbar>
-        <SearchBox value={search} onChange={setSearch} placeholder="Search my templates…" />
-        <ToolbarGroup label="Sport">
-          <SportPicker
-            value={activitySet}
-            onChange={setActivitySet}
-            counts={sportCounts}
-            limitToValues={presentSportValues}
-          />
-        </ToolbarGroup>
-        <ToolbarGroup label="Category">
-          <Chip active={activeCategory === 'All'} onClick={() => setActiveCategory('All')}>All</Chip>
-          {TEMPLATE_CATEGORIES.filter(cat => cat !== 'All').map(cat => (
-            <Chip key={cat} active={activeCategory === cat} onClick={() => setActiveCategory(cat)}>
-              {cat}
-            </Chip>
-          ))}
-        </ToolbarGroup>
-        {filtersActive && (
-          <Button variant="ghost" size="sm" onClick={clearAll}>Clear filter</Button>
-        )}
-        {!pickingFromBank && (
-          <Button onClick={startNewTemplate} className="th-toolbar-action">
+      <SessionFilterBar
+        criteria={filters.criteria}
+        set={filters.set}
+        filtersActive={filtersActive}
+        clearAll={clearAll}
+        enabled={BANK_FILTERS}
+        sportCounts={sportCounts}
+        presentSportValues={presentSportValues}
+        searchPlaceholder="Search my templates…"
+        trailingAction={!pickingFromBank ? (
+          <Button onClick={startNewTemplate}>
             <Plus size={16} strokeWidth={2} aria-hidden="true" />
             New template
           </Button>
-        )}
-      </Toolbar>
+        ) : null}
+      />
 
       {loadingTemplates ? (
         <EmptyState title="Loading templates…" />

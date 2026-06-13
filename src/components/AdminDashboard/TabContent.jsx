@@ -93,6 +93,9 @@ export default function TabContent(p) {
         onAddSessionToDay={onAddSessionToDay}
         onAddSessionToDayAcross={onAddSessionToDayAcross}
         onCreateTemplate={p.startNewTemplate}
+        plan={p.plan}
+        planActions={p.planActions}
+        noteAuthor={p.noteAuthor}
       />
     )
   }

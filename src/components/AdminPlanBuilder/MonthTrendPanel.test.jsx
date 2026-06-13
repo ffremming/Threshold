@@ -1,6 +1,7 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import '@testing-library/jest-dom'
+import { resetTrendMetric } from './trendMetricStore'
 
 // react-chartjs-2 renders a <canvas> that jsdom can't paint; stub <Line> so we
 // test the panel's switcher behavior, not chart.js rendering.
@@ -27,6 +28,8 @@ const SERIES = [
 ]
 
 describe('MonthTrendPanel', () => {
+  beforeEach(() => resetTrendMetric())
+
   it('renders a metric switcher with Distance/Duration/Load', () => {
     render(<MonthTrendPanel series={SERIES} />)
     expect(screen.getByRole('button', { name: /distance/i })).toBeInTheDocument()
@@ -49,6 +52,18 @@ describe('MonthTrendPanel', () => {
     expect(screen.getByRole('button', { name: /duration/i })).not.toHaveClass('is-active')
     fireEvent.click(screen.getByRole('button', { name: /duration/i }))
     expect(screen.getByRole('button', { name: /duration/i })).toHaveClass('is-active')
+    expect(screen.getByRole('button', { name: /distance/i })).not.toHaveClass('is-active')
+  })
+
+  it('keeps the selected metric after an unmount/remount (week navigation)', () => {
+    const { unmount } = render(<MonthTrendPanel series={SERIES} />)
+    fireEvent.click(screen.getByRole('button', { name: /load/i }))
+    expect(screen.getByRole('button', { name: /load/i })).toHaveClass('is-active')
+    // Navigating weeks can remount the panel; the chosen metric must persist
+    // for the lifetime of the builder session (not snap back to distance).
+    unmount()
+    render(<MonthTrendPanel series={SERIES} />)
+    expect(screen.getByRole('button', { name: /load/i })).toHaveClass('is-active')
     expect(screen.getByRole('button', { name: /distance/i })).not.toHaveClass('is-active')
   })
 

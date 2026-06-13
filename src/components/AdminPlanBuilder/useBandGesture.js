@@ -7,9 +7,10 @@ import { dateUnderPoint } from '../../utils/planGeometry'
 //     in the grid (so a resize can cross into the row above/below), the other
 //     edge stays put. Commits via onResizeBand on release; a no-move release is
 //     a no-op.
-//   • beginDraw(date, event) — sweep out a fresh range from an empty band strip.
-//     Calls onDraw(range, point) on release so the caller can open a prefilled
-//     band editor.
+//   • beginDraw(event) — sweep out a fresh range from an empty band strip. The
+//     anchor day is resolved from the press point against the same day cells the
+//     drag-end uses, so the two ends share one geometry. Calls onDraw(range,
+//     point) on release so the caller can open a prefilled band editor.
 // While a gesture runs, `preview` carries the live span so the track can render
 // a ghost; it is null otherwise.
 //
@@ -90,31 +91,33 @@ export function useBandGesture({ gridRef, onResizeBand, onDraw }) {
   }, [begin, gridRef, onResizeBand])
 
   // ── Draw a fresh range in an empty band strip ───────────────────────
-  const beginDraw = useCallback((date, event) => {
-    if (!date) return
+  const beginDraw = useCallback((event) => {
+    if (event.button != null && event.button !== 0) return
     event.stopPropagation?.()
-    activeRef.current = { kind: 'draw', anchor: date }
-    // `date` (the anchor) is the column the press started on, computed from the
-    // strip's own geometry (no DOM-tie ambiguity). The other end tracks the
-    // cursor's day; before any real movement the range is just the anchor day,
-    // so a plain click draws a clean 1-day band instead of snapping to whatever
-    // column the press pixel happens to border.
+    // The anchor day is the day under the PRESS point, resolved against the same
+    // day cells the drag-end uses — so start and end share one geometry and can
+    // never disagree by a column. The other end tracks the cursor; before any
+    // real movement the range is just the anchor day, so a plain click draws a
+    // clean 1-day band instead of snapping to a bordering column.
+    const anchor = dateUnderPoint(event.clientX, event.clientY, gridRef.current)
+    if (!anchor) return
+    activeRef.current = { kind: 'draw', anchor }
     const spanFrom = (to) => {
-      const [startDate, endDate] = order(date, to || date)
+      const [startDate, endDate] = order(anchor, to || anchor)
       return { startDate, endDate }
     }
     const started = begin(
       event,
       (e, moved) => {
-        const to = moved ? dateUnderPoint(e.clientX, e.clientY, gridRef.current) : date
+        const to = moved ? dateUnderPoint(e.clientX, e.clientY, gridRef.current) : anchor
         setPreview({ drawing: true, ...spanFrom(to) })
       },
       (e, moved) => {
-        const to = moved ? dateUnderPoint(e.clientX, e.clientY, gridRef.current) : date
+        const to = moved ? dateUnderPoint(e.clientX, e.clientY, gridRef.current) : anchor
         onDraw?.(spanFrom(to), { x: e.clientX, y: e.clientY })
       },
     )
-    if (started) setPreview({ drawing: true, ...spanFrom(date) })
+    if (started) setPreview({ drawing: true, ...spanFrom(anchor) })
   }, [begin, gridRef, onDraw])
 
   return { preview, beginResize, beginDraw }

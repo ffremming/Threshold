@@ -1,7 +1,9 @@
 import GoalStrip from './GoalStrip'
 import BandTrack from './BandTrack'
 import NoteLayer from './NoteLayer'
-import { formatDate, rangeToSpan, columnToPercent, spanWidthPercent } from '../../utils/planGeometry'
+import { formatDate, rangeToSpan, columnLeftCalc, spanWidthCalc } from '../../utils/planGeometry'
+
+const COL_GAP_CSS = '4px' // matches the day-grid `gap`; keeps the overlay on the columns
 
 // A live highlight of the currently-selected day-range, drawn across the columns
 // it covers, with a hint prompting the right-click. Shown the moment a marquee
@@ -14,8 +16,8 @@ function RangeHighlight({ range, weekMonday }) {
     <div
       className="pb-range-highlight"
       style={{
-        left: `${columnToPercent(span.startCol)}%`,
-        width: `${spanWidthPercent(span.startCol, span.endCol)}%`,
+        left: columnLeftCalc(span.startCol, COL_GAP_CSS),
+        width: spanWidthCalc(span.startCol, span.endCol, COL_GAP_CSS),
       }}
     >
       <span className="pb-range-hint">Right-click to add band / note / competition</span>

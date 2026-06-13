@@ -187,11 +187,12 @@ describe('PlanAnnotations rendering', () => {
     const { container } = renderAnn({ onDrawBand, bands: [] })
     expect(container.querySelector('.pb-band-draw-hint')).not.toBeNull()
     const track = container.querySelector('.pb-band-track')
-    // Press on the empty strip → onDrawBand(date, event). jsdom rects are 0-wide,
-    // so column 0 / Monday resolves; we only assert it fired with a date string.
+    // Press on the empty strip → onDrawBand(event). The gesture hook resolves the
+    // anchor day from the event against the day cells; here we only assert the
+    // strip forwards the pointer-down event to start a draw.
     fireEvent.pointerDown(track, { button: 0, clientX: 0, clientY: 0 })
     expect(onDrawBand).toHaveBeenCalledTimes(1)
-    expect(onDrawBand.mock.calls[0][0]).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+    expect(onDrawBand.mock.calls[0][0]).toBeInstanceOf(Object) // the pointer event
   })
 
   it('renders a live band ghost from bandPreview, clipped to this week', () => {
@@ -201,8 +202,10 @@ describe('PlanAnnotations rendering', () => {
     const ghost = container.querySelector('.pb-band-ghost')
     expect(ghost).not.toBeNull()
     expect(ghost.classList.contains('is-drawing')).toBe(true)
-    // Tue..Thu → cols 1..3, left = 1/7.
-    expect(ghost.style.left).toBe(`${(1 / 7) * 100}%`)
+    // Tue..Thu → starts at col 1. Gap-aware: one column-width + one 4px gap in.
+    expect(ghost.style.left).toMatch(/calc\(/)
+    expect(ghost.style.left).toContain('4px')
+    expect(ghost.style.left).toContain('100%')
   })
 
   it('renders a live range highlight with a right-click hint when a range is selected', () => {
@@ -210,7 +213,8 @@ describe('PlanAnnotations rendering', () => {
     const hl = container.querySelector('.pb-range-highlight')
     expect(hl).not.toBeNull()
     expect(hl.textContent).toMatch(/Right-click/)
-    // Spans Tue..Thu → cols 1..3, left = 1/7.
-    expect(hl.style.left).toBe(`${(1 / 7) * 100}%`)
+    // Spans Tue..Thu → starts at col 1. Gap-aware calc, not a flat percentage.
+    expect(hl.style.left).toMatch(/calc\(/)
+    expect(hl.style.left).toContain('4px')
   })
 })

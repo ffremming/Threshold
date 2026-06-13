@@ -46,9 +46,11 @@ describe('PlanGridPanel (quick build)', () => {
     expect(screen.getByText('Easy run')).toBeInTheDocument()
   })
 
-  it('shows the quick-build bar with the single start-volume input + Generate', () => {
+  it('shows the settings sidebar with volume, quality balance + Generate', () => {
     render(<PlanGridPanel {...baseProps()} />)
     expect(screen.getByLabelText(/start time/i)).toBeInTheDocument()
+    expect(screen.getByLabelText(/hard sessions/i)).toBeInTheDocument()
+    expect(screen.getByLabelText(/threshold weight/i)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /generate/i })).toBeInTheDocument()
   })
 

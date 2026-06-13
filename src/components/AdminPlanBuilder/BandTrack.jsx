@@ -1,24 +1,9 @@
-import { rangeToSpan, packLanes, columnToPercent, spanWidthPercent, formatDate } from '../../utils/planGeometry'
+import { rangeToSpan, packLanes, columnLeftCalc, spanWidthCalc, dateUnderPoint } from '../../utils/planGeometry'
 import { resolveBandColor, resolveBandLabel } from '../../utils/planTypes'
 
 const LANE_HEIGHT = 18 // px per band lane, kept in sync with annotations.css
 const EMPTY_HEIGHT = 15 // px reserved when a week has no bands, so it stays drawable
-
-// Which day-column (0..6) a pointer x lands in, over this strip element. Used to
-// seed a draw gesture with the day the press started on, without consulting the
-// grid hit-test (the strip itself carries no data-date cells).
-function colAtPointer(stripEl, clientX) {
-  const r = stripEl.getBoundingClientRect()
-  if (r.width <= 0) return 0
-  const frac = (clientX - r.left) / r.width
-  return Math.max(0, Math.min(6, Math.floor(frac * 7)))
-}
-
-// Date for column c within the week starting weekMonday.
-function dateForColumn(weekMonday, c) {
-  const d = new Date(weekMonday.getFullYear(), weekMonday.getMonth(), weekMonday.getDate() + c)
-  return formatDate(d)
-}
+const COL_GAP_CSS = '4px' // px between day columns; matches the grid `gap` in month/week CSS
 
 // Lane-packed phase/focus band pills for ONE week. Each band is clipped to the
 // week's visible Mon..Sun span; bands continuing past an edge render flush
@@ -50,8 +35,9 @@ export default function BandTrack({
     // a pill or its handle are handled by those elements (they stopPropagation).
     if (event.button != null && event.button !== 0) return
     if (event.target.closest?.('.pb-band-pill, .pb-band-handle')) return
-    const col = colAtPointer(event.currentTarget, event.clientX)
-    onDrawHandleDown?.(dateForColumn(weekMonday, col), event)
+    // The gesture hook resolves the anchor day from the press point against the
+    // SAME day cells the drag end uses, so start and end can never disagree.
+    onDrawHandleDown?.(event)
   }
 
   return (
@@ -77,8 +63,8 @@ export default function BandTrack({
             key={band.id}
             className={className}
             style={{
-              left: `${columnToPercent(startCol)}%`,
-              width: `${spanWidthPercent(startCol, endCol)}%`,
+              left: columnLeftCalc(startCol, COL_GAP_CSS),
+              width: spanWidthCalc(startCol, endCol, COL_GAP_CSS),
               top: lane * LANE_HEIGHT,
               '--pb-band-color': color,
             }}
@@ -115,8 +101,8 @@ export default function BandTrack({
         <div
           className={`pb-band-ghost${preview.drawing ? ' is-drawing' : ''}`}
           style={{
-            left: `${columnToPercent(ghost.startCol)}%`,
-            width: `${spanWidthPercent(ghost.startCol, ghost.endCol)}%`,
+            left: columnLeftCalc(ghost.startCol, COL_GAP_CSS),
+            width: spanWidthCalc(ghost.startCol, ghost.endCol, COL_GAP_CSS),
           }}
           aria-hidden="true"
         />

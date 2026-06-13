@@ -100,7 +100,7 @@ describe('useBandGesture — resize', () => {
 describe('useBandGesture — draw', () => {
   it('drawing from one day to another calls onDraw with the ordered range', () => {
     const { result, onDraw } = setup()
-    act(() => result.current.beginDraw('2026-06-09', down(colX(1), 20)))
+    act(() => result.current.beginDraw(down(colX(1), 20)))
     winEvt('pointermove', colX(4), 20) // Fri
     winEvt('pointerup', colX(4), 20)
     expect(onDraw).toHaveBeenCalledWith(
@@ -111,7 +111,7 @@ describe('useBandGesture — draw', () => {
 
   it('a single-day draw (no move) still creates a one-day range', () => {
     const { result, onDraw } = setup()
-    act(() => result.current.beginDraw('2026-06-10', down(colX(2), 20)))
+    act(() => result.current.beginDraw(down(colX(2), 20)))
     winEvt('pointerup', colX(2), 20)
     expect(onDraw).toHaveBeenCalledWith(
       { startDate: '2026-06-10', endDate: '2026-06-10' },
@@ -121,7 +121,7 @@ describe('useBandGesture — draw', () => {
 
   it('orders the range when dragging right-to-left (backwards)', () => {
     const { result, onDraw } = setup()
-    act(() => result.current.beginDraw('2026-06-12', down(colX(4), 20)))
+    act(() => result.current.beginDraw(down(colX(4), 20)))
     winEvt('pointermove', colX(1), 20) // Tue, before the anchor
     winEvt('pointerup', colX(1), 20)
     expect(onDraw).toHaveBeenCalledWith(
@@ -132,7 +132,7 @@ describe('useBandGesture — draw', () => {
 
   it('exposes a live draw preview during the gesture', () => {
     const { result } = setup()
-    act(() => result.current.beginDraw('2026-06-09', down(colX(1), 20)))
+    act(() => result.current.beginDraw(down(colX(1), 20)))
     winEvt('pointermove', colX(3), 20)
     expect(result.current.preview).toMatchObject({
       drawing: true, startDate: '2026-06-09', endDate: '2026-06-11',
@@ -145,7 +145,7 @@ describe('useBandGesture — draw', () => {
     const { result, onDraw } = setup()
     const ev = new Event('pointerdown', { bubbles: true })
     ev.button = 2; ev.clientX = colX(1); ev.clientY = 20
-    act(() => result.current.beginDraw('2026-06-09', ev))
+    act(() => result.current.beginDraw(ev))
     winEvt('pointerup', colX(1), 20)
     expect(onDraw).not.toHaveBeenCalled()
   })

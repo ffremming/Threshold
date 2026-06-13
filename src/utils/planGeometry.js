@@ -149,3 +149,33 @@ export function columnToPercent(col) {
 export function spanWidthPercent(startCol, endCol) {
   return ((endCol - startCol + 1) / 7) * 100
 }
+
+// Gap-aware column geometry. The day columns the band track overlays are a CSS
+// grid with a fixed GAP between them, so a column is NOT a flat 1/7 of the
+// track width — there are 6 internal gaps. These return CSS calc() strings that
+// place an overlay exactly on the day-column grid for any track width.
+//
+// Track width W holds 7 columns of width c and 6 gaps of width g:
+//   W = 7c + 6g           ⇒  c = (W - 6g) / 7
+//   left(col)      = col * (c + g)            = (W - 6g)/7 * col + col*g
+//   width(s..e)    = n*c + (n-1)*g, n=e-s+1   = (W - 6g)/7 * n + (n-1)*g
+// We express (W - 6g)/7 as calc((100% - 6*gap)/7) so the browser resolves W.
+
+// Left edge of column `col` as a calc() string, given the CSS gap (e.g. '4px').
+export function columnLeftCalc(col, gap) {
+  if (!col) return '0px'
+  return `calc((100% - 6 * ${gap}) / 7 * ${col} + ${col} * ${gap})`
+}
+
+// Width of a span covering [startCol, endCol] inclusive, as a calc() string.
+export function spanWidthCalc(startCol, endCol, gap) {
+  const n = endCol - startCol + 1
+  const innerGaps = n - 1
+  if (innerGaps <= 0) return `calc((100% - 6 * ${gap}) / 7 * ${n})`
+  return `calc((100% - 6 * ${gap}) / 7 * ${n} + ${innerGaps} * ${gap})`
+}
+
+// Center x of column `col` as a calc() string (for point markers like goals).
+export function columnCenterCalc(col, gap) {
+  return `calc((100% - 6 * ${gap}) / 7 * ${col + 0.5} + ${col} * ${gap})`
+}

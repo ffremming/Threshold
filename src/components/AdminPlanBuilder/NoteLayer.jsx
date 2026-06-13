@@ -1,7 +1,9 @@
 import { useRef, useState } from 'react'
 import { StickyNote } from 'lucide-react'
-import { dateToColumn, columnToPercent } from '../../utils/planGeometry'
+import { dateToColumn, columnLeftCalc } from '../../utils/planGeometry'
 import { noteHasUnread } from '../../utils/planReducers'
+
+const COL_GAP_CSS = '4px' // matches the day-grid `gap`; keeps notes on the columns
 
 // Resolve a note's time anchor to a column (0..6) within this week, or null if
 // the note doesn't belong to this week. Session anchors resolve through the
@@ -89,7 +91,7 @@ function PostIt({ note, col, unread, onEdit, onMove }) {
     <div
       className={`pb-postit${drag ? ' is-dragging' : ''}`}
       style={{
-        left: `${columnToPercent(col)}%`,
+        left: columnLeftCalc(col, COL_GAP_CSS),
         transform: `translate(${dx}px, ${dy}px)`,
         '--pb-note-color': note.color || 'var(--th-accent)',
       }}

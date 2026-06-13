@@ -128,9 +128,9 @@ describe('draw in the empty strip commits the correct range', () => {
     const onDraw = vi.fn()
     const grid = gridWithCells()
     const { result } = renderHook(() => useBandGesture({ gridRef: { current: grid }, onResizeBand: vi.fn(), onDraw }))
-    // BandTrack computes the start date from colAtPointer; emulate that here.
-    // Press squarely on col 2 (Wed).
-    act(() => result.current.beginDraw(dateOf(2), down(centerX(2), stripY)))
+    // The gesture resolves the anchor day from the press point itself.
+    // Press squarely on col 2 (Wed), up in the strip row above the cells.
+    act(() => result.current.beginDraw(down(centerX(2), stripY)))
     winEvt('pointermove', centerX(5), stripY)
     winEvt('pointerup', centerX(5), stripY)
     expect(onDraw).toHaveBeenCalledWith(

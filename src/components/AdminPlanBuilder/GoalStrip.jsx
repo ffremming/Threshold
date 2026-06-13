@@ -1,7 +1,9 @@
 import ActivityIcon from '../ActivityIcon'
-import { dateToColumn, columnToPercent, dayDiff } from '../../utils/planGeometry'
+import { dateToColumn, columnCenterCalc, dayDiff } from '../../utils/planGeometry'
 import { goalPriorityWeight } from '../../utils/planTypes'
 import { ACTIVITY_TAG_MAP } from '../../utils'
+
+const COL_GAP_CSS = '4px' // matches the day-grid `gap`; keeps markers on the columns
 
 // Priority-weighted competition markers for ONE week. Each goal sits on its day
 // column; A races read boldest (weight 1), C subtlest. Past goals dim; the week
@@ -38,7 +40,7 @@ export default function GoalStrip({ goals, weekMonday, view, today, onEditGoal }
             key={goal.id}
             className={className}
             style={{
-              left: `${columnToPercent(col) + 100 / 14}%`, // center of the column
+              left: columnCenterCalc(col, COL_GAP_CSS), // center of the column
               '--pb-goal-color': sport?.color || 'var(--th-accent)',
             }}
             onClick={event => { event.stopPropagation(); onEditGoal?.(goal) }}

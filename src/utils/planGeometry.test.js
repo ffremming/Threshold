@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import {
   parseDate, formatDate, dayDiff, dateToColumn, rangeToSpan, packLanes,
   columnToPercent, spanWidthPercent, dateUnderPoint,
+  columnLeftCalc, spanWidthCalc, columnCenterCalc,
 } from './planGeometry'
 
 // A known Monday: 2026-06-08 is a Monday (week 24, 2026).
@@ -117,6 +118,30 @@ describe('percent helpers', () => {
   it('spanWidthPercent', () => {
     expect(spanWidthPercent(0, 6)).toBeCloseTo(100)
     expect(spanWidthPercent(0, 0)).toBeCloseTo(100 / 7)
+  })
+})
+
+describe('gap-aware column calc helpers', () => {
+  const G = '4px'
+  it('columnLeftCalc: col 0 is the flush left edge', () => {
+    expect(columnLeftCalc(0, G)).toBe('0px')
+  })
+  it('columnLeftCalc: later columns add their share of width + preceding gaps', () => {
+    expect(columnLeftCalc(1, G)).toBe('calc((100% - 6 * 4px) / 7 * 1 + 1 * 4px)')
+    expect(columnLeftCalc(3, G)).toBe('calc((100% - 6 * 4px) / 7 * 3 + 3 * 4px)')
+  })
+  it('spanWidthCalc: a single column has no internal gap', () => {
+    expect(spanWidthCalc(2, 2, G)).toBe('calc((100% - 6 * 4px) / 7 * 1)')
+  })
+  it('spanWidthCalc: a multi-column span adds the internal gaps', () => {
+    // cols 1..3 → 3 columns + 2 internal gaps.
+    expect(spanWidthCalc(1, 3, G)).toBe('calc((100% - 6 * 4px) / 7 * 3 + 2 * 4px)')
+    // full week cols 0..6 → 7 columns + 6 gaps == 100%.
+    expect(spanWidthCalc(0, 6, G)).toBe('calc((100% - 6 * 4px) / 7 * 7 + 6 * 4px)')
+  })
+  it('columnCenterCalc: centers within the column accounting for gaps', () => {
+    expect(columnCenterCalc(0, G)).toBe('calc((100% - 6 * 4px) / 7 * 0.5 + 0 * 4px)')
+    expect(columnCenterCalc(2, G)).toBe('calc((100% - 6 * 4px) / 7 * 2.5 + 2 * 4px)')
   })
 })
 

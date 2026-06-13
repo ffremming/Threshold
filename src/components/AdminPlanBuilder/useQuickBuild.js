@@ -18,6 +18,18 @@ function buildCandidates(templates, resolveMuscles) {
   }))
 }
 
+const HIGH_INTENSITY = new Set(['threshold', 'vo2max', 'speed', 'strength'])
+
+// Count existing sessions that train a high-intensity quality (toward the cap).
+function countHard(workouts, resolveMuscles) {
+  let n = 0
+  for (const w of workouts || []) {
+    const qs = sessionCategories(w, { resolveMuscles })
+    if (qs.some(q => HIGH_INTENSITY.has(q))) n += 1
+  }
+  return n
+}
+
 // Existing-week totals shaped for the solver.
 function buildExistingTotals(workouts, resolveMuscles) {
   const s = computeWeekSummary(workouts || [], { resolveMuscles })
@@ -25,7 +37,13 @@ function buildExistingTotals(workouts, resolveMuscles) {
   for (const tag of new Set([...Object.keys(s.activityDistance), ...Object.keys(s.activityDuration)])) {
     byActivity[tag] = { distance: s.activityDistance[tag] || 0, duration: s.activityDuration[tag] || 0 }
   }
-  return { distance: s.totalDistance, durationMin: s.totalDuration, byActivity, byQuality: {} }
+  return {
+    distance: s.totalDistance,
+    durationMin: s.totalDuration,
+    byActivity,
+    byQuality: {},
+    hardCount: countHard(workouts, resolveMuscles),
+  }
 }
 
 // Quick-build controller: ONE start volume + a ramp drives every selected week.
@@ -42,14 +60,19 @@ export function useQuickBuild({
     () => buildCandidates(templates, resolveMuscles),
     [templates, resolveMuscles])
 
-  // Generate sessions across `range` ([{week,year}]) from a single start volume.
-  // `opts = { startVolume, unit: 'time'|'distance', rampPct }`. The first week in
-  // range is the typed base; deriveWeekTargets ramps the rest and applies any
-  // deload/taper coding. One batched insert; existing sessions are kept.
+  // Generate sessions across `range` ([{week,year}]) from a single start volume
+  // plus block-level quality/intensity/activity parameters applied to every week.
+  // `opts = { startVolume, unit:'time'|'distance', rampPct, qualityWeights,
+  // hardPerWeek, distribution }`. The first week in range is the typed base;
+  // deriveWeekTargets ramps the rest and applies deload/taper coding. The solver
+  // fills each week from the bank around existing sessions. One batched insert.
   const generate = useCallback((range, opts) => {
     const selected = range || []
     if (selected.length === 0) return
-    const { startVolume, unit = 'time', rampPct = 0 } = opts || {}
+    const {
+      startVolume, unit = 'time', rampPct = 0,
+      qualityWeights = null, hardPerWeek = null, distribution = null,
+    } = opts || {}
     if (!(startVolume > 0)) return
 
     // Seed the ramp: the first selected week carries the typed start volume in the
@@ -84,8 +107,10 @@ export function useQuickBuild({
       const target = {
         distanceKm: r.distanceKm || 0,
         durationMin: r.durationMin || 0,
-        distribution: null,
+        distribution: distribution && Object.keys(distribution).length ? distribution : null,
         qualities: [],
+        qualityWeights: qualityWeights && Object.keys(qualityWeights).length ? qualityWeights : null,
+        hardPerWeek: hardPerWeek != null ? hardPerWeek : null,
       }
       if (!(target.distanceKm > 0) && !(target.durationMin > 0)) continue
 

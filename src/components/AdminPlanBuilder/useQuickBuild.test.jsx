@@ -69,4 +69,39 @@ describe('useQuickBuild', () => {
     act(() => result.current.generate([], { startVolume: 60, unit: 'time', rampPct: 10 }))
     expect(props.onAddManySessions).not.toHaveBeenCalled()
   })
+
+  it('honors the activity distribution across the generated week', () => {
+    const props = baseProps({
+      templates: [
+        { id: 'r', title: 'Run', activityTag: 'run', type: 'continuous', intensityZone: [2], blocks: { sections: [{ kind: 'steady', distanceKm: 10, durationMin: 60 }] } },
+        { id: 'b', title: 'Bike', activityTag: 'bike', type: 'continuous', intensityZone: [2], blocks: { sections: [{ kind: 'steady', distanceKm: 30, durationMin: 60 }] } },
+      ],
+    })
+    const { result } = renderHook(() => useQuickBuild(props))
+    act(() => result.current.generate(
+      [{ week: 1, year: 2026 }],
+      { startVolume: 120, unit: 'time', rampPct: 0, distribution: { run: 50, bike: 50 } },
+    ))
+    const items = props.onAddManySessions.mock.calls[0][0]
+    const tags = new Set(items.map(i => i.session.activityTag))
+    expect(tags.has('run')).toBe(true)
+    expect(tags.has('bike')).toBe(true)
+  })
+
+  it('caps hard sessions per week from the param', () => {
+    const props = baseProps({
+      templates: [
+        { id: 'h', title: 'Intervals', activityTag: 'run', type: 'interval', intensityZone: [5], blocks: { sections: [{ kind: 'interval', distanceKm: 8, durationMin: 50, reps: 5 }] } },
+        { id: 'e', title: 'Easy', activityTag: 'run', type: 'continuous', intensityZone: [2], blocks: { sections: [{ kind: 'steady', distanceKm: 10, durationMin: 60 }] } },
+      ],
+    })
+    const { result } = renderHook(() => useQuickBuild(props))
+    act(() => result.current.generate(
+      [{ week: 1, year: 2026 }],
+      { startVolume: 360, unit: 'time', rampPct: 0, qualityWeights: { vo2max: 1 }, hardPerWeek: 1 },
+    ))
+    const items = props.onAddManySessions.mock.calls[0][0]
+    const hard = items.filter(i => (i.session.qualities || []).some(q => ['threshold', 'vo2max', 'speed', 'strength'].includes(q)))
+    expect(hard.length).toBeLessThanOrEqual(1)
+  })
 })

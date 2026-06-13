@@ -1,13 +1,16 @@
 import { averageLastValues } from '../../utils/seriesMath'
 import { formatDurationLabel, formatKmValue } from '../../utils'
 import { ACTIVITY_TAG_MAP } from '../../utils/activity'
+import { QUALITY_ORDER, QUALITY_COLORS, QUALITY_LABELS } from '../../utils/dimensions'
 
-// The three metrics the planner trend chart can switch between. `color` is the
-// line color; `unit` drives axis/tooltip formatting.
+// The metrics the planner trend chart can switch between. `color` is the line
+// color; `unit` drives axis/tooltip formatting. Quality is multi-line (one per
+// training quality) on a fixed 0–100 axis, so its `unit`/`color` are unused.
 export const TREND_METRICS = [
   { value: 'distance', label: 'Distance', unit: 'km', color: '#2563eb' },
   { value: 'duration', label: 'Duration', unit: 'min', color: '#10b981' },
   { value: 'load', label: 'Load', unit: '', color: '#f97316' },
+  { value: 'quality', label: 'Quality', unit: '', color: '#64748b' },
 ]
 
 function metricColor(metric) {
@@ -48,14 +51,38 @@ function buildDistanceSportData(series) {
   }
 }
 
+// Quality fans out into one line per training quality (0–100), in the stable
+// QUALITY_ORDER, colored/labelled by the dimensions engine. Each point reads its
+// precomputed per-week dims map (no aggregation here). Styling mirrors the
+// analysis-view QualityTrendChart.
+function buildQualityChartData(series) {
+  return {
+    labels: series.map(point => point.label),
+    datasets: QUALITY_ORDER.map(q => ({
+      label: QUALITY_LABELS[q],
+      data: series.map(point => Math.round((point.dims && point.dims[q]) || 0)),
+      borderColor: QUALITY_COLORS[q],
+      backgroundColor: QUALITY_COLORS[q],
+      pointBackgroundColor: QUALITY_COLORS[q],
+      tension: 0.34,
+      borderWidth: 2,
+      pointRadius: 2,
+      pointHoverRadius: 4,
+      spanGaps: true,
+    })),
+  }
+}
+
 // Build chart.js data for the selected metric. Distance fans out into per-sport
-// lines (see buildDistanceSportData); duration and load keep a primary line
-// plus a 3-week trailing moving average. Planner-local — does not depend on
-// dashboard charts. The moving average is computed from raw values and rounded
-// only at the end (so it matches the dashboard's MA), while the plotted points
-// are rounded for a clean tooltip.
+// lines (see buildDistanceSportData); quality fans out into per-quality lines
+// (see buildQualityChartData); duration and load keep a primary line plus a
+// 3-week trailing moving average. Planner-local — does not depend on dashboard
+// charts. The moving average is computed from raw values and rounded only at the
+// end (so it matches the dashboard's MA), while the plotted points are rounded
+// for a clean tooltip.
 export function buildTrendChartData(series, metric) {
   if (metric === 'distance') return buildDistanceSportData(series)
+  if (metric === 'quality') return buildQualityChartData(series)
 
   const raw = series.map(point => point[metric] || 0)
   const values = raw.map(value => Number(value.toFixed(1)))
@@ -101,6 +128,7 @@ function formatTick(value, unit) {
 // planner-local and English-labelled. `metricMeta` is a TREND_METRICS entry.
 export function trendChartOptions(metricMeta) {
   const unit = metricMeta?.unit || ''
+  const isQuality = metricMeta?.value === 'quality'
   return {
     responsive: true,
     maintainAspectRatio: false,
@@ -119,7 +147,9 @@ export function trendChartOptions(metricMeta) {
         intersect: false,
         mode: 'index',
         callbacks: {
-          label: context => `${context.dataset.label}: ${formatTick(context.parsed.y, unit)}`,
+          label: context => isQuality
+            ? `${context.dataset.label}: ${Math.round(context.parsed.y)}`
+            : `${context.dataset.label}: ${formatTick(context.parsed.y, unit)}`,
         },
       },
     },
@@ -128,15 +158,22 @@ export function trendChartOptions(metricMeta) {
         grid: { display: false },
         ticks: { color: '#64748b', font: { size: 11, weight: '700' } },
       },
-      y: {
-        beginAtZero: true,
-        grid: { color: 'rgba(148, 163, 184, 0.18)' },
-        ticks: {
-          color: '#64748b',
-          font: { size: 11 },
-          callback: value => formatTick(value, unit),
-        },
-      },
+      y: isQuality
+        ? {
+            beginAtZero: true,
+            max: 100,
+            grid: { color: 'rgba(148, 163, 184, 0.18)' },
+            ticks: { color: '#64748b', font: { size: 11 }, stepSize: 25 },
+          }
+        : {
+            beginAtZero: true,
+            grid: { color: 'rgba(148, 163, 184, 0.18)' },
+            ticks: {
+              color: '#64748b',
+              font: { size: 11 },
+              callback: value => formatTick(value, unit),
+            },
+          },
     },
   }
 }

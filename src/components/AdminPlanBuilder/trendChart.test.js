@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { ACTIVITY_TAG_MAP } from '../../utils/activity'
+import { QUALITY_ORDER, QUALITY_COLORS, QUALITY_LABELS } from '../../utils/dimensions'
 import { TREND_METRICS, buildTrendChartData, trendChartOptions } from './trendChart'
 
 const SERIES = [
@@ -17,8 +18,8 @@ const SPORT_SERIES = [
 ]
 
 describe('TREND_METRICS', () => {
-  it('lists distance, duration, and load', () => {
-    expect(TREND_METRICS.map(m => m.value)).toEqual(['distance', 'duration', 'load'])
+  it('lists distance, duration, load, and quality', () => {
+    expect(TREND_METRICS.map(m => m.value)).toEqual(['distance', 'duration', 'load', 'quality'])
   })
 })
 
@@ -59,6 +60,39 @@ describe('buildTrendChartData — distance multi-sport', () => {
   it('does not add a moving-average line for distance', () => {
     const data = buildTrendChartData(SPORT_SERIES, 'distance')
     expect(data.datasets.some(d => /average/i.test(d.label))).toBe(false)
+  })
+})
+
+const QUALITY_SERIES = [
+  { key: '2026-23', label: 'W23', dims: { threshold: 10, vo2max: 20, speed: 0, strength: 5, muscular_endurance: 8, endurance: 40 } },
+  { key: '2026-24', label: 'W24', dims: { threshold: 30, vo2max: 25, speed: 12, strength: 15, muscular_endurance: 18, endurance: 60 } },
+]
+
+describe('buildTrendChartData — quality', () => {
+  it('emits one dataset per quality in QUALITY_ORDER', () => {
+    const data = buildTrendChartData(QUALITY_SERIES, 'quality')
+    expect(data.datasets.map(d => d.label)).toEqual(QUALITY_ORDER.map(q => QUALITY_LABELS[q]))
+  })
+
+  it('plots each quality value per week from the point dims', () => {
+    const data = buildTrendChartData(QUALITY_SERIES, 'quality')
+    const threshold = data.datasets.find(d => d.label === QUALITY_LABELS.threshold)
+    expect(threshold.data).toEqual([10, 30])
+    expect(threshold.borderColor).toBe(QUALITY_COLORS.threshold)
+  })
+
+  it('does not add a moving-average line for quality', () => {
+    const data = buildTrendChartData(QUALITY_SERIES, 'quality')
+    expect(data.datasets.some(d => /average/i.test(d.label))).toBe(false)
+  })
+})
+
+describe('trendChartOptions — quality axis', () => {
+  it('uses a fixed 0–100 y-axis for the quality metric', () => {
+    const meta = TREND_METRICS.find(m => m.value === 'quality')
+    const opts = trendChartOptions(meta)
+    expect(opts.scales.y.max).toBe(100)
+    expect(opts.scales.y.beginAtZero).toBe(true)
   })
 })
 

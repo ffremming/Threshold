@@ -7,6 +7,7 @@ import {
   normalizeWorkout,
 } from '../../utils'
 import { sortTemplates } from '../../templateLibrary'
+import { subscribeAthleteSessions } from '../../athleteSessions'
 import { subscribeToWorkoutWeeks } from '../../workoutSubscriptions'
 import { subscribeCompletedActivities } from '../../strava/stravaClient'
 
@@ -133,6 +134,26 @@ export function useCoachTemplates(ownerId) {
   }, [ownerId])
 
   return { templates, loading }
+}
+
+export function useAthleteSessions(coachId, athleteId) {
+  const [sessions, setSessions] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    if (!coachId || !athleteId) {
+      setSessions([])
+      setLoading(false)
+      return
+    }
+    setLoading(true)
+    return subscribeAthleteSessions(coachId, athleteId, next => {
+      setSessions(next.map(s => normalizeWorkout({ ...s, source: 'athlete' })))
+      setLoading(false)
+    })
+  }, [coachId, athleteId])
+
+  return { sessions, loading }
 }
 
 export function useGlobalTemplates(ownerId) {

@@ -76,6 +76,11 @@ export default function TabContent(p) {
         loadingWorkouts={p.loadingWorkouts}
         templates={p.templates}
         loadingTemplates={p.loadingTemplates}
+        globalTemplates={p.globalTemplates}
+        loadingGlobalTemplates={p.loadingGlobalTemplates}
+        athleteSessions={p.athleteSessions}
+        loadingAthleteSessions={p.loadingAthleteSessions}
+        hasAthlete={Boolean(p.selectedAthleteId)}
         overviewWeeks={p.overviewWeeks}
         overviewWorkoutsByWeekKey={p.overviewWorkoutsByWeekKey}
         overviewWorkouts={p.overviewWorkouts}

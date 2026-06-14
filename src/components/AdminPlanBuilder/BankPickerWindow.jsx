@@ -16,8 +16,23 @@ const resolveMuscles = makeMuscleResolver()
 // filter bar so the picker gains zones/types/focus/duration/full-text search.
 const PICKER_FILTERS = ['search', 'zones', 'types', 'categories', 'duration']
 
+// Source scopes, mirroring BibliotekTab: the coach's own bank, the shared global
+// library, and the selected athlete's personal sessions. Sessions from any scope
+// drag/add identically — the wiring just takes a plain session object.
+const SCOPES = [
+  { value: 'mine', label: 'My bank' },
+  { value: 'global', label: 'Library' },
+  { value: 'athlete', label: 'Athlete' },
+]
+
 export default function BankPickerWindow({
   templates,
+  loadingTemplates = false,
+  globalTemplates = [],
+  loadingGlobalTemplates = false,
+  athleteSessions = [],
+  loadingAthleteSessions = false,
+  hasAthlete = false,
   onDragStart,
   onDragEnd,
   onAddTemplate,
@@ -25,15 +40,39 @@ export default function BankPickerWindow({
   onAddActivity,
   onRemoveActivity,
 }) {
+  const [scope, setScope] = useState('mine')
   const [activeTagFilter, setActiveTagFilter] = useState(null)
+
+  const visibleScopes = useMemo(
+    () => SCOPES.filter(s => s.value !== 'athlete' || hasAthlete),
+    [hasAthlete],
+  )
+
+  const scopeSource = scope === 'global'
+    ? globalTemplates
+    : scope === 'athlete'
+      ? athleteSessions
+      : templates
+  const scopeLoading = scope === 'global'
+    ? loadingGlobalTemplates
+    : scope === 'athlete'
+      ? loadingAthleteSessions
+      : loadingTemplates
+
+  // Different scopes have different activities present, so a tag selected in one
+  // scope rarely makes sense in another — reset it when switching.
+  function changeScope(next) {
+    setScope(next)
+    setActiveTagFilter(null)
+  }
 
   // Activity is filtered up-front (visibility show/hide + the single active tag),
   // then the shared engine applies search/zone/type/focus/duration.
   const byActivity = useMemo(() => (
-    templates
+    scopeSource
       .filter(t => !t.activityTag || visibleActivities.includes(t.activityTag))
       .filter(t => !activeTagFilter || t.activityTag === activeTagFilter)
-  ), [templates, visibleActivities, activeTagFilter])
+  ), [scopeSource, visibleActivities, activeTagFilter])
 
   const filters = useSessionFilters(byActivity, {
     enabled: PICKER_FILTERS,
@@ -47,6 +86,21 @@ export default function BankPickerWindow({
 
   return (
     <section className="pb-picker">
+      <div className="pb-picker-scope" role="tablist" aria-label="Session source">
+        {visibleScopes.map(s => (
+          <button
+            key={s.value}
+            type="button"
+            role="tab"
+            aria-selected={scope === s.value}
+            className={`pb-picker-scope-btn${scope === s.value ? ' is-active' : ''}`}
+            onClick={() => changeScope(s.value)}
+          >
+            {s.label}
+          </button>
+        ))}
+      </div>
+
       <SessionFilterBar
         criteria={filters.criteria}
         set={filters.set}
@@ -65,7 +119,9 @@ export default function BankPickerWindow({
         onRemoveActivity={onRemoveActivity}
       />
 
-      {filteredTemplates.length === 0 ? (
+      {scopeLoading ? (
+        <div className="pb-empty-copy">Loading sessions…</div>
+      ) : filteredTemplates.length === 0 ? (
         <div className="pb-empty-copy">No sessions match these filters.</div>
       ) : (
         <div className="pb-card-grid">

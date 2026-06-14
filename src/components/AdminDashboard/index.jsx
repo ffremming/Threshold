@@ -11,6 +11,7 @@ import '../LibraryBrowser.css'
 import '../AdminPlanBuilder.css'
 import { EMPTY_TEMPLATE } from './constants'
 import {
+  useAthleteSessions,
   useCoachTemplates,
   useCompletedActivities,
   useGlobalTemplates,
@@ -69,6 +70,7 @@ export default function AdminDashboard({
   const { workouts: analysisWorkouts, loading: loadingAnalysis } = useWeeklyRangeWorkouts(selectedAthleteId, analysisWeeks, analysisWeekKeys)
   const { templates, loading: loadingTemplates } = useCoachTemplates(userProfile?.uid)
   const { templates: globalTemplates, loading: loadingGlobalTemplates } = useGlobalTemplates(userProfile?.uid)
+  const { sessions: athleteSessions, loading: loadingAthleteSessions } = useAthleteSessions(userProfile?.uid, selectedAthleteId)
   const completedActivities = useCompletedActivities(selectedAthleteId)
   // Per-athlete plan annotations (focus bands, post-it notes, competitions).
   const { plan, planActions } = usePlan(selectedAthleteId)
@@ -157,6 +159,7 @@ export default function AdminDashboard({
     workoutLayout, onWorkoutLayoutChange,
     workouts, loadingWorkouts,
     templates, loadingTemplates, globalTemplates, loadingGlobalTemplates,
+    athleteSessions, loadingAthleteSessions,
     overviewWeeks, overviewWorkouts, loadingOverview, selectedWeekKey,
     analysisWeeks, loadingAnalysis,
     showOverview, setShowOverview,

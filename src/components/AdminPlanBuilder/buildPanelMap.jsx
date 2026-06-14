@@ -12,6 +12,11 @@ export function buildPanelMap(props) {
     onCreateTemplate,
     loadingTemplates,
     templates,
+    globalTemplates,
+    loadingGlobalTemplates,
+    athleteSessions,
+    loadingAthleteSessions,
+    hasAthlete,
     handleTemplateDragStart,
     handleDragEnd,
     handleAddTemplateClick,
@@ -54,6 +59,11 @@ export function buildPanelMap(props) {
         onCreateTemplate={onCreateTemplate}
         loadingTemplates={loadingTemplates}
         templates={templates}
+        globalTemplates={globalTemplates}
+        loadingGlobalTemplates={loadingGlobalTemplates}
+        athleteSessions={athleteSessions}
+        loadingAthleteSessions={loadingAthleteSessions}
+        hasAthlete={hasAthlete}
         handleTemplateDragStart={handleTemplateDragStart}
         handleDragEnd={handleDragEnd}
         handleAddTemplateClick={handleAddTemplateClick}

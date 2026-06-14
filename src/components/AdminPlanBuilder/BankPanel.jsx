@@ -7,6 +7,11 @@ export default function BankPanel({
   onCreateTemplate,
   loadingTemplates,
   templates,
+  globalTemplates,
+  loadingGlobalTemplates,
+  athleteSessions,
+  loadingAthleteSessions,
+  hasAthlete,
   handleTemplateDragStart,
   handleDragEnd,
   handleAddTemplateClick,
@@ -29,19 +34,21 @@ export default function BankPanel({
         )}
       </BuilderPanelHeader>
 
-      {loadingTemplates ? (
-        <div className="pb-empty-state">Loading sessions…</div>
-      ) : (
-        <BankPickerWindow
-          templates={templates}
-          onDragStart={handleTemplateDragStart}
-          onDragEnd={handleDragEnd}
-          onAddTemplate={handleAddTemplateClick}
-          visibleActivities={visibleActivities}
-          onAddActivity={addVisibleActivity}
-          onRemoveActivity={removeVisibleActivity}
-        />
-      )}
+      <BankPickerWindow
+        templates={templates}
+        loadingTemplates={loadingTemplates}
+        globalTemplates={globalTemplates}
+        loadingGlobalTemplates={loadingGlobalTemplates}
+        athleteSessions={athleteSessions}
+        loadingAthleteSessions={loadingAthleteSessions}
+        hasAthlete={hasAthlete}
+        onDragStart={handleTemplateDragStart}
+        onDragEnd={handleDragEnd}
+        onAddTemplate={handleAddTemplateClick}
+        visibleActivities={visibleActivities}
+        onAddActivity={addVisibleActivity}
+        onRemoveActivity={removeVisibleActivity}
+      />
     </aside>
   )
 }

@@ -8,6 +8,48 @@
   gap: var(--th-space-2);
 }
 
+/* Source scope switcher — My bank / Library / Athlete. Mirrors BibliotekTab's
+ * scope control, sized to fill the narrow picker panel. */
+.pb-picker-scope {
+  display: flex;
+  gap: 3px;
+  padding: 3px;
+  background: var(--th-surface-2);
+  border: 1px solid var(--th-line);
+  border-radius: var(--th-radius-pill);
+}
+
+.pb-picker-scope-btn {
+  appearance: none;
+  flex: 1 1 0;
+  border: none;
+  background: transparent;
+  color: var(--th-ink-muted);
+  font-family: var(--th-font-sans);
+  font-size: var(--th-text-xs);
+  font-weight: 600;
+  letter-spacing: var(--th-tracking-snug);
+  height: 1.75rem;
+  padding: 0 var(--th-space-2);
+  border-radius: var(--th-radius-pill);
+  cursor: pointer;
+  transition: background-color var(--th-dur-base) var(--th-ease),
+              color var(--th-dur-base) var(--th-ease);
+}
+
+.pb-picker-scope-btn:hover { color: var(--th-ink); }
+
+.pb-picker-scope-btn.is-active {
+  background: var(--th-surface);
+  color: var(--th-accent);
+  box-shadow: var(--th-shadow-xs);
+}
+
+.pb-picker-scope-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--th-accent-ring);
+}
+
 /* Search box */
 .pb-search {
   display: flex;
